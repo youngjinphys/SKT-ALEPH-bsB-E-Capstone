@@ -1,0 +1,25 @@
+# 포털의 정적 페이지·클라이언트 코드 검사만 실행합니다.
+name: Warning portal checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/warning-portal/**'
+      - '.github/workflows/portal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-check:
+    name: HTML, assets, security and JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Portal unit checks
+        run: python3 -m unittest discover -s apps/warning-portal/tests -p 'test_*.py' -v
+      - name: JavaScript syntax
+        run: node --check apps/warning-portal/public/portal.js

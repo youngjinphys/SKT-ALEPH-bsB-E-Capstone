@@ -19,7 +19,7 @@ flowchart LR
 - **Control Plane**: IOC 출처·검토·승인·버전·만료·배포(추후 구현).
 - **Data Plane**: 로컬 리졸버와 정책 적용기. 원격 서버 장애에도 기존 정상 서비스와 검증된 정책 유지 목표.
 - **계약**: 공통 JSON 스키마/테스트 벡터. 내부 라이브러리나 관리자 권한을 양쪽 서비스가 공유하지 않음.
-- **Portal**: 원래 피싱 HTTPS 호스트의 TLS 세션과 별도. DNS NXDOMAIN으로 포털 HTML을 자동 표시할 수 없음.
+- **Portal**: 원래 피싱 HTTPS 호스트의 TLS 세션과 별도. DNS NXDOMAIN으로 포털 HTML을 자동 표시할 수 없음. `apps/warning-portal/public`에 독립 안내 사이트를 **정적 프론트엔드로 구현**했으나 실제 정책·사례 API와는 연결되지 않음.
 
 ## 단계별 활성화
 

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>접근 차단 안내 | ALEPH 보안 안내</title>
+  <meta name="description" content="SKT ALEPH E조의 교육용 Protective DNS 차단·경고 독립 HTTPS 안내 화면. 실제 정책 연동 전 시연용입니다.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./portal.css">
+  <script src="./portal.js" defer></script>
+</head>
+<body class="mode mode--block" data-mode="block">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="topbar">
+    <div class="shell topbar__inner">
+      <a class="brand" href="./index.html" aria-label="ALEPH Capstone 안내 홈">
+        <span class="brand__mark"><svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m24 4 16 7v13c0 10-5 16-16 21C13 40 8 34 8 24V11l16-7Z"/><path d="m17 24 5 5 10-11"/></svg></span>
+        <span><span class="brand__name">ALEPH / SECURITY</span><span class="brand__sub">PROTECTIVE DNS · CAPSTONE</span></span>
+      </a>
+      <nav class="topnav" aria-label="안내 페이지 탐색">
+        <a href="./index.html">안내 홈</a>
+        <a href="./phishing-block.html" aria-current="page">차단 예시</a>
+        <a href="./phishing-warning-continue.html">경고 예시</a>
+      </nav>
+      <div class="env-label"><span class="env-dot"></span> DEMO ONLY · 정책 연동 전</div>
+    </div>
+  </header>
+  <main id="main" class="shell content">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero__copy">
+        <span class="eyebrow">SECURITY ALERT · BLOCK</span>
+        <h1 id="page-title">접속이 <span class="highlight">제한된 주소</span>를<br>확인하세요.</h1>
+        <p class="hero__lead">정책에 의해 차단된 상황을 설명하는 독립 안내 화면입니다. DNS 차단만으로 원래 HTTPS 탭이 여기로 전환되지는 않습니다. 실제 차단 여부와 사유는 정책 서버의 기록으로 확인해야 합니다.</p>
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="./index.html"><span class="btn__icon" aria-hidden="true">↗</span>안내 홈으로 이동</a>
+          <button class="btn btn--outline" id="close-tab" type="button">이 탭 닫기</button>
+        </div>
+        <p class="hero__footnote" id="action-status" role="status" aria-live="polite">이전 페이지로 돌아가는 기능은 사용하지 않습니다. 의심 사이트를 다시 열 수 있기 때문입니다.</p>
+      </div>
+      <div class="hero__visual" role="img" aria-label="POLICY · BLOCK 보안 상태를 나타내는 추상적인 보호막 일러스트">
+      <span class="eyeline">ALEPH / THREAT RESPONSE</span><span class="eyeline eyeline--right">LAB · 01</span>
+      <div class="orbit" aria-hidden="true"></div><div class="orbit__arc" aria-hidden="true"></div>
+      <div class="orbit__center"><svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="21" width="30" height="23" rx="5"/><path d="M16 21v-6a8 8 0 0 1 16 0v6M24 31v4"/></svg></div>
+      <div class="orbit__label">POLICY · BLOCK</div>
+    </div>
+    </section>
+    <section class="section" aria-label="시연 상태">
+      <div class="context-bar">
+        <div class="context-bar__item"><span>안내 종류</span><strong class="tone">차단 안내 (예시)</strong></div>
+        <div class="context-bar__item"><span>실제 DNS·정책 서버 연결</span><strong>연결되지 않음</strong></div>
+        <div class="context-bar__item"><span>원래 방문 주소 식별</span><strong>자동으로 확인 불가</strong></div>
+      </div>
+    </section>
+    <section class="section" aria-labelledby="analysis-title">
+      <div class="section__top"><div><span class="tinycap">SAMPLE ASSESSMENT</span><h2 id="analysis-title">위험도와 안내 근거</h2></div><p>기존 디자인의 위험도 카드와 탐지 신호를 계승한 <strong>명시적 시연 예시</strong>입니다.</p></div>
+      <div class="panel-grid">
+        <article class="panel" aria-labelledby="score-title">
+          <div class="panel__titleline"><h3 id="score-title">피싱 위험도 예시</h3><span class="tag">실측 결과 아님</span></div>
+          <p class="sample-note">이 점수는 원본 화면의 샘플 값입니다. AI 모델의 출력·실제 FQDN 조회·차단 정책의 근거가 아닙니다.</p>
+          <div class="risk-score"><strong>94</strong><span>/ 100점 · 시연용</span></div>
+          <div class="risk-meter" role="meter" aria-label="시연용 피싱 위험도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="94" aria-describedby="score-meaning"><div class="risk-meter__fill"></div></div>
+          <div class="meter-caption"><span>낮음</span><span>높음</span></div>
+          <p id="score-meaning">점수와 등급을 URL 파라미터로 변경할 수 없으며, 실제 위험도 계산은 구현되지 않았습니다.</p>
+          <ul class="signal-list">
+            <li>금융기관과 유사한 도메인 형태 (시연 예시)</li>
+            <li>최근 생성된 도메인 사례 (시연 예시)</li>
+          </ul>
+        </article>
+        <article class="panel" aria-labelledby="steps-title">
+          <div class="panel__titleline"><h3 id="steps-title">지금 권장하는 행동</h3><span class="tag">안전 가이드</span></div>
+          <div class="steps">
+            <div class="step"><span class="step__count">01</span><div><strong>민감한 정보 입력 중단</strong><p>로그인 정보, 금융정보와 인증번호를 의심 사이트에 입력하지 마세요.</p></div></div>
+            <div class="step"><span class="step__count">02</span><div><strong>공식 주소를 직접 확인</strong><p>주소창·즐겨찾기 또는 별도 공식 채널을 통해 접근하세요.</p></div></div>
+            <div class="step"><span class="step__count">03</span><div><strong>잘못된 판단이라면 신고</strong><p>아래에서 검토 요청 초안을 만들 수 있습니다. 이 페이지에서는 자동 제출하지 않습니다.</p></div></div>
+          </div>
+          <details><summary>왜 이 화면에서 바로 방문할 수 없나요?</summary><p>브라우저의 HTTPS 연결 대상과 인증서를 DNS만으로 안전하게 변경할 수 없습니다. 방문 예외·화이트리스트는 팀이 별도로 검증한 정책 절차가 필요합니다.</p></details>
+        </article>
+      </div>
+    </section>
+    <section class="section" aria-labelledby="report-title">
+      <div class="section__top"><div><span class="tinycap">FALSE POSITIVE REVIEW</span><h2 id="report-title">오탐 검토 요청</h2></div><p>개인정보와 비밀번호를 입력하지 마세요. 신고 접수 서버는 아직 연결되지 않았습니다.</p></div>
+      <div class="panel-grid">
+        <article class="panel" aria-labelledby="form-title">
+          <h3 id="form-title">검토 요청 초안 만들기</h3>
+          <p>아래 입력값은 이 페이지에서만 처리됩니다. <strong>전송·저장되지 않으며</strong> 자동으로 차단 정책을 변경하지 않습니다.</p>
+          <form id="report-form" class="form-grid" novalidate autocomplete="off">
+            <div><label for="reported-domain">검토 대상 도메인 <span class="tag">선택</span></label><input id="reported-domain" type="text" inputmode="url" maxlength="253" spellcheck="false" autocomplete="off" placeholder="example.test"><small>URL 전체·경로·비밀번호 대신 ASCII 도메인 이름만 입력합니다.</small></div>
+            <div><label for="reported-reason">오탐이라고 생각하는 이유</label><textarea id="reported-reason" minlength="10" maxlength="1000" required placeholder="이 주소가 정상이라고 생각한 근거를 10자 이상 작성해 주세요.
+민감한 내용은 포함하지 마세요."></textarea><small>10~1,000자 · 실제 접수는 별도 채널 필요</small></div>
+            <p id="form-error" class="field-error" role="alert" hidden></p>
+            <button type="submit" class="btn btn--primary" disabled>신고 초안 만들기</button>
+          </form>
+          <div id="draft-box" class="draft-box" hidden><h4>만들어진 초안 · 미제출</h4><label class="sr-only" for="draft-text">오탐 신고 초안 내용</label><textarea id="draft-text" class="draft-copy" readonly></textarea><button type="button" class="btn btn--outline" id="copy-draft">초안 복사하기</button></div>
+          <p id="form-status" class="live-status" role="status" aria-live="polite"></p>
+        </article>
+        <aside class="panel" aria-labelledby="privacy-title">
+          <div class="panel__titleline"><h3 id="privacy-title">알아두세요</h3><span class="tag">운영 전 안내</span></div>
+          <div class="explainer"><span class="explainer__symbol" aria-hidden="true">i</span><div><strong>이 화면은 DNS 정책을 실행하지 않습니다</strong><p>BLOCK/WARN 판단·정책 파일 적용·로그 확인은 별도의 로컬 DNS 및 정책 서버 역할입니다. 이 포털의 시연 화면을 열었다는 것만으로 차단이나 경고가 발생한 것이 아닙니다.</p></div></div>
+          <div class="steps"><div class="step"><span class="step__count">A</span><div><strong>신뢰할 수 없는 매개변수</strong><p>주소창의 <code>score</code>나 <code>url</code> 입력으로 위험 점수를 바꾸거나 임의 사이트로 이동할 수 없습니다.</p></div></div><div class="step"><span class="step__count">B</span><div><strong>접수 시스템 연계 대기</strong><p>향후 신고 API와 담당자 검토 절차가 검증되기 전에는 초안 복사만 제공합니다.</p></div></div></div>
+        </aside>
+      </div>
+    </section>
+    
+
+  </main>
+  <footer class="footer"><div class="shell footer__inner">
+    <p>ALEPH SECURITY LAB · E조 캡스톤 · 교육용 프로토타입</p>
+    <p>피싱 판정·차단 실행 결과는 이 페이지에서 확인할 수 없습니다. <a href="./index.html">안내 홈</a></p>
+  </div></footer>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>Protective DNS 시연 안내 | ALEPH 보안 안내</title>
+  <meta name="description" content="SKT ALEPH E조의 교육용 Protective DNS 차단·경고 독립 HTTPS 안내 화면. 실제 정책 연동 전 시연용입니다.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./portal.css">
+  <script src="./portal.js" defer></script>
+</head>
+<body class="mode mode--home" data-mode="home">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="topbar">
+    <div class="shell topbar__inner">
+      <a class="brand" href="./index.html" aria-label="ALEPH Capstone 안내 홈">
+        <span class="brand__mark"><svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m24 4 16 7v13c0 10-5 16-16 21C13 40 8 34 8 24V11l16-7Z"/><path d="m17 24 5 5 10-11"/></svg></span>
+        <span><span class="brand__name">ALEPH / SECURITY</span><span class="brand__sub">PROTECTIVE DNS · CAPSTONE</span></span>
+      </a>
+      <nav class="topnav" aria-label="안내 페이지 탐색">
+        <a href="./index.html" aria-current="page">안내 홈</a>
+        <a href="./phishing-block.html">차단 예시</a>
+        <a href="./phishing-warning-continue.html">경고 예시</a>
+      </nav>
+      <div class="env-label"><span class="env-dot"></span> DEMO ONLY · 정책 연동 전</div>
+    </div>
+  </header>
+  <main id="main" class="shell content">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero__copy">
+        <span class="eyebrow">ALEPH SECURITY · CAPSTONE</span>
+        <h1 id="page-title">더 안전한 웹을 위한<br><span class="highlight">분명한 경계.</span></h1>
+        <p class="hero__lead">피싱 도메인을 사전에 확인하고 차단하는 <strong>Protective DNS</strong> 실습 프로젝트입니다. 이 사이트는 원본 디자인을 기반으로 제작한 <strong>독립 안내 포털의 시연판</strong>입니다.</p>
+        <div class="hero__actions"><a class="btn btn--primary" href="./phishing-block.html">차단 화면 보기 <span class="btn__icon" aria-hidden="true">↗</span></a><a class="btn btn--outline" href="./phishing-warning-continue.html">경고 화면 보기</a></div>
+        <p class="hero__footnote">아직 DNS 엔진·원격 정책 서버·접수 API와 연결되지 않았습니다. 실제 사이트의 안전 여부를 검사하는 서비스가 아닙니다.</p>
+      </div>
+      <div class="hero__visual" role="img" aria-label="DNS · OVERVIEW 보안 상태를 나타내는 추상적인 보호막 일러스트">
+      <span class="eyeline">ALEPH / THREAT RESPONSE</span><span class="eyeline eyeline--right">LAB · 01</span>
+      <div class="orbit" aria-hidden="true"></div><div class="orbit__arc" aria-hidden="true"></div>
+      <div class="orbit__center"><svg aria-hidden="true" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m24 4 16 7v13c0 10-5 16-16 21C13 40 8 34 8 24V11l16-7Z"/><path d="m17 24 5 5 10-11"/></svg></div>
+      <div class="orbit__label">DNS · OVERVIEW</div>
+    </div>
+    </section>
+    <section class="section" aria-labelledby="flow-title">
+      <div class="section__top"><div><span class="tinycap">THREE POLICY STATES</span><h2 id="flow-title">정책 상태별 역할</h2></div><p>안내 화면은 상태를 설명할 뿐, DNS 판정을 자체 생성하거나 TLS 연결을 대신하지 않습니다.</p></div>
+      <div class="state-grid">
+        <a href="./phishing-block.html" class="state-card state-card--block"><span class="state-card__status">01 / BLOCK</span><h3>차단 안내</h3><p>승인된 정책에 의해 도메인 이름 해석이 제한되는 경우를 설명하는 시연 화면입니다.</p><span class="state-card__action">예시 열기 ↗</span></a>
+        <a href="./phishing-warning-continue.html" class="state-card state-card--warn"><span class="state-card__status">02 / WARN</span><h3>주의 안내</h3><p>위험 징후를 사용자에게 설명합니다. DNS만으로 브라우저에 확인창을 띄우지는 못합니다.</p><span class="state-card__action">예시 열기 ↗</span></a>
+        <div class="state-card state-card--allow"><span class="state-card__status">03 / ALLOW</span><h3>정상 통과</h3><p>정상 DNS 해석을 방해하지 않습니다. 별도 안내 포털로의 이동이 필요한 상태가 아닙니다.</p><span class="state-card__action">포털 강제 이동 없음 ✓</span></div>
+      </div>
+    </section>
+    <section class="section" aria-labelledby="how-title">
+      <div class="section__top"><div><span class="tinycap">TECHNICAL BOUNDARY</span><h2 id="how-title">DNS 차단과 안내 화면은 별개입니다</h2></div></div>
+      <div class="explainer"><span class="explainer__symbol" aria-hidden="true">i</span><div><strong>DNS NXDOMAIN은 HTTP 리다이렉트가 아닙니다</strong><p>기존 피싱 HTTPS 주소를 열다가 DNS 차단이 발생해도 브라우저가 자동으로 이 포털로 전환되지는 않습니다. 별도의 신뢰 가능한 HTTPS 주소에서 안내를 열어야 하며, 원래 접속 이름을 URL 파라미터로 받아 임의 이동시키지 않습니다.</p></div></div>
+    </section>
+
+  </main>
+  <footer class="footer"><div class="shell footer__inner">
+    <p>ALEPH SECURITY LAB · E조 캡스톤 · 교육용 프로토타입</p>
+    <p>피싱 판정·차단 실행 결과는 이 페이지에서 확인할 수 없습니다. <a href="./index.html">안내 홈</a></p>
+  </div></footer>
+</body>
+</html>

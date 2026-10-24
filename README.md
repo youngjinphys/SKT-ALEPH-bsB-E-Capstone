@@ -1,7 +1,7 @@
 # SKT ALEPH E조 Capstone
 
 > **피싱 IOC 검증 및 Protective DNS 기반 도메인 차단 시스템**  
-> **저장소 상태: 구조·문서 기준선 및 구조 검증 CI (애플리케이션·배포 미구현)**  
+> **저장소 상태: 독립 안내 포털 정적 UI 구현 · DNS·원격 정책 서버·실제 접수 API 미구현**  
 > 최종 발표 **계획일**: 2026년 11월 5일(목). 공식 시간·장소·평가 기준은 추후 확인합니다.
 
 이 저장소는 SKT ALEPH E조 캡스톤의 **단일 제출·개발 저장소(Monorepo)** 입니다. 원격 정책 관리 서비스, 사설 DNS 정책 적용기, 독립 HTTPS 안내 포털을 하나의 Git 이력으로 관리하지만, **실행·배포·인증 경계는 분리**합니다.
@@ -50,7 +50,7 @@
 ├── apps/
 │   ├── policy-server/       # 원격 IOC·정책 수집·검토·배포 (예정)
 │   ├── dns-agent/           # 격리 DNS 에이전트·리졸버 설정 (예정)
-│   └── warning-portal/      # 독립 HTTPS 안내/오탐 UI (예정)
+│   └── warning-portal/      # 차단·경고·안내 정적 UI 구현 (정책 미연결)
 ├── packages/
 │   └── policy-contract/     # 팀 공통 FQDN 정책 형식·검증 벡터
 ├── infra/
@@ -67,7 +67,8 @@
 │   │   └── 0001-repository-layout.md  # Monorepo 결정 기록
 │   └── submission.md        # 제출 및 증빙 기준
 ├── .github/workflows/
-│   └── baseline.yml         # 구조·위험 파일명 검사 (기능 테스트 아님)
+│   ├── baseline.yml         # 구조·위험 파일명 검사 (기능 테스트 아님)
+│   └── portal.yml           # 포털 정적 검사·JavaScript 문법 점검
 ├── scripts/
 │   └── verify_baseline.py   # Python 표준 라이브러리 구조 검사
 ├── CONTRIBUTING.md
@@ -77,7 +78,7 @@
 └── README.md
 ```
 
-**중요:** 이 기준선은 디렉터리·문서와 **구조 점검 CI만** 포함합니다. `src/`, `tests/`, `schema/`의 `.gitkeep`은 자리표시자이며 실제 실행 코드·JSON Schema·애플리케이션 테스트가 아닙니다. CI 성공은 DNS 차단이나 서버·포털 작동을 증명하지 않습니다.
+**중요:** 기준선 이후 `apps/warning-portal/public/`에 독립 정적 사이트와 UI 검사 코드를 구현했습니다. 다른 모듈의 `.gitkeep`은 자리표시자이며 정책 JSON Schema와 DNS/원격 서버 동작 코드는 미구현입니다. **정적 포털 검사는 DNS 차단이나 실제 인증서·서비스 간 통합 성공을 뜻하지 않습니다.**
 
 ### 디렉터리 책임
 
@@ -85,13 +86,22 @@
 | --- | --- | --- |
 | `apps/policy-server/` | 중앙 IOC 처리·승인·정책 생성·배포 API | 구획만 생성 |
 | `apps/dns-agent/` | 정책 수신/검증·DNS 구성 생성·적용·철회·복원 | 구획만 생성 |
-| `apps/warning-portal/` | 별도의 HTTPS 차단 설명 및 오탐 신고 | 구획만 생성 |
+| `apps/warning-portal/` | 별도 안내 홈·BLOCK/WARN·오탐 신고 초안 UI | **정적 사이트 구현·브라우저 UI 검사**, DNS/접수 API·TLS 배포 미연결 |
 | `packages/policy-contract/` | 양쪽 서비스가 독립적으로 검증할 공통 정책 계약 | 초안 위치만 확보 |
 | `infra/` | 개발 격리망·DNS/원격 배포 환경 분리 | 배포 금지/원칙 문서 |
 | `tests/e2e/` | 관리 클라이언트→DNS→정책 적용/복원 검증 | 시험 계획만 |
 | `docs/` | 아키텍처·위협 모델·시연·제출 정본 | 초기 문서 작성 |
 
 서버의 내부 Python 모듈을 DNS 에이전트가 직접 import하지 않습니다. **JSON 계약·버전·검증 벡터**만 공유하여 독립적으로 실행될 수 있게 합니다.
+
+### 독립 안내 포털 실행
+
+```bash
+python3 -m http.server 35173 --directory apps/warning-portal/public
+# http://127.0.0.1:35173/
+```
+
+안내 홈 `index.html`, 차단 `phishing-block.html`, 경고 `phishing-warning-continue.html`에서 UI를 확인할 수 있습니다. 원본 2개는 `apps/warning-portal/originals/`에 그대로 보존했습니다. [포털 상세 README](apps/warning-portal/README.md) · [Vercel 정적 배포 설정](apps/warning-portal/vercel.json). **개발 HTTP는 정상 HTTPS 인증서 테스트가 아닙니다.**
 
 ## 4. 작업 순서 (Notion 계획일, 완료 보장 아님)
 
@@ -127,7 +137,7 @@ python3 scripts/verify_baseline.py
 
 Notion 역할표의 **담당 영역 후보**: 염영진(통합/인프라), 김태양(IOC·정책), 김다영(로컬 DNS), 조유정(독립 포털/PM). 각 작업의 **최종 오너와 검토자**는 별도 확인이 필요합니다. GitHub 계정이 확인되기 전 임의로 CODEOWNERS를 지정하지 않습니다.
 
-- 저장소에는 구조 문서와 기본 구조 점검 CI만 있으며 **탐지 모델, 리졸버 적용 스크립트, 원격 API, 프론트엔드 서비스, 실행 가능한 애플리케이션 테스트·통합 테스트는 아직 포함되지 않습니다**.
+- 저장소에는 구조 문서·CI와 **독립 안내 포털 정적 HTML/CSS/JS 및 UI 테스트**가 있습니다. **탐지 모델, 리졸버 적용 스크립트, 원격 API, 신고 접수 API, 서비스 간 통합 테스트는 아직 포함되지 않습니다.**
 - 팀 내에 이미 구현한 별도 코드가 있다면 원본 저장소·고정 커밋을 먼저 기록한 뒤 이 구조로 합쳐야 합니다.
 - 기준선은 기존 `main`의 **단일 `Baseline` 커밋**으로 관리합니다. 본 프로젝트에서는 별도 브랜치를 생성하지 않으며, 후속 구현의 실제 증빙은 해당 시점의 커밋 SHA로 구분합니다.
 - 최종 발표에서는 DNS IOC 차단 성공을 신종 피싱의 **AI 탐지율**이나 실제 피해 예방 건수로 환산하지 않습니다.

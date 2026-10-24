@@ -21,4 +21,6 @@
 
 `.github/workflows/baseline.yml`은 Python 표준 라이브러리 기반 `scripts/verify_baseline.py`만 실행합니다. 이 검사는 문서/디렉터리 누락, 흔한 위험 파일명 및 예제 JSON 구문을 확인하는 **정적 기준선 점검**입니다. 정상 DNS 응답, 정책 무결성, 실제 서비스 테스트나 비밀 내용 검색을 수행하지 않으며 **애플리케이션 기능 검증으로 표시해서는 안 됩니다.**
 
-서비스 코드가 구현되면 모듈별 단위·공통 계약 테스트를 추가하고, `packages/policy-contract/` 변경 시 원격 서버와 로컬 DNS 양쪽의 호환성을 검사합니다. 격리 VM의 DNS/HTTPS·원복 증빙은 별도 결과로 보관합니다. **테스트 부재를 통과 처리하지 않습니다.**
+`apps/warning-portal/tests/`에는 포털 HTML·URL 오용 금지·원본 보존·보안 헤더의 정적 테스트를 추가했습니다. `.github/workflows/portal.yml`은 해당 변경 시 단위 검사와 JavaScript 문법 검사를 실행하도록 설정했습니다. Chromium DOM 시뮬레이션 검사는 선택 실행이며 실제 HTTP·TLS 및 DNS 연동 검증이 아닙니다.
+
+DNS/원격 서버 코드가 구현되면 모듈별 단위·공통 계약 테스트를 추가하고, `packages/policy-contract/` 변경 시 원격 서버와 로컬 DNS 양쪽의 호환성을 검사합니다. 격리 VM의 DNS/HTTPS·원복 증빙은 별도 결과로 보관합니다. **테스트 부재를 통과 처리하지 않습니다.**
