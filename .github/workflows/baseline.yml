@@ -1,0 +1,20 @@
+# 저장소 구성 점검만 수행합니다. DNS·HTTPS·앱 동작 검증이 아닙니다.
+name: Baseline structure checks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    name: Directory and tracked-file checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Verify baseline
+        run: python3 scripts/verify_baseline.py

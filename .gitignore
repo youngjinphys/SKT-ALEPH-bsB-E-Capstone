@@ -1,0 +1,55 @@
+# 비밀/환경
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+private/
+credentials/
+# 개인/런타임 정책 및 로그
+data/private/
+runtime/
+inbox/
+*.log
+*.log.*
+*.bak
+*.tmp
+applied.json
+# 운영 DB·트래픽 캡처·인프라 상태 (공개 커밋 금지)
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.pcap
+*.pcapng
+*.ovpn
+*.kdbx
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# JavaScript
+node_modules/
+dist/
+build/
+coverage/
+.next/
+# IDE/OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
