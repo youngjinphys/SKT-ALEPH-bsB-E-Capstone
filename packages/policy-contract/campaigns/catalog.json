@@ -1,0 +1,44 @@
+{
+  "synthetic": true,
+  "campaigns": [
+    {
+      "id": "credential-impersonation",
+      "title": "계정 인증 사칭 실습",
+      "scenario": "로그인 재확인 문구를 사칭한 가상 도메인의 차단·검토 상태를 비교한다. 실존 IOC가 아니다.",
+      "rules": [
+        {"domain": "account-session-verify.test", "decision": "BLOCK", "approved": true, "ttl_minutes": 30, "case_id": "LAB-CRED-001"},
+        {"domain": "account-login-review.test", "decision": "BLOCK", "approved": false, "ttl_minutes": 60, "case_id": "LAB-CRED-002"},
+        {"domain": "account-help-notice.test", "decision": "WARN", "approved": true, "ttl_minutes": 75, "case_id": "LAB-CRED-003"}
+      ]
+    },
+    {
+      "id": "invoice-imitation",
+      "title": "가상 청구서·결제 사칭 실습",
+      "scenario": "청구서 확인을 유도하는 가상 이름에 정책을 적용하고 정상 대조 이름을 통과시킨다.",
+      "rules": [
+        {"domain": "invoice-payment-check.test", "decision": "BLOCK", "approved": true, "ttl_minutes": 45, "case_id": "LAB-INVOICE-001"},
+        {"domain": "invoice-receipt-review.test", "decision": "WARN", "approved": true, "ttl_minutes": 90, "case_id": "LAB-INVOICE-002"},
+        {"domain": "invoice-help-reference.test", "decision": "ALLOW", "approved": true, "ttl_minutes": 120, "case_id": "LAB-INVOICE-003"}
+      ]
+    },
+    {
+      "id": "parcel-notification",
+      "title": "배송 알림 사칭 실습",
+      "scenario": "가상의 배송 확인 캠페인에 대한 정책 적용과 미승인 후보의 비집행을 검증한다.",
+      "rules": [
+        {"domain": "parcel-status-confirm.test", "decision": "BLOCK", "approved": true, "ttl_minutes": 60, "case_id": "LAB-PARCEL-001"},
+        {"domain": "parcel-missed-alert.test", "decision": "BLOCK", "approved": false, "ttl_minutes": 100, "case_id": "LAB-PARCEL-002"}
+      ]
+    },
+    {
+      "id": "support-fraud",
+      "title": "고객지원 사칭 실습",
+      "scenario": "지원센터 사칭 가상 이름을 차단하고 별개의 경고·정상 통과 이름을 비교한다.",
+      "rules": [
+        {"domain": "support-reset-request.test", "decision": "BLOCK", "approved": true, "ttl_minutes": 20, "case_id": "LAB-SUPPORT-001"},
+        {"domain": "support-callback-review.test", "decision": "WARN", "approved": true, "ttl_minutes": 90, "case_id": "LAB-SUPPORT-002"},
+        {"domain": "support-public-info.test", "decision": "ALLOW", "approved": true, "ttl_minutes": 120, "case_id": "LAB-SUPPORT-003"}
+      ]
+    }
+  ]
+}

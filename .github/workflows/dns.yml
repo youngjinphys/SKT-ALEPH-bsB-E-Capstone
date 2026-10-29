@@ -1,0 +1,39 @@
+name: DNS validation
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dns:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONPATH: apps/dns-agent/src
+      REQUIRE_DNSMASQ: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install standalone test binaries (no system DNS service)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dnsmasq-base dnsutils nftables iproute2
+          dnsmasq --version
+          python3 --version
+      - name: Unit, fault injection and real loopback DNS tests
+        run: python3 -m unittest discover -s apps/dns-agent/tests -v
+      - name: Synthetic campaigns and policy parser contract
+        run: python3 -m unittest discover -s tests/policy -p 'test_*.py' -v
+      - name: Real URL candidate and Google verification offline safety tests
+        run: python3 -m unittest discover -s tests/intel -p 'test_*.py' -v
+      - name: System DNS installer validation (no privileged changes)
+        run: |
+          python3 -m py_compile infra/edge/system_dns.py
+          python3 -m unittest discover -s tests/deployment -p 'test_*.py' -v
+      - name: Require real nftables ownership tests in an isolated network namespace
+        run: |
+          sudo env ALEPH_REQUIRE_NETNS_TESTS=1 python3 -m unittest discover -s tests/deployment -p 'test_firewall_guard.py' -v
+      - name: Frontend regression tests
+        run: python3 -m unittest discover -s apps/warning-portal/tests -p 'test_*.py' -v
+      - name: Plain HTTP redirect comparison (not HTTPS or DNS integration)
+        run: python3 -m unittest discover -s tests/e2e -p 'test_*.py' -v

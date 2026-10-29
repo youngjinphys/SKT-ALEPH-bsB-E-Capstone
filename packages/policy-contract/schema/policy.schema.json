@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local reviewed DNS policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["issued_at", "expires_at", "rules"],
+  "properties": {
+    "issued_at": {"type": "string", "format": "date-time", "maxLength": 40},
+    "expires_at": {"type": "string", "format": "date-time", "maxLength": 40},
+    "rules": {
+      "type": "array", "maxItems": 10000,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["domain", "decision", "scope", "approved", "expires_at", "evidence"],
+        "properties": {
+          "domain": {"type": "string", "maxLength": 254, "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+\\.?$"},
+          "decision": {"enum": ["BLOCK", "WARN", "ALLOW"]},
+          "scope": {"const": "SUBTREE"},
+          "approved": {"type": "boolean"},
+          "expires_at": {"type": "string", "format": "date-time", "maxLength": 40},
+          "evidence": {"type": "string", "minLength": 1, "maxLength": 256}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "issued_at": "2026-10-25T00:00:00+00:00",
+  "expires_at": "2026-10-25T01:00:00+00:00",
+  "rules": [
+    {"domain": "blocked.test", "decision": "BLOCK", "scope": "SUBTREE", "approved": true, "expires_at": "2026-10-25T01:00:00+00:00", "evidence": "synthetic-lab-only"},
+    {"domain": "warn.test", "decision": "WARN", "scope": "SUBTREE", "approved": true, "expires_at": "2026-10-25T01:00:00+00:00", "evidence": "synthetic-lab-only"},
+    {"domain": "good.test", "decision": "ALLOW", "scope": "SUBTREE", "approved": true, "expires_at": "2026-10-25T01:00:00+00:00", "evidence": "synthetic-lab-only"}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "reject_domains": ["https://bank.test/login", "x.test\\nserver=8.8.8.8", "127.0.0.1", "x..test", "*.x.test"],
+  "reject_scopes": ["EXACT", "REDIRECT"],
+  "non_blocking_decisions": ["WARN", "ALLOW"],
+  "note": "Semantic regression inputs, not executable policy. Fixed-time example must not be used as a live policy."
+}

@@ -1,144 +1,137 @@
-# SKT ALEPH E조 Capstone
+# SKT ALEPH · E조 Capstone
 
-> **피싱 IOC 검증 및 Protective DNS 기반 도메인 차단 시스템**  
-> **저장소 상태: 독립 안내 포털 정적 UI 구현 · DNS·원격 정책 서버·실제 접수 API 미구현**  
-> 최종 발표 **계획일**: 2026년 11월 5일(목). 공식 시간·장소·평가 기준은 추후 확인합니다.
+**피싱 의심 도메인의 정책 검증, DNS 차단·철회, 장애 복구를 재현하는 보안 프로젝트입니다.**
+Linux 서버에서 허용된 LAN 클라이언트의 UDP/TCP 53번 질의를 처리할 수 있습니다.
 
-이 저장소는 SKT ALEPH E조 캡스톤의 **단일 제출·개발 저장소(Monorepo)** 입니다. 원격 정책 관리 서비스, 사설 DNS 정책 적용기, 독립 HTTPS 안내 포털을 하나의 Git 이력으로 관리하지만, **실행·배포·인증 경계는 분리**합니다.
+| 구성 | 현재 상태 |
+| --- | --- |
+| [DNS / 시스템 배포](infra/edge/README.md) | 사설 IPv4, 전용 systemd 계정·nftables, 정책 적용·복구 및 제거 |
+| [합성 정책](packages/policy-contract/campaigns/README.md) | `.test` 캠페인 4개, 정책 검증·만료·승인 시험 |
+| [실제 URL 후보 도구](apps/policy-server/README.md) | OpenPhish 후보 수집, Google Safe Browsing v5 조회, 수동 승인·만료 정책 생성. **DNS 자동 배포 없음** |
+| [프론트엔드](apps/warning-portal/README.md) | 정적 차단·경고 안내. 실제 DNS 차단을 HTTPS 화면으로 자동 전환하지 않음 |
+| [HTTP 비교 시연](docs/demo.md) | 별도 HTTP 302 실습. HTTPS 리다이렉트가 아님 |
+| 원격 정책 서버 | 인증·원격 발행 API·DB·AI 탐지 모델은 미구현 |
 
-- [Notion 프로젝트 허브](https://app.notion.com/p/4025db6797f0809ea74ffd4cf2b96240)
-- [Notion 기술 명세](https://app.notion.com/p/4025db6797f081e18de9cc1a2ca748f2)
-- [Notion 일정·작업 트래커](https://app.notion.com/p/78f284e4c1504c90ab32e8e568c296d6)
-- [저장소 아키텍처 결정 기록](docs/decisions/0001-repository-layout.md)
+## 격리된 Linux DNS 설치
 
-## 1. 목표와 보호 범위
-
-피싱 관련 IOC(침해지표)를 수집·검토하고, 승인된 **FQDN(도메인 이름)** 에 대한 정책을 관리 대상 로컬 DNS 리졸버에 반영하여 악성 의심 이름의 해석을 차단합니다. 차단 사유 및 오탐 신고는 **원래 사이트와 별개인 HTTPS 안내 포털**에서 제공합니다.
-
-초기 MVP에서 검증할 것은 (1) 정책 데이터 계약, (2) DNS의 정상/차단·철회 동작, (3) 별도 안내 포털, (4) 재현 가능한 증적입니다. 검증된 IOC의 정책 차단과 **AI가 신규 피싱을 예측하는 탐지 성능**은 구별합니다. AI/ML 모델, 중앙 DB, 정책 전자서명, 관리자 대시보드는 구현 및 팀 승인 전에 완료 기능으로 취급하지 않습니다.
-
-### 기술적 비보장 사항
-
-- **DNS 응답은 HTTP 리다이렉트가 아닙니다.** 싱크홀 IP로 바꿔도 원래 HTTPS 도메인의 인증서 이름·HSTS 검증을 우회해 경고 HTML을 자동 표시할 수 없습니다.
-- DNS 기반 차단은 **이 리졸버를 실제 사용하는 클라이언트의 DNS 질의**에 한정됩니다. DoH/DoT/DoQ·VPN·직접 IP 연결·기존 DNS 캐시 및 이미 열린 연결은 별도 제약입니다.
-- 정확한 FQDN 한 개(EXACT)와 하위 도메인 전체(SUBTREE)는 다릅니다. 리졸버별 지원·동작을 테스트하기 전 동치로 취급하지 않습니다.
-- `.test`는 DNS 특별 용도 영역입니다. 정책이 없어도 NXDOMAIN일 수 있으므로, **NXDOMAIN 단독 관측으로 차단 성공을 판정하지 않습니다.**
-
-## 2. 구성요소와 데이터 흐름
-
-```text
-[원격 정책 관리: apps/policy-server]        (목표 구조)
-  IOC 수집·검증 → 인간 승인·만료 → 버전별 정책
-                   │ 정책 JSON 계약
-                   ▼
-[로컬 적용기: apps/dns-agent]               (독립 배포)
-  무결성·스키마·버전 검사 → 원자적 반영/실패 복원
-                   ▼
-[로컬 DNS 리졸버: Unbound RPZ 등 후보]
-  관리 클라이언트 질의 → 정책 차단 또는 정상 해석
-
-[독립 HTTPS 포털: apps/warning-portal]
-  차단 안내 / 오탐 신고 (원래 HTTPS 탭 자동 전환 아님)
-```
-
-**MVP 대안:** 원격 서버가 완성되기 전에도 로컬에 저장한 검증된 JSON 정책으로 DNS 동작을 검증할 수 있습니다. 원격 서비스의 부재로 M1 테스트를 가로막지 않습니다. 실제 서비스 간 통신·배포 API와 서명 체계는 **팀이 승인하기 전 미확정**입니다.
-
-## 3. 저장소 구조
-
-```text
-.
-├── apps/
-│   ├── policy-server/       # 원격 IOC·정책 수집·검토·배포 (예정)
-│   ├── dns-agent/           # 격리 DNS 에이전트·리졸버 설정 (예정)
-│   └── warning-portal/      # 차단·경고·안내 정적 UI 구현 (정책 미연결)
-├── packages/
-│   └── policy-contract/     # 팀 공통 FQDN 정책 형식·검증 벡터
-├── infra/
-│   ├── lab/                 # 격리 VM·테스트 네트워크
-│   ├── edge/                # DNS 단말 배포
-│   └── server/              # 원격 서버 배포
-├── tests/e2e/               # 시스템 간 통합 실험 (예정)
-├── docs/
-│   ├── architecture.md      # 논리·배포 아키텍처
-│   ├── threat-model.md      # 보안 경계와 제약
-│   ├── development.md       # 개발·협업·계약 절차
-│   ├── demo.md              # 시연/검증 절차
-│   ├── decisions/
-│   │   └── 0001-repository-layout.md  # Monorepo 결정 기록
-│   └── submission.md        # 제출 및 증빙 기준
-├── .github/workflows/
-│   ├── baseline.yml         # 구조·위험 파일명 검사 (기능 테스트 아님)
-│   └── portal.yml           # 포털 정적 검사·JavaScript 문법 점검
-├── scripts/
-│   └── verify_baseline.py   # Python 표준 라이브러리 구조 검사
-├── CONTRIBUTING.md
-├── SECURITY.md
-├── .gitattributes
-├── .gitignore
-└── README.md
-```
-
-**중요:** 기준선 이후 `apps/warning-portal/public/`에 독립 정적 사이트와 UI 검사 코드를 구현했습니다. 다른 모듈의 `.gitkeep`은 자리표시자이며 정책 JSON Schema와 DNS/원격 서버 동작 코드는 미구현입니다. **정적 포털 검사는 DNS 차단이나 실제 인증서·서비스 간 통합 성공을 뜻하지 않습니다.**
-
-### 디렉터리 책임
-
-| 경로 | 책임/배포 범위 | 이번 초기화 상태 |
-| --- | --- | --- |
-| `apps/policy-server/` | 중앙 IOC 처리·승인·정책 생성·배포 API | 구획만 생성 |
-| `apps/dns-agent/` | 정책 수신/검증·DNS 구성 생성·적용·철회·복원 | 구획만 생성 |
-| `apps/warning-portal/` | 별도 안내 홈·BLOCK/WARN·오탐 신고 초안 UI | **정적 사이트 구현·브라우저 UI 검사**, DNS/접수 API·TLS 배포 미연결 |
-| `packages/policy-contract/` | 양쪽 서비스가 독립적으로 검증할 공통 정책 계약 | 초안 위치만 확보 |
-| `infra/` | 개발 격리망·DNS/원격 배포 환경 분리 | 배포 금지/원칙 문서 |
-| `tests/e2e/` | 관리 클라이언트→DNS→정책 적용/복원 검증 | 시험 계획만 |
-| `docs/` | 아키텍처·위협 모델·시연·제출 정본 | 초기 문서 작성 |
-
-서버의 내부 Python 모듈을 DNS 에이전트가 직접 import하지 않습니다. **JSON 계약·버전·검증 벡터**만 공유하여 독립적으로 실행될 수 있게 합니다.
-
-### 독립 안내 포털 실행
-
-```bash
-python3 -m http.server 35173 --directory apps/warning-portal/public
-# http://127.0.0.1:35173/
-```
-
-안내 홈 `index.html`, 차단 `phishing-block.html`, 경고 `phishing-warning-continue.html`에서 UI를 확인할 수 있습니다. 원본 2개는 `apps/warning-portal/originals/`에 그대로 보존했습니다. [포털 상세 README](apps/warning-portal/README.md) · [Vercel 정적 배포 설정](apps/warning-portal/vercel.json). **개발 HTTP는 정상 HTTPS 인증서 테스트가 아닙니다.**
-
-## 4. 작업 순서 (Notion 계획일, 완료 보장 아님)
-
-| 구간 | 목표일 | 증빙이 필요한 산출물 |
-| --- | --- | --- |
-| M0 | 10/23 잠정 (과거 10/24~25 계획과 충돌) | 더미 IOC·JSON 계약 전달과 DNS 담당자의 실제 수령 확인 |
-| M1 | 10/26 | 격리 VM에서 DNS 정상/차단·EXACT·철회 및 HTTPS 한계 실측 |
-| M2 | 10/27 | 별도 HTTPS 포털과 안전한 신고 UI |
-| M3 | 10/28~11/01 | 정책 생성/전달 → 로컬 적용 → 차단·철회 → 안내 포털의 종단 간 재현 |
-| M4 | 11/02~11/04 | DNS 성능·실패 복구·문서·발표 대본과 백업 시연 |
-| 발표 | 11/05 | 실제 구현과 한계를 분리한 최종 발표 |
-
-10/31~11/01은 주말이 포함되며, 신규 업무 배정 여부는 팀 확인이 필요합니다. **예정일과 완료 상태는 다릅니다.** 최신 상태는 Notion 트래커를 따릅니다.
-
-## 5. 검증·보안·제출 원칙
-
-1. 기능 완료로 표시하려면 **실제 실행 코드의 Git SHA, 환경/설정, 명령, 표준 출력/로그, 성공·실패, 원복 결과**를 남깁니다. README/디렉터리만 생성한 이번 커밋은 동작 검증 증거가 아닙니다.
-2. 정책 파일은 FQDN 정규화·EXACT/SUBTREE 구분·만료·승인·버전과 실패 시 이전 정책 보존을 다룹니다. `risk_score=70` 등 미검증 점수를 자동 차단 근거로 삼지 않습니다.
-3. 격리된 테스트 도메인을 우선 사용합니다. `.test`의 기본 NXDOMAIN과 실제 로컬 정책 적용을 **통제된 정상 응답 fixture / 적용 로그 / 전후 비교**로 구별합니다.
-4. 사용자 DNS 질의 원본, 개인식별 정보, 키·비밀 토큰, 사설 장비 실제 설정은 커밋하지 않습니다. `.env`와 런타임 로그·개인키는 Git 무시 대상으로 관리합니다.
-5. 원격 배포 자격증명과 로컬 DNS 적용 권한은 분리합니다. **공개 저장소 쓰기 권한은 운영 서버 접근 권한이 아닙니다.** 관리자 권한 실행은 검토된 코드와 전용 실습 환경에서만 수행합니다.
-6. 자세한 절차는 [개발 규칙](docs/development.md), [위협 모델](docs/threat-model.md), [시연](docs/demo.md), [제출](docs/submission.md)을 따릅니다.
-
-### 기준선 구조 점검
+Python 3.11+, systemd, 관리자 권한과 서버의 **고정 사설 IPv4**가 필요합니다. DNS/방화벽·원래 DHCP DNS 및 복구 경로를 먼저 점검하세요.
 
 ```sh
-python3 scripts/verify_baseline.py
+sudo apt update
+sudo apt install -y python3 dnsmasq-base dnsutils nftables iproute2
+python3 scripts/build_campaign_policy.py > /tmp/aleph-policy.json
+
+# 미리보기: 단일 활성 사설 IPv4/NIC 자동 탐색, 시스템 변경 없음
+python3 infra/edge/system_dns.py install \
+  --upstream 9.9.9.9 --policy /tmp/aleph-policy.json
+
+# 탐지된 192.168.7.69 IP·NIC와 허용 대역을 확인한 뒤에만 설치
+sudo python3 infra/edge/system_dns.py install \
+  --client-cidr 192.168.7.0/24 \
+  --upstream 9.9.9.9 --policy /tmp/aleph-policy.json --apply
 ```
 
-이 명령은 필수 디렉터리/문서, Git 추적 파일의 위험한 확장자 및 공통 정책 예제 JSON 문법만 검사합니다. **비밀값의 내용 스캔·의존성 보안 검사·DNS/HTTPS/복원 테스트를 대신하지 않습니다.** 실제 모듈이 추가되면 각각의 테스트와 격리 VM 통합 검증을 별도로 추가해야 합니다.
+다중 NIC·Docker·VPN으로 후보가 모호하면 `--listen-ip 192.168.7.69`를 명시합니다. `--client-cidr`는 방화벽 허용 범위이므로 설치 시 직접 승인해야 합니다. 설치 성공 후 **다른 LAN 단말에서** UDP/TCP 53을 검증하고 DHCP DNS를 변경하세요.
 
-## 6. 협업과 현재 상태
+```sh
+dig @192.168.7.69 example.org A
+dig +tcp @192.168.7.69 example.org A
+sudo systemctl status aleph-dns.service --no-pager
+```
 
-Notion 역할표의 **담당 영역 후보**: 염영진(통합/인프라), 김태양(IOC·정책), 김다영(로컬 DNS), 조유정(독립 포털/PM). 각 작업의 **최종 오너와 검토자**는 별도 확인이 필요합니다. GitHub 계정이 확인되기 전 임의로 CODEOWNERS를 지정하지 않습니다.
+정책을 재발행하려면 `sudo python3 infra/edge/system_dns.py publish --policy /tmp/new-policy.json`을 사용합니다. **입력용 `/tmp` 파일은 자동 감시 대상이 아닙니다.** [설치·발행·제거 및 기존 설치 업그레이드](infra/edge/README.md) 절차를 따르세요.
 
-- 저장소에는 구조 문서·CI와 **독립 안내 포털 정적 HTML/CSS/JS 및 UI 테스트**가 있습니다. **탐지 모델, 리졸버 적용 스크립트, 원격 API, 신고 접수 API, 서비스 간 통합 테스트는 아직 포함되지 않습니다.**
-- 팀 내에 이미 구현한 별도 코드가 있다면 원본 저장소·고정 커밋을 먼저 기록한 뒤 이 구조로 합쳐야 합니다.
-- 기준선은 기존 `main`의 **단일 `Baseline` 커밋**으로 관리합니다. 본 프로젝트에서는 별도 브랜치를 생성하지 않으며, 후속 구현의 실제 증빙은 해당 시점의 커밋 SHA로 구분합니다.
-- 최종 발표에서는 DNS IOC 차단 성공을 신종 피싱의 **AI 탐지율**이나 실제 피해 예방 건수로 환산하지 않습니다.
-- 공개 저장소의 **배포 키·개인정보·DNS 원본 로그 관리**, 사고 대응과 비공개 제보 원칙은 [SECURITY.md](SECURITY.md)를 따릅니다. **라이선스와 외부 IOC 데이터의 재배포 허용 범위는 아직 확정되지 않았습니다.**
+## DNS 정책 JSON 작성과 적용
+
+`/tmp/aleph-policy.json`은 **입력 파일**입니다. `nano`로 수정만 해서는 이미 설치된 LAN DNS가 갱신되지 않습니다. 실행 중인 서비스가 읽는 파일은 `/etc/aleph-dns/policy.json`이며, 검증된 정책을 발행하려면 `publish`를 호출해야 합니다. **전체 정책을 교체하는 스냅샷**이므로 다른 기존 규칙을 누락하지 마세요.
+
+```sh
+# 새 실습 정책 만들기(현재 UTC 기준 시간 자동 생성) 및 편집
+python3 scripts/build_campaign_policy.py > /tmp/aleph-policy.json
+nano /tmp/aleph-policy.json
+
+# JSON 구문 검사. 정책 의미 검사는 다음 명령에서 수행
+python3 -m json.tool /tmp/aleph-policy.json > /dev/null
+export PYTHONPATH="$PWD/apps/dns-agent/src"
+python3 -m dns_agent validate /tmp/aleph-policy.json
+
+# 위 검증과 운영 서비스의 허용 범위를 모두 통과한 경우에만 발행
+sudo python3 infra/edge/system_dns.py publish --policy /tmp/aleph-policy.json
+sudo journalctl -u aleph-dns -n 60 --no-pager
+```
+
+JSON은 최상위 **객체** 하나이며, 그 안의 `rules` 배열에 규칙 객체를 추가합니다. 각 항목은 쉼표로 구분하고 마지막에는 쉼표를 붙이지 않습니다. JSON에는 `//` 주석을 쓸 수 없습니다.
+
+아래는 **구조 설명용 JSON 템플릿**입니다. `YYYY-MM-DD...`는 실제 값이 아니므로, 실행할 때는 **현재 UTC 발행시각 및 유효기간 안의 만료시각**으로 모두 교체해야 합니다. 자동으로 유효한 예시를 만들려면 위의 캠페인 생성 명령이나 `python3 -m dns_agent example`을 이용하세요.
+
+```json
+{
+  "issued_at": "YYYY-MM-DDTHH:MM:SS+00:00",
+  "expires_at": "YYYY-MM-DDTHH:MM:SS+00:00",
+  "rules": [
+    {
+      "domain": "blocked.test",
+      "decision": "BLOCK",
+      "scope": "SUBTREE",
+      "approved": true,
+      "expires_at": "YYYY-MM-DDTHH:MM:SS+00:00",
+      "evidence": "reviewed-lab-fixture"
+    }
+  ]
+}
+```
+
+| JSON 키 | 허용 형식·값 | 의미와 제약 |
+| --- | --- | --- |
+| `issued_at` | 시간대가 포함된 ISO 8601 문자열 | **정책 전체의 발행시각.** 기존 수락본보다 오래되면 거부. 같은 발행시각에 내용이 달라도 거부. 현재 시각보다 60초 넘게 미래여서는 안 됨 |
+| `expires_at` | ISO 8601 문자열 | **전체 정책 만료시각.** `issued_at`보다 나중이며 차이는 최대 **7일**. 현재 만료된 정책은 발행 거부 |
+| `rules` | JSON 배열(최대 10,000개) | 전체 규칙의 집합. 필드 누락·잘못된 규칙이 있으면 해당 정책 전체가 거부됨 |
+| `rules[].domain` | `"blocked.test"` 등 ASCII 도메인 | URL·IP가 아닌 도메인 이름. 기본 설치는 `.test`만 허용. 공용 도메인은 **설치 시** `--allow-public-domains` 승인이 필요 |
+| `rules[].decision` | `"BLOCK"`, `"WARN"`, `"ALLOW"` | `BLOCK`만 DNS 차단. 나머지 둘은 이 정책에서 차단하지 않으며 안전성을 보증하지 않음 |
+| `rules[].scope` | `"SUBTREE"` | 해당 도메인과 모든 하위 도메인에 적용. `"EXACT"`는 지원하지 않음 |
+| `rules[].approved` | `true`, `false` (따옴표 없음) | `true`이고 `BLOCK`이며 유효한 경우에만 차단. 서명·발행자 인증을 의미하지 않음 |
+| `rules[].expires_at` | ISO 8601 문자열 | **개별 규칙 만료시각.** `issued_at`보다 이후이고 **전체 `expires_at` 이하여야 함** |
+| `rules[].evidence` | 1–256자 문자열 | 사람이 검토한 근거·사례 식별자. 근거를 적었다고 자동 승인되는 것은 아님 |
+
+실제 값을 가진 예시 파일은 `python3 -m dns_agent example > /tmp/aleph-example.json`으로 생성할 수 있습니다. **예시 도메인 `.test`를 우선 사용**하세요. `naver.com`처럼 정상 서비스의 최상위 도메인을 차단하면 메일·로그인·여러 하위 서비스까지 영향을 받을 수 있으므로, 허가된 격리 실습 외에는 사용하지 마세요.
+
+### 공용 도메인 규칙이 적용되지 않을 때
+
+```sh
+# (1) 파일 전체 구조·시간·규칙 관계 확인 (공용 도메인 검증만 명시적으로 허용)
+python3 -m json.tool /tmp/aleph-policy.json > /dev/null
+PYTHONPATH="$PWD/apps/dns-agent/src" python3 -m dns_agent validate \
+  /tmp/aleph-policy.json --allow-public-domains
+
+# (2) 운영 서버가 공용 도메인 모드로 설치되어 있는지 확인
+sudo systemctl cat aleph-dns.service | grep '^ExecStart='
+
+# (3) 실제 발행된 규칙과 dnsmasq의 현재 설정 확인
+sudo grep -o '"domain":"naver.com"' /etc/aleph-dns/policy.json || true
+sudo grep -F 'address=/naver.com/' /var/lib/aleph-dns/active.conf || true
+sudo journalctl -u aleph-dns -n 80 --no-pager
+
+# (4) 다른 LAN 클라이언트에서 실제 서버의 TCP 응답 확인
+dig +tcp @192.168.7.69 naver.com A
+```
+
+`validate --allow-public-domains`는 **로컬 검증만** 바꾸며 설치된 서비스의 권한을 변경하지 않습니다. 운영 DNS의 systemd `ExecStart`에 `--allow-public-domains`가 없다면 `publish`에 임의 옵션을 붙여도 공용 도메인이 활성화되지 않습니다. 기존 설치 변경은 서비스 중단 및 복구 절차를 갖추어 [설치·업그레이드 안내](infra/edge/README.md)를 따르세요. 또한 `issued_at`이 이전 발행본과 같거나, 개별 `expires_at`이 전체 만료보다 늦거나, 발행시각 기준 전체 유효기간이 7일을 초과하면 거부됩니다. `publish`의 **`APPLIED` 또는 `UNCHANGED and ACKNOWLEDGED`** 결과와 서비스 로그를 확인해야 합니다.
+
+## 실제 위협 인텔리전스 (미승인 후보부터 시작)
+
+[실제 URL 수집·Google 검증·사람 승인 사용법](apps/policy-server/README.md)을 참고하세요. Google API 키와 각 공급자의 이용 조건 수락이 있어야 실제 온라인 검증을 수행할 수 있습니다. **원본 URL을 Google에 전달하며, DNS 전체 도메인 차단으로 변환하면 과차단 위험이 있습니다.** 후보 수집·검증은 DNS 정책을 자동 변경하지 않습니다. Google을 근거로 한 경고·차단에는 최신성·출처 표시 조건이 필요합니다.
+
+## 검증과 한계
+
+```sh
+export PYTHONPATH="$PWD/apps/dns-agent/src"
+REQUIRE_DNSMASQ=1 python3 -m unittest discover -s apps/dns-agent/tests -v
+python3 -m unittest discover -s tests/policy -v
+python3 -m unittest discover -s tests/intel -v
+python3 -m unittest discover -s tests/deployment -v
+python3 -m unittest discover -s apps/warning-portal/tests -v
+```
+
+**보호 범위:** `BLOCK`은 요청한 도메인과 모든 하위 이름에 NXDOMAIN을 반환합니다(`SUBTREE`). `WARN/ALLOW`는 차단하지 않으며, CNAME 응답 체인·DoH/VPN·기존 DNS 캐시·HTTPS 경고 화면까지 통제하지 않습니다. 외부 위협 피드 및 URL 조회는 **피싱 탐지율 또는 운영 LAN 안전성을 입증하지 않습니다.**
+
+[아키텍처](docs/architecture.md) · [감사](docs/review/commit-audit-20261027.md) · [위협 모델](docs/threat-model.md) · [검증 범위](docs/validation-matrix.md) · [Notion](https://app.notion.com/p/4025db6797f0809ea74ffd4cf2b96240)
