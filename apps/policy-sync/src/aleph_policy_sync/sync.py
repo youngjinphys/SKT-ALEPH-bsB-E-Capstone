@@ -253,9 +253,24 @@ def _locked_publish(script: Path, candidate: Path):
         raise SyncError("ALEPH DNS publish failed; inspect DNS service and publication journal") from exc
 
 
+def _locked_attest(script: Path, digest: str):
+    """Read-only root DNS attestation; never re-publish on a replay."""
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise SyncError("invalid expected DNS policy digest")
+    program = _safe_root_program(script)
+    try:
+        subprocess.run(["/usr/bin/python3", "-B", str(program), "attest",
+                        "--policy-sha256", digest],
+                       check=True, timeout=30, stdin=subprocess.DEVNULL,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                       env={"PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1"})
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
+        raise SyncError("DNS no longer attests the signed policy; inspect DNS service") from exc
+
+
 def _apply_locked(*, device: str, trust_dir: Path, inbox_dir: Path,
                fetch_user: str, state_dir: Path, dns_admin: Path, now=None,
-               publisher=None):
+               publisher=None, attestor=None):
     """Root-only: reverify the signed input, publish, THEN persist replay watermark.
 
     Never performs HTTP requests; rejects snapshots below the last good sequence.
@@ -299,7 +314,14 @@ def _apply_locked(*, device: str, trust_dir: Path, inbox_dir: Path,
             if (digest != previous["payload_sha256"]
                     or policy.digest != previous["policy_sha256"]):
                 raise SyncError("conflicting policy at same signed sequence")
-            return "already-applied"  # No root publish and no expiry extension.
+            # Root metadata by itself is not a live DNS attestation: the local
+            # policy may have been withdrawn, replaced or its firewall removed.
+            # Check without rewriting the DNS policy or extending the sequence.
+            if attestor is None:
+                _locked_attest(dns_admin, policy.digest)
+            else:
+                attestor(policy.digest)  # offline test injection only
+            return "already-applied"
     # The policy applied by the signed producer is always canonicalised before
     # invoking existing trusted DNS publish machinery.
     candidate = dest / "pending-policy.json"
@@ -328,11 +350,12 @@ def fetch_once(*, url: str, device: str, trust_dir: Path, inbox_dir: Path,
 
 def apply_once(*, device: str, trust_dir: Path, inbox_dir: Path,
                fetch_user: str, state_dir: Path, dns_admin: Path, now=None,
-               publisher=None):
+               publisher=None, attestor=None):
     if os.geteuid() != 0:
         raise SyncError("apply must run as root")
     folder = owner_dir(state_dir, 0, create=True)
     with file_lock(folder, owner=0):
         return _apply_locked(device=device, trust_dir=trust_dir, inbox_dir=inbox_dir,
                              fetch_user=fetch_user, state_dir=folder,
-                             dns_admin=dns_admin, now=now, publisher=publisher)
+                             dns_admin=dns_admin, now=now,
+                             publisher=publisher, attestor=attestor)

@@ -802,6 +802,32 @@ def await_published_policy(digest: str, *, seconds=12):
         time.sleep(.25)
     raise RuntimeError('policy saved but live DNS did not confirm; inspect journalctl/state; no automatic downgrade')
 
+def attest(args):
+    """Read-only signed-policy reconciliation for repeat apply ticks.
+
+    The policy on disk, daemon-acknowledged SHA, local health answer, and
+    dedicated nftables firewall must all agree. Never installs or mutates DNS.
+    """
+    need_root()
+    expected = args.policy_sha256
+    if not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected):
+        raise ValueError("attest requires a lowercase SHA-256 policy digest")
+    lock = publish_lock()
+    try:
+        read_options()
+        verify_installed_code()
+        if not service_active():
+            raise RuntimeError("DNS service inactive; cannot attest policy")
+        current = validate_policy(ETC/'policy.json', installed=True)
+        if current.digest != expected:
+            raise RuntimeError("published DNS policy differs from signed snapshot")
+        await_published_policy(expected)
+        firewall_guard('verify')
+        print("DNS_ATTESTED:", expected)
+    finally:
+        os.close(lock)
+
+
 def install(args):
     # Detecting a subnet cannot itself grant access to clients.
     # Fail before any root check, lock, or network lookup if scope is not approved.
@@ -1335,6 +1361,8 @@ def main(argv=None):
     setup.add_argument('--apply', action='store_true')
     update = cmds.add_parser('publish', help='publish an approved policy; requires sudo')
     update.add_argument('--policy', type=Path, required=True)
+    reconcile = cmds.add_parser('attest', help='read-only check of signed policy actually active in DNS')
+    reconcile.add_argument('--policy-sha256', required=True)
     migration = cmds.add_parser('upgrade', help='migrate existing installation; preview by default')
     migration.add_argument('--apply', action='store_true')
     migration.add_argument('--adopt-legacy-table', action='store_true')
@@ -1350,6 +1378,8 @@ def main(argv=None):
             install(args)
         elif args.command == 'publish':
             publish(args)
+        elif args.command == 'attest':
+            attest(args)
         elif args.command == 'upgrade':
             upgrade(args)
         elif args.command == 'migration-status':

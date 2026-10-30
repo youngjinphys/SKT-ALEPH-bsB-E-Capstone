@@ -4,7 +4,7 @@
 이는 DNS 엔진·통신 API·DB·AI 모델·팀 담당자까지 확정한다는 뜻이 아닙니다.
 
 - `apps/dns-agent/`: 로컬 DNS 정책 적용. 포털·원격 서버에 관리자 권한을 공유하지 않음.
-- `apps/policy-server/`: 원격 수집·검토·배포 영역. 현재 미구현.
+- `apps/policy-server/`: 원격 URL 수집·위험 제안·수동 검토·서명 발행 CLI가 구현됨. 원격 승인 API/DB는 미구현.
 - `apps/warning-portal/`: 독립 안내 UI. 사용자 신고가 자동 정책 변경 권한을 갖지 않음.
 - `packages/policy-contract/`: 구현된 데이터 형식과 반례. 서비스 내부 코드를 직접 import하지 않음.
 - `infra/`, `tests/`, `docs/`: 환경별 배포, 통합 증빙, 설계/실행 근거.

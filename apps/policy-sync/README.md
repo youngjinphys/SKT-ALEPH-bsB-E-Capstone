@@ -1,6 +1,10 @@
 # Signed Policy Sync
 
 Unprivileged HTTPS fetch + Ed25519-verified, root-only local policy publication.
+Repeated signed sequences now require a **read-only live DNS attestation**
+(policy file SHA, agent acknowledgement, health response and nftables guard)
+before returning `already-applied`. This avoids reporting success from the
+replay watermark alone. No renewed TTL or automatic overwrite is performed.
 Does not perform DNS queries, score threat intelligence, deploy databases,
 or modify firewall/DHCP. **No real policy is downloaded or applied by CI tests.**
 

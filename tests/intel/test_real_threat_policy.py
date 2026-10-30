@@ -1,20 +1,16 @@
 """Offline tests: exact Google response, freshness, scope, authorization, I/O."""
 from __future__ import annotations
-import importlib.util
-import hashlib
 import json
 from pathlib import Path
-import subprocess
 import sys
 import tempfile
 from datetime import datetime,timedelta,timezone
 import unittest
 from unittest.mock import patch
 
-FILE=Path(__file__).resolve().parents[2]/'scripts/build_real_threat_policy.py'
-spec=importlib.util.spec_from_file_location('real_intel', FILE)
-m=importlib.util.module_from_spec(spec)
-spec.loader.exec_module(m)
+ROOT = Path(__file__).resolve().parents[2]
+sys.path[:0] = [str(ROOT/'apps/policy-server/src'), str(ROOT/'apps/dns-agent/src')]
+from policy_server import intel as m
 NOW=datetime(2026,10,29,1,0,0,tzinfo=timezone.utc)
 URL='https://malicious-example-domain.online/secure/login'
 URL2='http://another-phish-example.biz/'

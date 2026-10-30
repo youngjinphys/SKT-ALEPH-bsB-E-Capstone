@@ -1,0 +1,69 @@
+name: Remote policy server checks
+on:
+  push:
+    paths:
+      - 'apps/policy-server/**'
+      - 'apps/policy-sync/**'
+      - 'apps/dns-agent/**'
+      - 'packages/policy-contract/**'
+      - 'infra/edge/**'
+      - 'scripts/deploy/**'
+      - 'tests/policy_server/**'
+      - 'tests/policy_sync/**'
+      - 'tests/intel/**'
+      - '.github/workflows/policy-server.yml'
+  pull_request:
+    paths:
+      - 'apps/policy-server/**'
+      - 'apps/policy-sync/**'
+      - 'apps/dns-agent/**'
+      - 'packages/policy-contract/**'
+      - 'infra/edge/**'
+      - 'scripts/deploy/**'
+      - 'tests/policy_server/**'
+      - 'tests/policy_sync/**'
+      - 'tests/intel/**'
+      - '.github/workflows/policy-server.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  remote-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PYTHONPATH: apps/policy-server/src:apps/dns-agent/src:apps/policy-sync/src
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install signing validation dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-cryptography
+      - name: Syntax and dry-run installer checks
+        run: |
+          bash -n scripts/deploy/install-policy-server.sh
+          bash -n scripts/deploy/install-dns-server.sh
+          python3 -m compileall -q apps/policy-server/src/policy_server
+      - name: Preview independent server installers without mutating DNS
+        run: |
+          tmp=$(mktemp -d)
+          trap 'rm -rf "$tmp"' EXIT
+          printf 'offline-test-key\n' > "$tmp/key"
+          openssl genpkey -algorithm Ed25519 -out "$tmp/private.pem"
+          openssl pkey -in "$tmp/private.pem" -pubout -out "$tmp/public.pem"
+          python3 -m dns_agent example > "$tmp/bootstrap.json"
+          bash scripts/deploy/install-policy-server.sh \
+            --server-name policy.example.org --device-id edge-69 \
+            --api-key-file "$tmp/key" --public-key "$tmp/public.pem" \
+            --accept-openphish-terms --ack-url-disclosure --ack-noncommercial-use
+          bash scripts/deploy/install-dns-server.sh \
+            --listen-ip 192.168.7.69 --interface eth0 --client-cidr 192.168.7.0/24 \
+            --upstream 9.9.9.9 --bootstrap-policy "$tmp/bootstrap.json" \
+            --public-key "$tmp/public.pem" --device-id edge-69 \
+            --policy-url https://policy.example.org/v1/policies/edge-69/current.json
+      - name: Offline dataset and malformed-provider regression tests
+        run: /usr/bin/python3 -B -m unittest discover -s tests/intel -p 'test_*.py' -v
+      - name: Non-privileged proposal, refresh and signed-release tests
+        run: /usr/bin/python3 -B -m unittest discover -s tests/policy_server -p 'test_*.py' -v
+      - name: Isolated root-only promoter regression tests
+        run: sudo env PYTHONPATH="$PYTHONPATH" /usr/bin/python3 -B -m unittest discover -s tests/policy_server -p 'test_*.py' -v

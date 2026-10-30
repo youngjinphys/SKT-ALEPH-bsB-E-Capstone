@@ -968,6 +968,60 @@ class InstallerLifecycleTests(unittest.TestCase):
                 mod.uninstall(SimpleNamespace(apply=True))
             migrate.assert_not_called()
 
+    def test_attest_requires_live_policy_and_valid_firewall(self):
+        policy_hash = 'a' * 64
+        args = SimpleNamespace(policy_sha256=policy_hash)
+        with patch.object(mod, 'need_root'), patch.object(mod, 'read_options'), \
+             patch.object(mod, 'verify_installed_code'), \
+             patch.object(mod, 'service_active', return_value=True), \
+             patch.object(mod, 'validate_policy', return_value=SimpleNamespace(digest=policy_hash)), \
+             patch.object(mod, 'publish_lock', return_value=os.open(mod.ETC/'attest.lock',
+                                                                   os.O_CREAT | os.O_RDWR, 0o600)), \
+             patch.object(mod, 'await_published_policy') as check_dns, \
+             patch.object(mod, 'firewall_guard') as check_firewall, \
+             patch.object(mod, 'write_atomic') as write:
+            mod.attest(args)
+            check_dns.assert_called_once_with(policy_hash)
+            check_firewall.assert_called_once_with('verify')
+            write.assert_not_called()
+
+    def test_attest_rejects_changed_policy_and_no_firewall_mutations(self):
+        expected = 'b' * 64
+        args = SimpleNamespace(policy_sha256=expected)
+        fd = os.open(mod.ETC/'attest.lock', os.O_CREAT | os.O_RDWR, 0o600)
+        with patch.object(mod, 'need_root'), patch.object(mod, 'read_options'), \
+             patch.object(mod, 'verify_installed_code'), \
+             patch.object(mod, 'service_active', return_value=True), \
+             patch.object(mod, 'validate_policy', return_value=SimpleNamespace(digest='c'*64)), \
+             patch.object(mod, 'publish_lock', return_value=fd), \
+             patch.object(mod, 'await_published_policy') as check_dns, \
+             patch.object(mod, 'firewall_guard') as check_firewall:
+            with self.assertRaisesRegex(RuntimeError, 'differs'):
+                mod.attest(args)
+            check_dns.assert_not_called()
+            check_firewall.assert_not_called()
+
+    def test_attest_rejects_firewall_drift_even_if_dns_hash_matches(self):
+        expected = 'a' * 64
+        args = SimpleNamespace(policy_sha256=expected)
+        fd = os.open(mod.ETC/'attest2.lock', os.O_CREAT | os.O_RDWR, 0o600)
+        with patch.object(mod, 'need_root'), patch.object(mod, 'read_options'), \
+             patch.object(mod, 'verify_installed_code'), \
+             patch.object(mod, 'service_active', return_value=True), \
+             patch.object(mod, 'validate_policy', return_value=SimpleNamespace(digest=expected)), \
+             patch.object(mod, 'publish_lock', return_value=fd), \
+             patch.object(mod, 'await_published_policy'), \
+             patch.object(mod, 'firewall_guard', side_effect=RuntimeError('firewall ownership lost')):
+            with self.assertRaisesRegex(RuntimeError, 'firewall ownership'):
+                mod.attest(args)
+
+    def test_attest_rejects_invalid_digest_before_any_state_access(self):
+        with patch.object(mod, 'need_root'), \
+             patch.object(mod, 'publish_lock') as lock:
+            with self.assertRaises(ValueError):
+                mod.attest(SimpleNamespace(policy_sha256='00' * 31 + 'XX'))
+            lock.assert_not_called()
+
     def test_service_acknowledgement_rejects_wrong_policy_sha(self):
         (mod.STATE_DIR/'state.json').write_text('{"policy_sha256":"other-sha"}')
         with patch.object(mod, 'service_active', return_value=True):

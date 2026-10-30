@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Non-commercial threat URL review pipeline; never modifies DNS or fetches suspect sites.
 
 Only two fixed official remote endpoints are contacted, with no redirects:
@@ -9,7 +8,6 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timedelta, timezone
 import hashlib
-import ipaddress
 import json
 import os
 from pathlib import Path
@@ -20,6 +18,8 @@ import tempfile
 from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
 
+from dns_agent.policy import PolicyError, domain_name, timestamp
+
 OPENPHISH = 'https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt'
 GOOGLE = 'https://safebrowsing.googleapis.com/v5/urls:search'
 MAX_URLS = 150
@@ -29,7 +29,11 @@ MAX_ARTIFACT_BYTES = 900_000
 MAX_GOOGLE_BYTES = 1_000_000
 MAX_LOOKUP_URL = 7600
 VALID_TYPES = {'SOCIAL_ENGINEERING', 'MALWARE', 'UNWANTED_SOFTWARE'}
-LABEL = re.compile(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z')
+BLOCK_TYPES = {'SOCIAL_ENGINEERING', 'MALWARE'}
+SOURCES = {'openphish', 'local-openphish', 'local-urlhaus'}
+IDENTITY_KEYS = {'url', 'domain', 'source', 'url_sha256'}
+VERIFIED_KEYS = IDENTITY_KEYS | {'status', 'threat_types', 'checked_at', 'valid_until'}
+ROOT = Path(__file__).resolve().parents[4]
 DURATION = re.compile(r'(?:0|[1-9]\d*)(?:\.\d{1,9})?s\Z')
 # Shared and highly sensitive hosting boundaries that must never be silently
 # converted from a specific URL into a SUBTREE-wide DNS block.
@@ -50,19 +54,23 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
+def as_utc(value):
+    if not isinstance(value, datetime) or value.tzinfo is None:
+        raise IntelError('timezone-aware datetime required')
+    try:
+        return value.astimezone(timezone.utc)
+    except (ValueError, OverflowError) as exc:
+        raise IntelError('datetime outside supported UTC range') from exc
+
+
 def iso(t):
-    return t.astimezone(timezone.utc).isoformat()
+    return as_utc(t).isoformat()
 
 
 def parse_time(text):
-    if not isinstance(text, str) or len(text) > 40:
-        raise IntelError('invalid timestamp')
     try:
-        t = datetime.fromisoformat(text.replace('Z', '+00:00'))
-        if t.tzinfo is None:
-            raise ValueError('no timezone')
-        return t.astimezone(timezone.utc)
-    except (ValueError, OverflowError) as exc:
+        return timestamp(text, 'intel timestamp')
+    except PolicyError as exc:
         raise IntelError('invalid timestamp') from exc
 
 
@@ -80,7 +88,7 @@ def reject_number(value):
 
 
 def parse_json(blob):
-    if len(blob) > MAX_ARTIFACT_BYTES:
+    if not isinstance(blob, bytes) or len(blob) > MAX_ARTIFACT_BYTES:
         raise IntelError('artifact exceeds size limit')
     try:
         return json.loads(blob.decode('utf-8'), object_pairs_hook=pairs_unique,
@@ -116,7 +124,7 @@ def write_json(path, data):
         raise IntelError('unsafe output target')
     # No raw public-feed URLs in the public GitHub repository. The ignored
     # data/private directory is the only in-repository exception.
-    root = Path(__file__).resolve().parents[1]
+    root = ROOT
     try:
         relative = path.resolve(strict=False).relative_to(root)
     except ValueError:
@@ -135,6 +143,11 @@ def write_json(path, data):
             stream.flush()
             os.fsync(stream.fileno())
         os.replace(tmp, path)
+        directory_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
     finally:
         if os.path.exists(tmp):
             os.unlink(tmp)
@@ -156,16 +169,10 @@ def safe_url(raw):
         raise IntelError('invalid URL authority') from exc
     if not host or not host.isascii() or '%' in host or host.endswith('..'):
         raise IntelError('invalid host')
-    host = host.lower().removesuffix('.')
-    labs = host.split('.')
-    if len(host) > 253 or len(labs) < 2 or any(not LABEL.fullmatch(x) for x in labs):
-        raise IntelError('invalid DNS hostname')
     try:
-        ipaddress.ip_address(host)
-    except ValueError:
-        pass
-    else:
-        raise IntelError('literal IP is not a public domain candidate')
+        host = domain_name(host)
+    except PolicyError as exc:
+        raise IntelError('invalid public DNS hostname') from exc
     if (host.endswith(('.test', '.invalid', '.localhost', '.local', '.example', '.onion', '.internal'))
             or host.endswith('.home.arpa')):
         raise IntelError('reserved lab name')
@@ -203,10 +210,61 @@ def get_https(url, *, headers=None, limit=MAX_FEED_BYTES):
     return data
 
 
+def validate_limit(limit):
+    if type(limit) is not int or not 1 <= limit <= MAX_URLS:
+        raise IntelError('item limit must be an integer between 1 and 150')
+
+
+def _object(value, keys, label):
+    if type(value) is not dict or set(value) != keys:
+        raise IntelError('invalid ' + label + ' fields')
+
+
+def _identity(item):
+    if any(not isinstance(item.get(key), str) for key in IDENTITY_KEYS):
+        raise IntelError('invalid candidate identity fields')
+    normal, host = safe_url(item['url'])
+    if (normal != item['url'] or host != item['domain'] or item['source'] not in SOURCES
+            or hashlib.sha256(normal.encode()).hexdigest() != item['url_sha256']):
+        raise IntelError('candidate integrity or source mismatch')
+
+
+def _verification_entries(value):
+    _object(value, {'kind', 'checked_at', 'unassigned_expressions', 'entries'}, 'verification')
+    if value['kind'] != 'aleph-verified-urls':
+        raise IntelError('requires verification artifact')
+    checked = parse_time(value['checked_at'])
+    if type(value['unassigned_expressions']) is not int or value['unassigned_expressions'] < 0:
+        raise IntelError('invalid expression count')
+    entries = value['entries']
+    if not isinstance(entries, list) or len(entries) > MAX_URLS:
+        raise IntelError('invalid verification entries')
+    seen = set()
+    for item in entries:
+        _object(item, VERIFIED_KEYS, 'verification entry')
+        _identity(item)
+        kinds = item['threat_types']
+        status = item['status']
+        if (not isinstance(kinds, list) or len(kinds) > len(VALID_TYPES)
+                or any(not isinstance(k, str) or k not in VALID_TYPES for k in kinds)
+                or len(set(kinds)) != len(kinds)
+                or not isinstance(status, str) or status not in {'MATCH', 'NO_MATCH', 'UNRESOLVED'}
+                or (status == 'MATCH') != bool(kinds)):
+            raise IntelError('invalid verified threat status')
+        observed, expires = parse_time(item['checked_at']), parse_time(item['valid_until'])
+        if observed != checked or not timedelta(0) < expires - observed <= timedelta(minutes=30):
+            raise IntelError('invalid verification validity interval')
+        if item['url'] in seen:
+            raise IntelError('duplicate verified URL')
+        seen.add(item['url'])
+    return entries
+
+
 def collect_urls(data, *, source, fetched_at=None, limit=MAX_URLS):
-    if source not in ('openphish', 'local-openphish', 'local-urlhaus'):
+    if not isinstance(source, str) or source not in SOURCES:
         raise IntelError('unsupported feed source')
-    if len(data) > MAX_FEED_BYTES or not 1 <= limit <= MAX_URLS:
+    validate_limit(limit)
+    if not isinstance(data, bytes) or len(data) > MAX_FEED_BYTES:
         raise IntelError('feed or item limit exceeded')
     try:
         lines = data.decode('utf-8').splitlines()
@@ -289,28 +347,33 @@ def parse_google_response(raw, queried, checked_at):
     return matches, expires_at, unassigned, unknown
 
 
-def verify_collected(data, key, *, fetch=get_https, checked_at=None):
-    if data.get('kind') != 'aleph-collected-urls' or not isinstance(data.get('entries'), list):
-        raise IntelError('not a collected URL artifact')
-    if not isinstance(key, str) or not key or any(ord(c) < 33 for c in key):
+def verify_collected(data, key, *, fetch=None, checked_at=None):
+    _object(data, {'kind', 'collected_at', 'source', 'rejected_count', 'entries'}, 'collection')
+    if (data['kind'] != 'aleph-collected-urls' or not isinstance(data['source'], str)
+            or data['source'] not in SOURCES or type(data['rejected_count']) is not int
+            or data['rejected_count'] < 0):
+        raise IntelError('invalid collection metadata')
+    if (not isinstance(key, str) or not 1 <= len(key) <= 1024 or not key.isascii()
+            or any(not 33 <= ord(c) <= 126 for c in key)):
         raise IntelError('API key is missing or malformed')
-    checked_at = checked_at or now_utc()
+    checked_at = as_utc(checked_at or now_utc())
+    if parse_time(data['collected_at']) - checked_at > timedelta(seconds=60):
+        raise IntelError('collection timestamp is in the future')
     items = data['entries']
-    if not items or len(items) > MAX_URLS:
+    if not isinstance(items, list) or not 1 <= len(items) <= MAX_URLS:
         raise IntelError('invalid candidate count')
-    if len(set(x.get('url') for x in items if isinstance(x,dict))) != len(items):
-        raise IntelError('duplicate candidates')
+    # Validate ALL candidates before the first API request, not batch by batch.
+    seen = set()
+    for item in items:
+        _object(item, IDENTITY_KEYS, 'candidate')
+        _identity(item)
+        if item['source'] != data['source'] or item['url'] in seen:
+            raise IntelError('inconsistent source or duplicate candidate')
+        seen.add(item['url'])
+    fetch = get_https if fetch is None else fetch
     verified, expressions = [], 0
     for batch in batches(items):
-        url_set = []
-        for item in batch:
-            if not isinstance(item, dict) or set(item) != {'url','domain','source','url_sha256'}:
-                raise IntelError('invalid candidate entry')
-            normalized, host = safe_url(item['url'])
-            if (normalized != item['url'] or host != item['domain']
-                    or hashlib.sha256(normalized.encode()).hexdigest() != item['url_sha256']):
-                raise IntelError('candidate integrity mismatch')
-            url_set.append(item['url'])
+        url_set = [item['url'] for item in batch]
         qs = urlencode([('urls', u) for u in url_set])
         response = fetch(GOOGLE+'?'+qs,
                          headers={'x-goog-api-key': key, 'Accept':'application/json',
@@ -328,46 +391,70 @@ def verify_collected(data, key, *, fetch=get_https, checked_at=None):
             'unassigned_expressions':expressions,'entries':verified}
 
 
+def _digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=True,
+                                    separators=(',', ':'), allow_nan=False).encode('ascii')).hexdigest()
+
+
+def verification_fingerprint(verified):
+    """Bind the full observed evidence, not just URL identity; not source authentication.
+
+    The verified dataset and the independently reviewed approval file must both
+    remain in trusted storage. An attacker who can rewrite both can recompute an
+    unkeyed hash; the separate policy signer remains the authorization boundary.
+    """
+    entries = _verification_entries(verified)
+    normalized = {**verified, 'entries': sorted(
+        ({**entry, 'threat_types': sorted(entry['threat_types'])} for entry in entries),
+        key=lambda entry: entry['url'])}
+    return _digest({'format': 2, 'scope': 'SUBTREE', 'verification': normalized})
+
+
 def review_template(verified):
-    if verified.get('kind') != 'aleph-verified-urls':
-        raise IntelError('requires verification artifact')
+    entries = _verification_entries(verified)
     proposals = []
-    for item in verified.get('entries', []):
-        if item['status'] != 'MATCH' or not item['threat_types']:
+    for item in entries:
+        if item['status'] != 'MATCH' or not set(item['threat_types']) & BLOCK_TYPES:
             continue
         proposals.append({'domain': item['domain'], 'url_sha256': item['url_sha256'],
                           'checked_at': item['checked_at'], 'reviewer': '',
                           'reason': '', 'approved': False,
                           'acknowledge_subtree': False})
-    return {'kind':'aleph-manual-domain-reviews','reviews':proposals}
+    return {'kind': 'aleph-manual-domain-reviews', 'format': 2, 'scope': 'SUBTREE',
+            'verification_sha256': verification_fingerprint(verified), 'reviews': proposals}
 
 
 def build_policy(verified, reviews, *, at=None,
                  acknowledge_replacement=False, acknowledge_notice=False):
-    if not (acknowledge_replacement and acknowledge_notice):
+    if acknowledge_replacement is not True or acknowledge_notice is not True:
         raise IntelError('explicit --confirm-replacement and --acknowledge-user-notice required')
-    if verified.get('kind') != 'aleph-verified-urls' or reviews.get('kind') != 'aleph-manual-domain-reviews':
-        raise IntelError('artifact kind mismatch')
-    entries = verified.get('entries')
-    approvals = reviews.get('reviews')
-    if not isinstance(entries, list) or not isinstance(approvals, list) or len(entries) > MAX_URLS:
+    entries = _verification_entries(verified)
+    _object(reviews, {'kind', 'format', 'scope', 'verification_sha256', 'reviews'},
+            'reviews (regenerate and re-review legacy unbound templates)')
+    fingerprint = verification_fingerprint(verified)
+    if (reviews['kind'] != 'aleph-manual-domain-reviews'
+            or type(reviews['format']) is not int or reviews['format'] != 2
+            or reviews['scope'] != 'SUBTREE'
+            or reviews['verification_sha256'] != fingerprint):
+        raise IntelError('review evidence or scope changed; regenerate and re-review')
+    approvals = reviews['reviews']
+    if not isinstance(approvals, list) or len(approvals) > MAX_URLS:
         raise IntelError('invalid review lists')
-    at = at or now_utc()
-    by_ref = {}
-    for item in entries:
-        if not isinstance(item, dict) or not {'url','domain','url_sha256','source','status','threat_types','checked_at','valid_until'} <= set(item):
-            raise IntelError('invalid verification entry')
-        normal, host = safe_url(item['url'])
-        if host != item['domain'] or normal != item['url'] or hashlib.sha256(normal.encode()).hexdigest() != item['url_sha256']:
-            raise IntelError('tampered verification identity')
-        ref = (host, item['url_sha256'], item['checked_at'])
-        if ref in by_ref:
-            raise IntelError('duplicate verified URL')
-        by_ref[ref] = item
+    at = as_utc(at or now_utc())
+    by_ref = {(x['domain'], x['url_sha256'], x['checked_at']): x for x in entries}
+    seen_reviews = set()
     selected = {}
+    host_reviews = {}
     for review in approvals:
         if not isinstance(review, dict) or set(review) != {'domain','url_sha256','checked_at','reviewer','reason','approved','acknowledge_subtree'}:
             raise IntelError('unexpected review fields')
+        if any(not isinstance(review[field], str) for field in
+               ('domain', 'url_sha256', 'checked_at', 'reviewer', 'reason')):
+            raise IntelError('invalid review identity or text')
+        reference = (review['domain'], review['url_sha256'], review['checked_at'])
+        if reference in seen_reviews or reference not in by_ref:
+            raise IntelError('duplicate review or approval not bound to this verification')
+        seen_reviews.add(reference)
         if type(review['approved']) is not bool or type(review['acknowledge_subtree']) is not bool:
             raise IntelError('review booleans required')
         if not review['approved']:
@@ -375,7 +462,9 @@ def build_policy(verified, reviews, *, at=None,
         if review['acknowledge_subtree'] is not True:
             raise IntelError('review must acknowledge whole-domain SUBTREE consequences')
         if (not isinstance(review['reason'], str) or not 15 <= len(review['reason']) <= 400
-                or not isinstance(review['reviewer'], str) or not 2 <= len(review['reviewer']) <= 80):
+                or not isinstance(review['reviewer'], str) or not 2 <= len(review['reviewer']) <= 80
+                or any(text != text.strip() or any(ord(c) < 32 or ord(c) == 127 for c in text)
+                       for text in (review['reason'], review['reviewer']))):
             raise IntelError('approved domain requires reviewer identity and detailed rationale')
         item = by_ref.get((review['domain'],review['url_sha256'],review['checked_at']))
         if item is None:
@@ -383,24 +472,29 @@ def build_policy(verified, reviews, *, at=None,
         host = item['domain']
         if is_protected(host):
             raise IntelError('shared-platform or high-impact host cannot be SUBTREE-blocked by this tool')
-        if item['status'] != 'MATCH' or not (set(item['threat_types']) & {'SOCIAL_ENGINEERING','MALWARE'}):
+        if item['status'] != 'MATCH' or not (set(item['threat_types']) & BLOCK_TYPES):
             raise IntelError('not a confirmed relevant Google threat')
         observed = parse_time(item['checked_at'])
         expires = parse_time(item['valid_until'])
-        if observed > at + timedelta(seconds=60) or at >= expires or at - observed >= timedelta(minutes=30):
+        if observed - at > timedelta(seconds=60) or at >= expires or at - observed >= timedelta(minutes=30):
             raise IntelError('Google evidence stale; verify again before generating a block')
         until = min(expires, observed + timedelta(minutes=30), at + timedelta(minutes=15))
         if until <= at:
             raise IntelError('no useful freshness window remains')
-        evidence = item['source']+':gsb:'+item['url_sha256'][:24]
+        host_reviews.setdefault(host, []).append(review)
         if host in selected:
             # Multiple approved URLs on the same host cannot increase the TTL.
             selected[host]['expires_at'] = iso(min(parse_time(selected[host]['expires_at']), until))
         else:
             selected[host] = {'domain':host,'decision':'BLOCK','scope':'SUBTREE',
-                              'approved':True,'expires_at':iso(until),'evidence':evidence}
+                              'approved':True,'expires_at':iso(until),'evidence':''}
     if not selected:
         raise IntelError('no approved, current, verified domains; no policy generated')
+    for host, rule in selected.items():
+        # Retain an audit reference to EVERY approved URL and to who approved it.
+        rule['evidence'] = 'intel-review-v2:sha256:' + _digest({
+            'format': 2, 'scope': 'SUBTREE', 'verification_sha256': fingerprint,
+            'reviews': sorted(host_reviews[host], key=lambda review: review['url_sha256'])})
     rules = sorted(selected.values(),key=lambda x:x['domain'])
     return {'issued_at':iso(at), 'expires_at':max(x['expires_at'] for x in rules),
             'rules':rules}
@@ -424,15 +518,10 @@ def main(argv=None):
     r = sub.add_parser('review-template',help='create unapproved review template')
     r.add_argument('--input',type=Path,required=True)
     r.add_argument('--output',type=Path,required=True)
-    b = sub.add_parser('build',help='generate bounded approved BLOCK policy; does not publish')
-    b.add_argument('--input',type=Path,required=True)
-    b.add_argument('--reviews',type=Path,required=True)
-    b.add_argument('--output',type=Path,required=True)
-    b.add_argument('--confirm-replacement',action='store_true')
-    b.add_argument('--acknowledge-user-notice',action='store_true')
     opts = cli.parse_args(argv)
     try:
         if opts.command == 'collect':
+            validate_limit(opts.limit)
             if opts.source == 'openphish':
                 if opts.feed_file is not None or not opts.accept_openphish_terms:
                     raise IntelError('OpenPhish remote feed requires explicit --accept-openphish-terms and no --feed-file')
@@ -449,18 +538,8 @@ def main(argv=None):
             if not key:
                 raise IntelError('Google API key environment variable not set')
             write_json(opts.output,verify_collected(read_json(opts.input),key))
-        elif opts.command == 'review-template':
-            write_json(opts.output,review_template(read_json(opts.input)))
         else:
-            policy = build_policy(read_json(opts.input),read_json(opts.reviews),
-
-                                  acknowledge_replacement=opts.confirm_replacement,
-                                  acknowledge_notice=opts.acknowledge_user_notice)
-            # Use the same producer validation contract as the DNS agent before output.
-            sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'apps/dns-agent/src'))
-            from dns_agent.policy import parse_policy
-            parse_policy(json.dumps(policy).encode())
-            write_json(opts.output,policy)
+            write_json(opts.output,review_template(read_json(opts.input)))
         print('Created local private artifact. No DNS service or policy was published.',file=sys.stderr)
         return 0
     except (IntelError, OSError, ValueError) as exc:

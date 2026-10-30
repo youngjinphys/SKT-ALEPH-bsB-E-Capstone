@@ -1,0 +1,35 @@
+# 원격 정책·DNS 안전성 검토 — 2026-10-30
+
+재검토 시작점: `7842e5c59255fb9f3542fc1f6acc5d56c617dae8`. 아래는 이 문서가 포함된 코드의 수정 내용이며, 실제 운영환경 배포 인증이 아닙니다.
+
+## 재현 후 수정한 경계
+
+| 원인 | 수정·회귀 시험 |
+|---|---|
+| 승인이 URL 해시/시각에만 결합되어 출처·위협 유형·만료가 바뀌어도 재사용됨 | format 2: 전체 검증 아티팩트와 SUBTREE 범위의 정규화 지문. 변경·구형 템플릿은 재검토 |
+| 한 호스트의 여러 URL 중 첫 URL만 정책 evidence에 남음 | 모든 승인 URL과 검토자·사유의 감사 해시. 순서 독립 및 최단 TTL 유지 |
+| 공백뿐인 reviewer/reason, 줄바꿈이 포함된 승인 사유 허용 | 의미 있는 길이·trim·제어문자 검사 |
+| current.json 쓰기 직후 receipt 쓰기 실패 시 같은 release 재시도 불가 | root journal → current → receipt → journal 제거. 양쪽 쓰기 실패·만료·서로 다른 재시도·읽기 전용 preview 시험 |
+| 이전 키 회수 후 이전 current 검증 때문에 명시적 키 교체도 막힘 | root receipt가 이전에 검증한 전체 envelope를 결합. 신규 release는 현재 trust store로 반드시 검증 |
+| public 파일 누락을 새 설치처럼 취급, 경로 상위 symlink 허용 | receipt 일치/디렉터리 계보·소유권 검사. 불명확한 상태에서 발행 거부 |
+| 같은 BLOCK 이름의 만료 단축을 철회로 보지 않음 | shortened_blocks를 표시하고 --ack-withdrawals 요구 |
+| 외부 analysis 매핑이 누락/NULL이면 다른 top-level analysis로 조용히 복귀 | 명시적 매핑은 누락 시 오류, NULL은 UNKNOWN용으로 보존, fallback 금지 |
+| 설치기가 기존 계정 신원 없이 재사용, cp -a로 미검토 bytecode 설치 | 공유 preflight로 UID/GID·home·nologin·경로·drop-in 검사. 캐시 제외·bounded source copy·모드 정규화 |
+
+검사 코드: `tests/intel/test_review_integrity.py`, `tests/policy_server/test_publication_recovery.py`, `test_input_mapping.py`, `test_install_preflight.py`. 기존 정책/수집/서명/설치 테스트도 계속 실행합니다. 새 원격 호출·운영 DNS 변경은 시험에 사용하지 않습니다.
+
+## 유지되는 기존 방어
+
+DNS 질의는 로컬에서 처리하고 원격 다운로드는 별도 계정이 수행합니다. 서명·장치 ID·시퀀스·만료 검사, DNS 적용 후 확인, 같은 시퀀스의 DNS attestation을 유지합니다. attestation은 설치 정책·에이전트 메타데이터·양성 건강 응답·nftables 소유 상태의 대표 검사이지 모든 질의나 점검 사이의 변조를 보증하지 않습니다.
+
+Google의 URL 신호를 도메인 전체 SUBTREE 승인으로 자동 승격하지 않습니다. 위험 제안의 EXACT와 집행 SUBTREE는 다른 계약이며, 기존 dnsmasq를 임의로 교체하거나 TLS MITM을 추가하지 않았습니다.
+
+## 인증·신선도·가용성 한계
+
+해시는 변경 탐지이지 출처/승인자 인증이 아닙니다. 수집 계정과 분리된 리뷰 사본 및 별도 서명자 권한이 필요합니다. 공급자 아티팩트와 리뷰를 모두 장악한 공격자, 서명키·root 침해는 이 해시로 막을 수 없습니다. 새 source allowlist 역시 발신자 인증이 아닙니다.
+
+OpenPhish 후보 수집 주기(약 12시간), GSB 최신성 상한(30분), 코드의 BLOCK 상한(15분)은 별개입니다. 수동 검토·서명 파이프라인만으로 상시 차단을 보장하지 않습니다. 자동 연장으로 숨기지 말고 운영 권한·갱신 빈도·철회 담당을 먼저 결정해야 합니다. Google의 표현식 결과가 원래 URL과 다르면 보수적으로 UNRESOLVED로 남기는 현행 제한도 유지합니다.
+
+새 발행 복구는 **서명된 정책 파일의 발행 트랜잭션**을 다룹니다. OS 패키지 설치, systemd/nftables 전체 설치·실제 재부팅·네트워크 단절의 자동 롤백을 실증한 것이 아닙니다. 실제 API 키·HTTPS·사설 LAN과 CNAME/DNSSEC/DoH/VPN/IPv6·기존 캐시는 별도 검증 대상입니다.
+
+[실제 사용 및 호환성 변경](../remote-policy-deployment.md) · [Google 최신성 조건](https://developers.google.com/safe-browsing/terms) · [URL 조회 계약](https://developers.google.com/safe-browsing/reference/rest/v5/urls/search)

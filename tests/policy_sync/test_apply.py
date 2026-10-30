@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from unittest.mock import patch
 import pwd
 import tempfile
 import unittest
@@ -28,6 +29,7 @@ class ApplyTests(unittest.TestCase):
         self.trust=self.root/'trust';self.trust.mkdir(mode=0o700)
         self.key=Ed25519PrivateKey.generate();trust(self.trust,self.key)
         self.published=[]
+        self.attested=[]
     def staged(self, *, sequence=1, at=NOW, data=None, key=None, confirm_empty=False):
         k=key or self.key
         blob=canonical(sign_policy(canonical(data if data is not None else policy(at)),k,
@@ -36,13 +38,17 @@ class ApplyTests(unittest.TestCase):
         path=self.inbox/'current.json';path.write_bytes(blob)
         path.chmod(0o600);os.chown(path,self.fetch_uid,self.fetch_uid)
         return blob
-    def apply(self, *, when=NOW, publisher=None):
+    def apply(self, *, when=NOW, publisher=None, attestor=None):
         if publisher is None:
             def publisher(p):
                 self.published.append(p.read_bytes())
+        if attestor is None:
+            def attestor(digest):
+                self.attested.append(digest)
         return apply_once(device='edge-69',trust_dir=self.trust,inbox_dir=self.inbox,
                           fetch_user=self.fetch_user,state_dir=self.state,
-                          dns_admin=Path('/usr/bin/python3'),now=when,publisher=publisher)
+                          dns_admin=Path('/usr/bin/python3'),now=when,
+                          publisher=publisher,attestor=attestor)
 
     def test_valid_signed_snapshot_publishes_then_persists_sequence(self):
         self.staged()
@@ -55,6 +61,36 @@ class ApplyTests(unittest.TestCase):
         self.assertFalse((self.state/'pending-policy.json').exists())
         self.assertEqual(self.apply(),'already-applied')
         self.assertEqual(len(self.published),1)
+        self.assertEqual(self.attested, [meta['policy_sha256']])
+
+    def test_real_attestation_command_is_bounded_and_read_only(self):
+        from aleph_policy_sync.sync import _locked_attest
+        from types import SimpleNamespace
+        with patch('aleph_policy_sync.sync._safe_root_program', return_value=Path('/opt/aleph-dns/admin.py')), \
+             patch('aleph_policy_sync.sync.subprocess.run') as command:
+            _locked_attest(Path('/opt/aleph-dns/admin.py'), 'a' * 64)
+            args, opts = command.call_args
+            self.assertEqual(args[0][3:5], ['attest', '--policy-sha256'])
+            self.assertEqual(args[0][-1], 'a' * 64)
+            self.assertTrue(opts['check'])
+            self.assertEqual(opts['timeout'], 30)
+            self.assertEqual(opts['stdin'], __import__('subprocess').DEVNULL)
+        with self.assertRaisesRegex(SyncError, 'invalid expected'):
+            _locked_attest(Path('/opt/aleph-dns/admin.py'), 'not-a-hash')
+
+    def test_replayed_sequence_checks_live_dns_before_reporting_success(self):
+        self.staged()
+        self.assertEqual(self.apply(), 'applied')
+        previous = (self.state/'applied.json').read_bytes()
+        def offline_or_diverged(_):
+            raise SyncError('simulated DNS policy drift')
+        with self.assertRaisesRegex(SyncError, 'policy drift'):
+            self.apply(attestor=offline_or_diverged)
+        self.assertEqual((self.state/'applied.json').read_bytes(), previous)
+        self.assertEqual(len(self.published), 1)
+        self.assertFalse((self.state/'pending-policy.json').exists())
+        self.assertEqual(self.apply(), 'already-applied')
+        self.assertEqual(len(self.attested), 1)
 
     def test_failed_publish_does_not_advance_sequence_or_erase_last_policy(self):
         self.staged();self.apply();last=(self.state/'applied.json').read_bytes()

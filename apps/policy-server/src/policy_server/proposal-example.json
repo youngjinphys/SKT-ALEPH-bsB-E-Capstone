@@ -1,0 +1,8 @@
+{
+  "policy_version": "v0.8-remote",
+  "warn_threshold": 70,
+  "admin_blocked_domains": [],
+  "approved_malicious_domains": [],
+  "official_domains": [],
+  "score_sources": ["lab-scanner"]
+}
