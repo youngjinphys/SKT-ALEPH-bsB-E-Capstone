@@ -1,0 +1,12 @@
+[Unit]
+Description=Apply newly verified ALEPH signed policies
+
+[Timer]
+OnBootSec=25s
+OnUnitInactiveSec=15s
+AccuracySec=5s
+Unit=aleph-policy-apply.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

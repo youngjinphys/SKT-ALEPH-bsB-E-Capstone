@@ -15,10 +15,10 @@
 | 장애 복구가 가능한가? | 후보/저널 기록 오류·기동 실패·실행 중 무응답·저널 손상별 기대 동작 확인 | transaction·wire 시험 |
 | CNAME 체인을 차단하는가? | `alias.test → blocked.test`와 주소가 반환되는 **한계 재현** | `test_alias_is_outside_qname_block_guarantee` |
 | 캠페인별 가상 정책이 적용 계약과 일치하는가? | 4개 캠페인 11개 규칙 중 실습 승인 BLOCK 4개만 렌더링, WARN·ALLOW·미승인 BLOCK 비차단, 그룹 중복·변조 입력 거부 | `tests/policy/test_campaign_policy.py` (실행 후 CI 기록 확인) |
-| HTTP 안내는 동작하는가? | 별도 고정 302→기존 포털 200; 요청 정보를 목적지에 전파하지 않음 | `tests/e2e/test_http_redirect_demo.py` |
+| HTTP 안내는 실제 정책에 따라 분기되는가? | 명시적 실습 DNS A 매핑과 `BLOCK/WARN` Host별 302→기존 정적 포털; 비승인·만료·변조 상태는 거부 | `apps/dns-agent/tests/test_integration.py`, `tests/e2e/test_http_policy_notice.py` |
 
 CI는 `.github/workflows/dns.yml`에서 실제 dnsmasq·dig를 설치하고 `REQUIRE_DNSMASQ=1`을 설정합니다.
-실제 DNS 시험의 skip은 통합 통과가 아닙니다. HTTP 비교 시험의 성공도 DNS→브라우저 자동 연계의 증거가 아닙니다.
+실제 DNS 시험의 skip은 통합 통과가 아닙니다. HTTP 고포트 테스트는 DNS 응답·302 경로를 분리해서 검증하며, 실제 LAN 53/80 배포나 HTTPS 사용자 경험의 증거가 아닙니다.
 CI URL과 소스 SHA는 발표 직전에 같은 커밋을 가리키는지 대조합니다.
 
 ## 남은 실험과 판정
@@ -31,9 +31,9 @@ CI URL과 소스 SHA는 발표 직전에 같은 커밋을 가리키는지 대조
 | DoH·DoT·VPN | 관리 여부·전송 경로를 명시한 비교 | 각 조건의 실제 리졸버와 통신 결과 확인; 포트 차단만으로 완전 통제를 주장하지 않음 |
 | 캐시·연결 재사용 | 정책 적용 전후 캐시와 연결 상태 통제 | 새 DNS 질의와 기존 연결 결과를 분리 기록 |
 | CNAME·HTTPS/SVCB 체인 | 응답 체인을 검사하는 엔진 대안 비교 | 양성·차단·복합 별칭 fixture별 적용 범위를 명시 |
-| HTTPS 안내 | HTTP 비교와 독립 포털의 역할 구분 | 원래 HTTPS 탭에서 자동 안내되지 않음을 명확히 전달 |
+| HTTPS 안내 | 실습 DNS A 변경과 HTTPS 인증서 검증의 차이를 확인 | 원래 HTTPS 탭에서 자동 안내되지 않고 연결 오류가 발생할 수 있음을 명확히 전달 |
 | 업스트림 장애 | 로컬 리스너 건강과 외부 이름 해석을 따로 확인 | 장애 알림·운영 판단 조건과 허용 중단시간 합의 |
-| 원격 정책 공급 | 출처·발행자 인증·서명·만료·재전송·철회 계약 | 변조/오래된 정책 거부 및 안전한 갱신 증거; 현재 미구현 |
+| 원격 정책 공급 | HTTPS 정적 파일·Ed25519 서명·장치 ID·버전·만료·수신/적용 역할 분리 | `tests/policy_sync/`: 루프백 TLS·304·서명 위조·버전 역행·빈 목록 철회·발행 실패. 실제 192.168.7.69 설치 및 재부팅 검증은 별도 |
 | 공공·ISP 협력 | 책임 주체와 연계 범위를 검토 | IOC 제공·검토·집행·이의신청·철회 역할을 분리한 제안; 제휴 확정과 구분 |
 
 ## 지표의 분모를 먼저 고정

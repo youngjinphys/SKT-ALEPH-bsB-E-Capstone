@@ -20,6 +20,29 @@ mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
 class SystemDnsTests(unittest.TestCase):
+    def test_upgrade_rejects_parent_allow_before_migration(self):
+        args = SimpleNamespace(apply=True, adopt_legacy_table=False)
+        existing = {'legacy': False, 'options': ('192.168.7.69', 'eth0',
+                                                  '192.168.7.0/24', '8.8.8.8', 53)}
+        with tempfile.TemporaryDirectory() as work, \
+             patch.object(mod, 'MIGRATION_JOURNAL', Path(work)/'journal'), \
+             patch.object(mod, 'need_root'), patch.object(mod, 'publish_lock', return_value=11), \
+             patch.object(mod, 'legacy_publish_lock', return_value=12), \
+             patch.object(mod, 'inspect_existing', return_value=existing), \
+             patch.object(mod, 'check_service_python'), \
+             patch.object(mod, 'check_parent_ip_allows', side_effect=RuntimeError('parent allow')), \
+             patch.object(mod, 'migrate_existing') as migrate, patch.object(mod.os, 'close'):
+            with self.assertRaisesRegex(RuntimeError, 'parent allow'):
+                mod.upgrade(args)
+            migrate.assert_not_called()
+
+    def test_unit_requires_mapless_guard_before_dns_start(self):
+        dns, _ = mod.unit_files('192.168.7.69', '8.8.8.8', 53, '192.168.7.0/24')
+        expected = ('ExecStartPre=+/usr/bin/python3 -B -m dns_agent.cgroup_guard '
+                    '192.168.7.69 192.168.7.0/24 8.8.8.8')
+        self.assertIn(expected, dns)
+        self.assertLess(dns.index(expected), dns.index('ExecStart=/usr/bin/python3'))
+
     def test_install_rejects_incompatible_service_python_before_interface_changes(self):
         # The installer can be invoked by a different interpreter from the one
         # hard-coded into the service units. An unsupported service interpreter
@@ -131,7 +154,7 @@ class SystemDnsTests(unittest.TestCase):
         self.assertNotIn('flush ruleset', text)
 
     def test_hardened_systemd_and_config(self):
-        dns, firewall = mod.unit_files('192.168.44.10', '1.1.1.1', 53, False, '192.168.44.0/24')
+        dns, firewall = mod.unit_files('192.168.44.10', '1.1.1.1', 53, '192.168.44.0/24')
         for line in ('User=aleph-dns', 'StateDirectoryMode=0700',
                      'AmbientCapabilities=CAP_NET_BIND_SERVICE',
                      'NoNewPrivileges=yes',
@@ -145,7 +168,7 @@ class SystemDnsTests(unittest.TestCase):
         self.assertIn('Type=oneshot', firewall)
         self.assertNotIn(' --allow-public-domains', dns)
         self.assertIn(' --allow-public-domains',
-                      mod.unit_files('192.168.44.10','1.1.1.1',53,True,'192.168.44.0/24')[0])
+                      mod.legacy_files('192.168.44.10','eth0','192.168.44.0/24','1.1.1.1',53,True)[0])
 
     def test_public_or_wide_or_injected_settings_rejected(self):
         cases = [
@@ -196,7 +219,7 @@ class InterfaceDiscoveryTests(unittest.TestCase):
     def arguments(**overrides):
         values = dict(listen_ip='192.168.7.69', interface=None, client_cidr=None,
                       upstream='9.9.9.9', upstream_port=53, policy=Path('unused'),
-                      allow_public_domains=False, apply=False)
+                      apply=False)
         values.update(overrides)
         return SimpleNamespace(**values)
 
@@ -479,7 +502,7 @@ class InstallerLifecycleTests(unittest.TestCase):
         mod.STATE_DIR.mkdir()
         self.now = datetime.now(timezone.utc).replace(microsecond=0)
         (mod.ETC/'options.json').write_text(json.dumps({
-            'managed_by': mod.OWNERSHIP_MARKER, 'allow_public_domains': False
+            'managed_by': mod.OWNERSHIP_MARKER
         }))
         (mod.ETC/'options.json').chmod(0o600)
         self.account = SimpleNamespace(pw_gid=os.getgid())
@@ -548,6 +571,28 @@ class InstallerLifecycleTests(unittest.TestCase):
         (mod.ETC/'options.json').write_text('{"allow_public_domains":false}')
         with self.assertRaisesRegex(RuntimeError, 'verified ALEPH'):
             mod.read_options()
+
+    def test_old_mode_requires_verified_upgrade(self):
+        p = mod.ETC/'options.json'
+        p.write_text(json.dumps({'managed_by':mod.OWNERSHIP_MARKER,
+                                 'allow_public_domains':False}))
+        with self.assertRaisesRegex(RuntimeError, 'upgrade --apply'):
+            mod.read_options()
+        self.assertFalse(mod.read_options(allow_historical=True)['allow_public_domains'])
+        p.write_text(json.dumps({'managed_by':mod.OWNERSHIP_MARKER,
+                                 'allow_public_domains':'false'}))
+        with self.assertRaisesRegex(RuntimeError, 'unrecognized'):
+            mod.read_options(allow_historical=True)
+
+    def test_public_domain_policy_is_valid_with_no_extra_mode(self):
+        policy = self.policy()
+        policy['rules'] = [{'domain':'reviewed.example.org', 'decision':'BLOCK',
+                            'scope':'SUBTREE', 'approved':True,
+                            'expires_at':policy['expires_at'], 'evidence':'test-approved'}]
+        candidate = mod.ETC/'candidate.json'
+        candidate.write_text(json.dumps(policy))
+        parsed = mod.validate_policy(candidate)
+        self.assertEqual(parsed.blocked(self.now), ('reviewed.example.org',))
 
     def test_publish_rejects_stale_and_equal_issuance_conflict(self):
         incoming=self.policy(issued_delta=-120)
@@ -826,7 +871,7 @@ class InstallerLifecycleTests(unittest.TestCase):
         args = SimpleNamespace(listen_ip='192.168.44.10', interface='eth0',
                                client_cidr='192.168.44.0/24', upstream='1.1.1.1',
                                upstream_port=53, policy=Path('unused'),
-                               allow_public_domains=False, apply=True)
+                               apply=True)
         fd = mod.publish_lock()
         try:
             with patch.object(mod, 'need_root'), \
@@ -842,7 +887,7 @@ class InstallerLifecycleTests(unittest.TestCase):
         args = SimpleNamespace(listen_ip='192.168.44.10', interface='eth0',
                                client_cidr='192.168.44.0/24', upstream='1.1.1.1',
                                upstream_port=53, policy=Path('unused'),
-                               allow_public_domains=False, apply=False)
+                               apply=False)
         with patch.object(mod, 'validate_policy', return_value=SimpleNamespace(digest='fixture')):
             mod.install(args)
         self.assertFalse(mod.LOCK_PATH.exists())
@@ -959,7 +1004,7 @@ class InstallerLifecycleTests(unittest.TestCase):
     def test_installed_parser_requires_real_installed_source(self):
         (mod.ETC/'policy.json').write_text(json.dumps(self.policy()))
         with self.assertRaisesRegex(RuntimeError, 'missing or not root-owned'):
-            mod.validate_policy(mod.ETC/'policy.json', False, installed=True)
+            mod.validate_policy(mod.ETC/'policy.json', installed=True)
 
 if __name__ == '__main__':
     unittest.main()

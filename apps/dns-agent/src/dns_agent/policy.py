@@ -59,7 +59,7 @@ def timestamp(value, field) -> datetime:
     except (ValueError, OverflowError) as exc:
         raise PolicyError(f'{field}: timestamp outside supported UTC range') from exc
 
-def domain_name(value: object, *, allow_public: bool = False) -> str:
+def domain_name(value: object) -> str:
     if not isinstance(value, str) or not value.isascii() or value != value.strip():
         raise PolicyError('domain: expected ASCII hostname without whitespace')
     name = value.lower().removesuffix('.')
@@ -77,8 +77,6 @@ def domain_name(value: object, *, allow_public: bool = False) -> str:
     if name == HEALTH_ZONE or name.endswith('.' + HEALTH_ZONE):
         raise PolicyError('domain overlaps reserved health-check namespace')
     # IDNA conversion belongs to the reviewed producer, not a lossy local repair.
-    if not allow_public and labels[-1] != 'test':
-        raise PolicyError('lab policy accepts only .test; public names require explicit opt-in')
     return name
 
 @dataclass(frozen=True)
@@ -103,8 +101,14 @@ class Policy:
         return tuple(sorted(r.domain for r in self.rules
                             if r.approved and r.decision == 'BLOCK' and now < r.expires_at))
 
-def parse_policy(raw: bytes, *, now: datetime | None = None,
-                 allow_public: bool = False) -> Policy:
+    def warned(self, now: datetime) -> tuple[str, ...]:
+        """Only approved, unexpired WARN is eligible for optional HTTP notice."""
+        if now >= self.expires_at:
+            return ()
+        return tuple(sorted(r.domain for r in self.rules
+                            if r.approved and r.decision == 'WARN' and now < r.expires_at))
+
+def parse_policy(raw: bytes, *, now: datetime | None = None) -> Policy:
     now = now or utcnow()
     obj = strict_json(raw)
     _keys(obj, ('issued_at', 'expires_at', 'rules'), 'policy')
@@ -119,7 +123,7 @@ def parse_policy(raw: bytes, *, now: datetime | None = None,
     by_name: dict[str, Rule] = {}
     for item in obj['rules']:
         _keys(item, ('domain','decision','scope','approved','expires_at','evidence'), 'rule')
-        name = domain_name(item['domain'], allow_public=allow_public)
+        name = domain_name(item['domain'])
         if item['scope'] != 'SUBTREE':
             raise PolicyError('dnsmasq backend supports SUBTREE only; EXACT is not silently widened')
         decision = item['decision']
@@ -152,7 +156,8 @@ def parse_policy(raw: bytes, *, now: datetime | None = None,
 
 def render_config(blocked: tuple[str, ...], *, port: int,
                   upstream: str, upstream_port: int,
-                  listen_address: str = '127.0.0.1', system_dns: bool = False) -> str:
+                  listen_address: str = '127.0.0.1', system_dns: bool = False,
+                  warned: tuple[str, ...] = (), http_sink_ip: str | None = None) -> str:
     """A privileged port is permitted ONLY in explicitly selected system DNS mode."""
     if type(system_dns) is not bool:
         raise PolicyError('system_dns must be a boolean')
@@ -185,12 +190,30 @@ def render_config(blocked: tuple[str, ...], *, port: int,
     if (address.is_loopback and upstream_port == port and not system_dns
             or str(address) == str(listen) and upstream_port == port):
         raise PolicyError('upstream points back to the listener')
-    names = tuple(sorted(domain_name(x, allow_public=True) for x in blocked))
+    names = tuple(sorted(domain_name(x) for x in blocked))
+    warnings = tuple(sorted(domain_name(x) for x in warned))
+    if http_sink_ip is not None:
+        try:
+            sink = ipaddress.IPv4Address(http_sink_ip)
+        except (TypeError, ValueError) as exc:
+            raise PolicyError('HTTP notice sink must be an IPv4 literal') from exc
+        if str(sink) != str(listen):
+            raise PolicyError('HTTP notice sink must match the exact DNS listener')
+        if set(names) & set(warnings):
+            raise PolicyError('conflicting BLOCK/WARN HTTP intercept domains')
+    elif warnings:
+        raise PolicyError('WARN remains nonblocking unless HTTP notice is explicitly enabled')
     marker = hashlib.sha256('\n'.join(names).encode()).hexdigest()[:20]
     lines = [f'port={port}', f'listen-address={listen}', 'bind-interfaces',
              'no-resolv', 'no-hosts', 'cache-size=0', 'local-ttl=0',
              'domain-needed', f'server={address}#{upstream_port}',
              f'local=/{HEALTH_ZONE}/',
              f'host-record=health-{marker}.{HEALTH_ZONE},192.0.2.1,2001:db8::1']
-    lines.extend(f'address=/{name}/' for name in names)
+    if http_sink_ip is None:
+        lines.extend(f'address=/{name}/' for name in names)
+    else:
+        # dnsmasq >=2.86 forwards non-A lookups if only address=/name/IPv4
+        # is used. Keep intercepted AAAA, HTTPS and SVCB local (NODATA).
+        for name in sorted(set(names) | set(warnings)):
+            lines.extend((f'address=/{name}/{sink}', f'local=/{name}/'))
     return '\n'.join(lines) + '\n'

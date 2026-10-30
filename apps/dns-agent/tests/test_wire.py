@@ -63,9 +63,9 @@ class WireTests(unittest.TestCase):
         runtime._health_name = 'health-demo.capstone.test'
         runtime._blocked_canary = 'blocked.test'
         runtime._last_probe_at = 0
-        with patch('dns_agent.runtime.dns_rcode', side_effect=[0, 0, 3, 0, 0, 3]) as query:
+        with patch('dns_agent.runtime.dns_rcode', side_effect=[0, 0, 3, 3, 0, 0, 3, 3]) as query:
             self.assertTrue(runtime.healthy())
-            self.assertEqual(query.call_count, 6)
+            self.assertEqual(query.call_count, 8)
         # Identical healthy process: skip redundant probes within five seconds.
         with patch('dns_agent.runtime.dns_rcode') as query:
             self.assertTrue(runtime.healthy())
@@ -76,6 +76,26 @@ class WireTests(unittest.TestCase):
         runtime._last_probe_at = 0
         with patch('dns_agent.runtime.dns_rcode', side_effect=RuntimeError('no DNS answer')):
             self.assertFalse(runtime.healthy())
+
+    def test_http_notice_health_requires_sink_a_and_no_aaaa_answers(self):
+        class Alive:
+            def poll(self): return None
+        runtime=DnsmasqRuntime('/bin/true',35353,http_sink_ip='127.0.0.1')
+        runtime.process=Alive()
+        runtime._health_name='health-test.capstone.test'
+        runtime._blocked_canary='warn.test'
+        runtime._last_probe_at=0
+        with patch('dns_agent.runtime.dns_rcode',side_effect=[0,0,0,0,0,0,0,0]) as request:
+            self.assertTrue(runtime.healthy())
+            self.assertEqual(request.call_count,8)
+            self.assertTrue(any(k.kwargs.get('require_no_answers') for k in request.call_args_list))
+            self.assertTrue(any(k.kwargs.get('expected_rdata') == b'\x7f\x00\x00\x01'
+                                for k in request.call_args_list))
+        runtime._last_probe_at=0
+        with patch('dns_agent.runtime.dns_rcode',side_effect=[0,0,0,3]):
+            self.assertFalse(runtime.healthy())
+        with self.assertRaisesRegex(RuntimeError,'must match'):
+            DnsmasqRuntime('/bin/true',35353,http_sink_ip='192.168.7.69')
 
     def test_privileged_binary_is_rejected_before_execution(self):
         with tempfile.TemporaryDirectory() as d:

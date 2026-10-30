@@ -1,6 +1,6 @@
 # 정책 서버 및 위협 인텔리전스
 
-**현재 구현:** 로컬·단발성 **실제 URL 후보 수집 → Google Safe Browsing v5 검증 → 사람 검토 초안 → DNS 정책 생성** 도구입니다. 원격 정책 서버·API·데이터베이스·자동 차단 서비스는 아직 없습니다.
+**현재 구현:** 로컬·단발성 **실제 URL 후보 수집 → Google Safe Browsing v5 검증 → 사람 검토 초안 → DNS 정책 생성** 도구입니다. 원격 검토 API·데이터베이스·자동 차단 서비스는 아직 없습니다. **서명된 정책 파일을 원격 HTTPS로 배포하고 로컬에서 검증 후 발행하는 별도 도구**는 [정책 배포 가이드](../../docs/policy-distribution.md)에 구현돼 있습니다. 다만 별도 systemd 설정이 필요하고 기본 DNS 설치에 자동 포함되지는 않습니다.
 
 [실행 코드](../../scripts/build_real_threat_policy.py) · [오프라인 보안 테스트](../../tests/intel/test_real_threat_policy.py)
 
@@ -49,15 +49,23 @@ python3 scripts/build_real_threat_policy.py build \
   --input /tmp/aleph-intel/verified.json \
   --reviews /tmp/aleph-intel/reviews.json \
   --output /tmp/aleph-intel/approved-policy.json \
-  --allow-public-domains --confirm-replacement --acknowledge-user-notice
+  --confirm-replacement --acknowledge-user-notice
 
 # 별도 검증. 이미 설치된 DNS는 직접 갱신하지 않습니다.
 export PYTHONPATH="$PWD/apps/dns-agent/src"
-python3 -m dns_agent validate /tmp/aleph-intel/approved-policy.json \
-  --allow-public-domains
+python3 -m dns_agent validate /tmp/aleph-intel/approved-policy.json
 ```
 
-**중요:** 결과 정책은 지정한 목록으로 전체 차단 정책을 *교체*하는 스냅샷입니다. 기존 승인 목록이 있다면 무심코 덮어써서 차단이 철회될 수 있습니다. 수동 검토 및 기존 정책 병합/안전한 철회 계획 없이 `publish`를 실행하지 마세요. 실제 서버에는 처음 설치할 때 `--allow-public-domains` 권한이 명시적으로 설정되어 있어야 하며, 이미 `.test` 전용으로 설치한 시스템은 이 JSON만 게시해서 활성화할 수 없습니다. 운영 설치 변경/인수 및 정책 승인 권한은 이 도구가 대행하지 않습니다.
+**중요:** 결과 정책은 지정한 목록으로 전체 차단 정책을 *교체*하는 스냅샷입니다. 기존 승인 목록이 있다면 무심코 덮어써서 차단이 철회될 수 있습니다. 수동 검토 및 기존 정책 병합/안전한 철회 계획 없이 `publish`를 실행하지 마세요. 신규 설치에서는 별도 도메인 허용 모드가 필요 없습니다. 다만 **구형 모드가 남아 있는 이전 설치는** 백업을 갖춘 `upgrade`를 수행해야 하며, 기존 설치 파일을 직접 덮어써서는 안 됩니다. 운영 설치 변경/인수 및 정책 승인 권한은 이 도구가 대행하지 않습니다.
+
+## 승인한 정책의 서명·원격 전달
+
+원격 전송에는 [독립 정책 동기화](../../docs/policy-distribution.md)의 Ed25519
+스냅샷을 사용합니다. Google API 응답을 DNS 서버가 직접 조회하지 않으며,
+위협 후보와 승인 기록을 DNS에서 재판정하지 않습니다. 새로운 정책은 유효한
+기존 목록을 보존하는 **완전한 교체 스냅샷**으로 서명해야 합니다.
+서명 또는 전송 실패가 현재 DNS 블랙리스트를 즉시 비우지는 않지만,
+개별 규칙의 만료는 독립적으로 작동합니다.
 
 ## 데이터 출처, API 및 이용 조건
 

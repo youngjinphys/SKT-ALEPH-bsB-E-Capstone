@@ -558,7 +558,7 @@ class LegacyInspectionTests(unittest.TestCase):
 
     def test_saved_policy_and_clock_watermark_are_read_without_changes(self):
         document, original = self._saved_policy()
-        policy, state = mod.migration_state(False)
+        policy, state = mod.migration_state()
         self.assertEqual(state, original)
         self.assertEqual(policy.digest, original['policy_sha256'])
         self.assertEqual(json.loads((mod.ETC/'policy.json').read_text()), document)
@@ -566,12 +566,92 @@ class LegacyInspectionTests(unittest.TestCase):
     def test_pending_or_corrupted_saved_state_is_not_adopted(self):
         _, original = self._saved_policy()
         pending = mod.STATE_DIR/'pending.json'; pending.write_text('{broken')
-        with self.assertRaises(RuntimeError): mod.migration_state(False)
+        with self.assertRaises(RuntimeError): mod.migration_state()
         self.assertEqual(pending.read_text(), '{broken')
         pending.unlink()
         (mod.STATE_DIR/'active.conf').write_text('corrupted')
-        with self.assertRaises(RuntimeError): mod.migration_state(False)
+        with self.assertRaises(RuntimeError): mod.migration_state()
         self.assertEqual(json.loads((mod.STATE_DIR/'state.json').read_text()), original)
+
+    def test_expired_upgrade_is_rejected_before_any_service_or_backup_change(self):
+        document, original_state = self._saved_policy()
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        document['issued_at'] = (now - timedelta(hours=2)).isoformat()
+        document['expires_at'] = (now - timedelta(hours=1)).isoformat()
+        path = mod.ETC/'policy.json'
+        canonical = json.dumps(document, sort_keys=True, separators=(',', ':'))
+        path.write_text(canonical)
+        original_state['policy'] = canonical
+        original_state['policy_sha256'] = hashlib.sha256(canonical.encode()).hexdigest()
+        (mod.STATE_DIR/'state.json').write_text(json.dumps(original_state))
+        (mod.STATE_DIR/'lock').touch(mode=0o600)
+        before = path.read_bytes()
+        existing = {'legacy': True,
+                    'options': ('192.168.44.10', 'eth0', '192.168.44.0/24', '1.1.1.1', 53)}
+        def fake_systemctl(command, **kwargs):
+            status = 'disabled\n' if command[1] == 'is-enabled' else 'inactive\n'
+            return SimpleNamespace(returncode=0, stdout=status, stderr='')
+        with patch.object(mod.subprocess, 'run', side_effect=fake_systemctl) as systemctl, \
+             patch.object(mod.os, 'fchown'), \
+             patch.object(mod, 'migration_snapshot', return_value=(5, 2)):
+            with self.assertRaisesRegex((RuntimeError, ValueError), 'expired'):
+                mod.migrate_existing(existing, 'upgrade')
+            systemctl.assert_not_called()
+        self.assertFalse(mod.MIGRATION_JOURNAL.exists())
+        self.assertFalse(mod.BACKUP_DIR.exists())
+        self.assertEqual(path.read_bytes(), before)
+        self.assertEqual(json.loads((mod.STATE_DIR/'state.json').read_text()), original_state)
+
+    def test_policy_expiring_during_code_backup_does_not_stop_service(self):
+        _, original_state = self._saved_policy()
+        (mod.STATE_DIR/'lock').touch(mode=0o600)
+        existing = {'legacy': True,
+                    'options': ('192.168.44.10', 'eth0', '192.168.44.0/24', '1.1.1.1', 53)}
+        first_check = mod.validate_policy
+        calls = 0
+        def expire_after_first_check(path):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise ValueError('policy already expired; generate a new policy')
+            return first_check(path)
+        with patch.object(mod.subprocess, 'run') as systemctl, \
+             patch.object(mod, 'validate_policy', side_effect=expire_after_first_check), \
+             patch.object(mod, 'migration_snapshot', return_value=(5, 2)):
+            with self.assertRaisesRegex(ValueError, 'expired'):
+                mod.migrate_existing(existing, 'upgrade')
+            systemctl.assert_not_called()
+        self.assertEqual(calls, 2)
+        self.assertFalse(mod.MIGRATION_JOURNAL.exists())
+        self.assertEqual(json.loads((mod.STATE_DIR/'state.json').read_text()), original_state)
+
+    def test_explicit_expired_policy_upgrade_preserves_policy_and_state(self):
+        document, state = self._saved_policy()
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        document['issued_at'] = (now - timedelta(hours=2)).isoformat()
+        document['expires_at'] = (now - timedelta(hours=1)).isoformat()
+        raw = json.dumps(document, sort_keys=True, separators=(',', ':'))
+        state['policy'] = raw
+        state['policy_sha256'] = hashlib.sha256(raw.encode()).hexdigest()
+        (mod.ETC/'policy.json').write_text(raw)
+        (mod.STATE_DIR/'state.json').write_text(json.dumps(state))
+        (mod.STATE_DIR/'lock').touch(mode=0o600)
+        existing = {'legacy': True, 'options': ('192.168.44.10', 'eth0',
+                    '192.168.44.0/24', '1.1.1.1', 53)}
+        def systemctl(command, **kwargs):
+            status = 'disabled\n' if command[1] == 'is-enabled' else 'inactive\n'
+            return SimpleNamespace(returncode=0, stdout=status, stderr='')
+        with patch.object(mod.subprocess, 'run', side_effect=systemctl), \
+             patch.object(mod, 'migration_snapshot', return_value=(5, 2)), \
+             patch.object(mod, 'migration_firewall_lock', side_effect=nullcontext), \
+             patch.object(mod._guard, 'delete_with_generation'), \
+             patch.object(mod._guard, 'apply'), patch.object(mod, 'await_installed_dns'), \
+             patch.object(mod.os, 'fchown'), patch.object(mod.os, 'chown'):
+            mod.migrate_existing(existing, 'upgrade', preserve_expired=True)
+        self.assertEqual((mod.ETC/'policy.json').read_text(), raw)
+        self.assertEqual(json.loads((mod.STATE_DIR/'state.json').read_text()), state)
+        archive = next(mod.BACKUP_DIR.glob('aleph-dns-migration-*'))
+        self.assertEqual((archive/'config'/'policy.json').read_text(), raw)
 
     def test_firewall_conflict_after_backup_preserves_originals_and_recovery_journal(self):
         _, original = self._saved_policy()
@@ -644,10 +724,14 @@ class LegacyInspectionTests(unittest.TestCase):
         self.assertTrue((mod.ETC/'installed-code.json').is_file())
         self.assertTrue((mod.ETC/'firewall.json').is_file())
         self.assertIn('firewall_guard.py apply', (mod.UNIT_DIR/'aleph-dns.service').read_text())
+        self.assertNotIn('--allow-public-domains', (mod.UNIT_DIR/'aleph-dns.service').read_text())
+        self.assertEqual(json.loads((mod.ETC/'options.json').read_text()),
+                         {'managed_by': mod.OWNERSHIP_MARKER})
         archives = list(mod.BACKUP_DIR.glob('aleph-dns-migration-*'))
         self.assertEqual(len(archives), 1)
         self.assertEqual(json.loads((archives[0]/'state'/'state.json').read_text()), original)
         self.assertEqual((archives[0]/'units'/'aleph-dns.service').read_text(), LEGACY_DNS)
+        self.assertFalse(json.loads((archives[0]/'config'/'options.json').read_text())['allow_public_domains'])
 
     def test_legacy_uninstall_preserves_state_and_units_in_archive(self):
         _, original = self._saved_policy()
@@ -677,22 +761,22 @@ class LegacyInspectionTests(unittest.TestCase):
         old = datetime.fromisoformat(document['issued_at'])-timedelta(seconds=1)
         document['issued_at'] = old.isoformat()
         (mod.ETC/'policy.json').write_text(json.dumps(document))
-        with self.assertRaises(RuntimeError): mod.migration_state(False)
+        with self.assertRaises(RuntimeError): mod.migration_state()
         self.assertEqual(json.loads((mod.STATE_DIR/'state.json').read_text()), original)
 
     def test_unsafe_policy_or_state_file_is_not_migrated(self):
         self._saved_policy()
         policy = mod.ETC/'policy.json'
         policy.chmod(0o660)
-        with self.assertRaises(RuntimeError): mod.migration_state(False)
+        with self.assertRaises(RuntimeError): mod.migration_state()
         policy.chmod(0o640)
         state = mod.STATE_DIR/'state.json'
         state.chmod(0o644)
-        with self.assertRaises(RuntimeError): mod.migration_state(False)
+        with self.assertRaises(RuntimeError): mod.migration_state()
         state.chmod(0o600)
         state.unlink()
         state.symlink_to(mod.STATE_DIR/'active.conf')
-        with self.assertRaises((OSError, RuntimeError)): mod.migration_state(False)
+        with self.assertRaises((OSError, RuntimeError)): mod.migration_state()
 
     def test_cli_refuses_legacy_adoption_or_dropin_before_migration(self):
         args = SimpleNamespace(apply=True, adopt_legacy_table=False)

@@ -11,7 +11,21 @@
 - `BLOCK + approved=true + 유효기간 내`인 SUBTREE 규칙만 `address=/domain/`으로 생성합니다.
 - `WARN`은 차단하지 않는 주의 상태이고 `ALLOW`는 해당 목록에서 차단하지 않는 상태입니다. 경고 페이지를 자동으로 띄우거나 악성 여부를 보증하지 않습니다.
 - `EXACT`는 지원하지 않아 오류 처리합니다. 상위 BLOCK과 하위 ALLOW/WARN 등의 충돌도 거부합니다.
-- 기본 입력은 `.test`만 허용합니다. `--allow-public-domains`는 명시적인 실험 범위 확대 옵션이지 운영 승인이나 공용 도메인 과차단 방지 기능이 아닙니다.
+- `.test`와 실제 ASCII 도메인 모두 같은 정책 파서에서 검증합니다. `BLOCK`은 여전히 `approved=true`, 유효기간 및 `SUBTREE` 범위가 필요하며, JSON 승인 플래그는 발행자의 신원을 증명하지 않습니다. 공유 호스팅과 정상 서비스의 과차단 위험을 별도 검토해야 합니다.
+
+## HTTP 안내 실습 (기본 DNS와 분리)
+
+**기본값은 BLOCK=NXDOMAIN, WARN/ALLOW=비차단입니다.**
+실습자가 명시적으로 `--http-sink-ip 127.0.0.1 --ack-http-sinkhole`을
+선택할 때에만 유효·승인된 BLOCK/WARN의 A 응답을 안내 IP로 바꾸고
+AAAA·HTTPS/SVCB 쿼리를 로컬 NODATA로 처리합니다. HTTP 안내 서버
+`python3 -m dns_agent.http_notice`는 실행 중 정책 SHA와
+`active.conf`의 일치를 확인한 후 GET/HEAD 요청만 정적 화면으로
+302 이동시킵니다. `POST`는 전송하지 않으며 임의 대상 웹서버로 프록시하지 않습니다.
+
+실행 명령과 수동 LAN 검증 조건은 [HTTP 실습](../../docs/http-notice.md)을
+따릅니다. 이 모드에서는 정상 HTTPS/WARN 사이트도 TLS 오류가 발생할
+수 있어 운영 DNS에 기본 활성화하지 않습니다.
 
 ## 읽기 전용 명령
 

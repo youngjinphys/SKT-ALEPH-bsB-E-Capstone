@@ -342,10 +342,10 @@ def review_template(verified):
     return {'kind':'aleph-manual-domain-reviews','reviews':proposals}
 
 
-def build_policy(verified, reviews, *, at=None, allow_public=False,
+def build_policy(verified, reviews, *, at=None,
                  acknowledge_replacement=False, acknowledge_notice=False):
-    if not (allow_public and acknowledge_replacement and acknowledge_notice):
-        raise IntelError('explicit --allow-public-domains, --confirm-replacement and --acknowledge-user-notice required')
+    if not (acknowledge_replacement and acknowledge_notice):
+        raise IntelError('explicit --confirm-replacement and --acknowledge-user-notice required')
     if verified.get('kind') != 'aleph-verified-urls' or reviews.get('kind') != 'aleph-manual-domain-reviews':
         raise IntelError('artifact kind mismatch')
     entries = verified.get('entries')
@@ -428,7 +428,6 @@ def main(argv=None):
     b.add_argument('--input',type=Path,required=True)
     b.add_argument('--reviews',type=Path,required=True)
     b.add_argument('--output',type=Path,required=True)
-    b.add_argument('--allow-public-domains',action='store_true')
     b.add_argument('--confirm-replacement',action='store_true')
     b.add_argument('--acknowledge-user-notice',action='store_true')
     opts = cli.parse_args(argv)
@@ -454,13 +453,13 @@ def main(argv=None):
             write_json(opts.output,review_template(read_json(opts.input)))
         else:
             policy = build_policy(read_json(opts.input),read_json(opts.reviews),
-                                  allow_public=opts.allow_public_domains,
+
                                   acknowledge_replacement=opts.confirm_replacement,
                                   acknowledge_notice=opts.acknowledge_user_notice)
             # Use the same producer validation contract as the DNS agent before output.
             sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'apps/dns-agent/src'))
             from dns_agent.policy import parse_policy
-            parse_policy(json.dumps(policy).encode(), allow_public=True)
+            parse_policy(json.dumps(policy).encode())
             write_json(opts.output,policy)
         print('Created local private artifact. No DNS service or policy was published.',file=sys.stderr)
         return 0

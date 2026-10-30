@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
-      PYTHONPATH: apps/dns-agent/src
+      PYTHONPATH: apps/dns-agent/src:apps/policy-sync/src
       REQUIRE_DNSMASQ: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Install standalone test binaries (no system DNS service)
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends dnsmasq-base dnsutils nftables iproute2
+          sudo apt-get install -y --no-install-recommends dnsmasq-base dnsutils nftables iproute2 python3-cryptography
           dnsmasq --version
           python3 --version
       - name: Unit, fault injection and real loopback DNS tests
@@ -26,6 +26,14 @@ jobs:
         run: python3 -m unittest discover -s tests/policy -p 'test_*.py' -v
       - name: Real URL candidate and Google verification offline safety tests
         run: python3 -m unittest discover -s tests/intel -p 'test_*.py' -v
+      - name: Offline signed policy and real localhost TLS fetch tests
+        run: |
+          /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_snapshot.py' -v
+          /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_cli.py' -v
+          /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_fetch.py' -v
+      - name: Root-only signed policy apply and rollback tests (mock DNS publisher)
+        run: |
+          sudo env PYTHONPATH="$PYTHONPATH" /usr/bin/python3 -B -m unittest discover -s tests/policy_sync -p 'test_apply.py' -v
       - name: System DNS installer validation (no privileged changes)
         run: |
           python3 -m py_compile infra/edge/system_dns.py
@@ -35,5 +43,5 @@ jobs:
           sudo env ALEPH_REQUIRE_NETNS_TESTS=1 python3 -m unittest discover -s tests/deployment -p 'test_firewall_guard.py' -v
       - name: Frontend regression tests
         run: python3 -m unittest discover -s apps/warning-portal/tests -p 'test_*.py' -v
-      - name: Plain HTTP redirect comparison (not HTTPS or DNS integration)
+      - name: Policy-backed HTTP notice and safe redirect loopback tests
         run: python3 -m unittest discover -s tests/e2e -p 'test_*.py' -v

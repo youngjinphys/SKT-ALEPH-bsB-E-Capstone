@@ -217,13 +217,13 @@ class Store:
 
 class Agent:
     def __init__(self, store, runtime, *, port, upstream, upstream_port,
-                 allow_public=False, listen_address='127.0.0.1',
-                 system_dns=False):
+                 listen_address='127.0.0.1', system_dns=False,
+                 http_sink_ip=None):
         self.store, self.runtime = store, runtime
         self.port, self.upstream, self.upstream_port = port, upstream, upstream_port
         self.listen_address = listen_address
         self.system_dns = system_dns
-        self.allow_public = allow_public
+        self.http_sink_ip = http_sink_ip
         self.last_now = None
         store.recover()
 
@@ -242,14 +242,13 @@ class Agent:
         chosen = None
         if previous:
             try:
-                chosen = parse_policy(previous['policy'].encode(), now=now,
-                                      allow_public=self.allow_public)
+                chosen = parse_policy(previous['policy'].encode(), now=now)
             except (KeyError, PolicyError) as exc:
                 raise RecoveryError('saved policy is not valid; refusing automatic restart') from exc
         rejected = None
         if raw is not None:
             try:
-                incoming = parse_policy(raw, now=now, allow_public=self.allow_public)
+                incoming = parse_policy(raw, now=now)
                 if chosen and (incoming.issued_at < chosen.issued_at or
                                (incoming.issued_at == chosen.issued_at and incoming.digest != chosen.digest)):
                     raise PolicyError('replayed timestamp or conflicting payload at same issuance')
@@ -264,7 +263,9 @@ class Agent:
         config = render_config(blocked, port=self.port, upstream=self.upstream,
                                upstream_port=self.upstream_port,
                                listen_address=self.listen_address,
-                               system_dns=self.system_dns)
+                               system_dns=self.system_dns,
+                               warned=chosen.warned(now) if self.http_sink_ip else (),
+                               http_sink_ip=self.http_sink_ip)
         state = {'policy': chosen.raw.decode(), 'config': config,
                  'policy_sha256': chosen.digest,
                  'config_sha256': hashlib.sha256(config.encode()).hexdigest(),
@@ -277,12 +278,13 @@ class Agent:
                 self.store.install(state, self.runtime)
             except ApplyError as exc:
                 if previous:
-                    old = parse_policy(previous['policy'].encode(), now=now,
-                                       allow_public=self.allow_public)
+                    old = parse_policy(previous['policy'].encode(), now=now)
                     fresh_old = render_config(old.blocked(now), port=self.port,
                                               upstream=self.upstream, upstream_port=self.upstream_port,
                                               listen_address=self.listen_address,
-                                              system_dns=self.system_dns)
+                                              system_dns=self.system_dns,
+                                              warned=old.warned(now) if self.http_sink_ip else (),
+                                              http_sink_ip=self.http_sink_ip)
                     if fresh_old != previous['config']:
                         self.runtime.stop()
                         raise RecoveryError('expired policy cannot be safely restored; service stopped') from exc

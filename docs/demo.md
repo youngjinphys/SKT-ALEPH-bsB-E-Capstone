@@ -33,56 +33,32 @@ python3 -m dns_agent render /tmp/aleph-credential-policy.json --upstream 127.0.0
 
 실습에서는 승인된 BLOCK만 `address=/.../`로 렌더링됩니다. WARN/ALLOW 및 미승인 BLOCK은 로컬 DNS 차단 규칙이 **아닙니다**. 정책이 만료되므로 실행 시 생성하고, 실제 질의 비교에는 정상 응답을 제공하는 통제 업스트림이 필요합니다. [카탈로그 설명](../packages/policy-contract/campaigns/README.md)을 따릅니다.
 
-## HTTP 302 비교 시연
+## 정책 기반 HTTP 302 경고·차단 실습
 
-발표에서 **평문 HTTP에서는 302 안내가 가능하다**는 것을 직접 확인하는 독립 실험입니다.
-현재 NXDOMAIN DNS 동작을 리다이렉트로 바꾸는 기능이나 HTTPS 해결책이 아닙니다.
-운영 DNS·공유기·방화벽·hosts 파일은 변경하지 않습니다.
+기존 **고정 302 비교 파일은 중복되어 제거**했습니다. 이제 실제 DNS 에이전트가
+수락한 정책과 활성 dnsmasq 설정이 서로 일치할 때에만,
+`BLOCK` / `WARN`의 요청 HTTP `Host`를 분리하여 기존 포털로
+고정된 `302`를 반환합니다. `ALLOW`나 미승인·만료된 이름은 전달하지 않습니다.
 
-저장소 루트에서 Python 3.11 이상으로 실행합니다. `sudo`는 필요 없습니다.
+**기본 NXDOMAIN은 그대로 유지**합니다. 별도 실습 모드는
+`--http-sink-ip` / `--ack-http-sinkhole`을 명시적으로 선택해야
+승인된 BLOCK/WARN의 A 응답을 안내 IP로 바꿉니다.
+기본 브라우저 사용 시 별도 DNS:53과 HTTP:80이 필요하며,
+고포트 루프백 시험은 실제 LAN 연계 완료를 뜻하지 않습니다.
 
-```sh
-python3 scripts/http_redirect_demo.py
-```
-
-두 리스너를 함께 시작하며 Ctrl+C로 함께 종료합니다.
-
-| 주소 | 역할 |
-| --- | --- |
-| `http://127.0.0.1:38080/` | 모든 GET/HEAD에 고정 `Location`을 가진 302 응답 |
-| `http://127.0.0.1:35173/phishing-block.html` | 기존 정적 차단 안내 화면. 실제 신고·정책 변경 권한 없음 |
-
-다른 터미널에서 네트워크 프록시를 경유하지 않고 확인합니다.
-
-```sh
-curl --noproxy '*' --head http://127.0.0.1:38080/
-curl --noproxy '*' --location --max-redirs 1 --dump-header - \
-  http://127.0.0.1:38080/ --output /tmp/aleph-http-demo.html
-```
-
-첫 명령은 `302`와 `Location: http://127.0.0.1:35173/phishing-block.html`, 두 번째는 `302` 이후 `200`을 보여야 합니다.
-브라우저에서도 첫 주소를 직접 열어 화면 전환을 볼 수 있습니다. HTTPS 우선 모드 등으로 동작이 다르면 설정을 낮추지 말고 curl 결과를 사용합니다.
-35173번 포털이 이미 실행 중이면 먼저 그 시연을 종료하거나 `--portal-port 35174`를 사용합니다.
-
-```sh
-python3 scripts/http_redirect_demo.py --redirect-port 38081 --portal-port 35174
-python3 -m unittest discover -s tests/e2e -p 'test_*.py' -v
-```
-
-검증 범위는 실제 로컬 302→포털 연결, GET/HEAD, POST 거부, 정적 파일 허용 목록,
-보안 헤더, 임의 Host·쿼리·원래 URL의 목적지 반영 방지, 부분 기동 실패 시 소켓 정리입니다.
-요청 경로·쿠키·전체 URL을 수집하거나 다른 서버로 전달하지 않습니다.
-이 서버에 `https://`로 접속해 생기는 오류는 **TLS를 제공하지 않는 실험 서버의 오류**입니다.
-그 결과를 원래 도메인의 인증서 신원 검증 실패 실험과 혼동하지 않습니다.
+[실행 명령·허용 범위·요청 검증·HTTPS 한계](http-notice.md) ·
+[단위 및 로컬 HTTP 통합 테스트](../tests/e2e/test_http_policy_notice.py)
 
 ### 발표에서 정확히 말할 문장
 
-> “이 비교 실험은 HTTP 응답이 이미 가능한 단계에서 302가 동작함을 보여줍니다.
-> HTTPS에서는 그 전에 브라우저가 원래 도메인의 인증서를 검증합니다.
-> DNS나 라우팅의 도착지를 바꾸어도 그 인증서 조건은 바뀌지 않습니다.”
+> “DNS의 이름 해석과 HTTP의 302 응답은 서로 다른 계층입니다.
+> 선택형 실습에서는 정책에 해당하는 DNS A 응답을 로컬 안내 IP로
+> 돌려 평문 HTTP에 대해 302 화면 전환을 시연합니다.
+> HTTPS/HSTS에서는 원래 호스트 인증서를 확보하지 못하므로
+> 자동 안내가 아니라 연결 오류가 발생할 수 있습니다.”
 
 ## 다음 시연의 완료 조건
 
 [조건별 검증표](validation-matrix.md)를 기준으로 실험 환경·소스 SHA·원문 응답·미측정 항목을 기록합니다.
-25분 발표에서는 DNS 정상/차단 대조, 철회, HTTP 비교까지 약 3분으로 제한하고,
+발표에서는 DNS 정상·차단·철회와 선택형 HTTP 안내를 독립 증빙으로 구분하고,
 DoH·VPN·실제 LAN은 측정 증거가 없으면 한계와 다음 실험으로 설명합니다.

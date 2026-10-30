@@ -1,9 +1,7 @@
-# 통합 검증 범위
+# 통합 시험
 
-실행 가능한 로컬 DNS 통합 시험은 [DNS tests](../../apps/dns-agent/tests/test_integration.py)에 있습니다.
-정상 응답을 주는 통제된 upstream, 정책 차단·SUBTREE·WARN/ALLOW·철회·만료·UDP/TCP·부모 종료를 검증합니다.
-원래 NXDOMAIN인 `.test` 응답만으로 차단을 입증하지 않습니다.
+- [DNS 통합 시험](../../apps/dns-agent/tests/test_integration.py): 실제 dnsmasq·통제 upstream, 기본 BLOCK NXDOMAIN, WARN/ALLOW 통과, 선택형 HTTP 안내 모드의 A·AAAA·HTTPS 타입, UDP/TCP와 철회.
+- [HTTP 안내 시험](test_http_policy_notice.py): 활성 정책/설정 해시 일치, 승인된 BLOCK/WARN 302, 요청 Host/URL 위조 거부, 정상·미승인 도메인 미프록시, 정적 자산 화이트리스트·보안 헤더·오류 시 503.
+- [HTTP 실습 가이드](../../docs/http-notice.md): 기본 포트 53/80의 LAN 접근과 고포트 루프백 시험의 차이.
 
-이 폴더에 아직 구현하지 않은 종단 간 경로는 원격 정책 인증/다운로드 → DNS → 실제 HTTPS 안내·신고 접수입니다.
-포털 화면 검사는 DNS 정책과 사용자 세션이 연결됐다는 증거가 아닙니다.
-동작 결과에는 소스 SHA, 정책 해시, 명령·원문 로그, 환경, 미실행 항목을 함께 기록합니다.
+DNS 응답과 HTTP 302를 함께 검증하더라도 실제 HTTPS 인증·운영 LAN 이용자 경험·자동 신고 접수는 검증되지 않습니다.

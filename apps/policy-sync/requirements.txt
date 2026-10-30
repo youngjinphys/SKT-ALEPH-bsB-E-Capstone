@@ -1,0 +1,2 @@
+# Use a distro-supported cryptography version or an isolated root-owned venv.
+cryptography>=41,<48

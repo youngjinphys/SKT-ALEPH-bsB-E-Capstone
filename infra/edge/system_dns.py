@@ -87,8 +87,7 @@ def check_rollback_firewall():
         raise RuntimeError('cannot prove firewall ownership during rollback; preserve installation for inspection')
 
 
-def unit_files(listen, upstream, upstream_port, allow_public, client_cidr):
-    public = ' --allow-public-domains' if allow_public else ''
+def unit_files(listen, upstream, upstream_port, client_cidr, *, cgroup_guard=True):
     dns = f"""[Unit]
 Description=ALEPH Managed Protective DNS (private LAN IPv4)
 Wants=network-online.target
@@ -104,7 +103,7 @@ Environment=PYTHONPATH=/opt/aleph-dns/src
 StateDirectory=aleph-dns
 StateDirectoryMode=0700
 ExecStartPre=+/usr/bin/python3 /opt/aleph-dns/firewall_guard.py apply /etc/aleph-dns/firewall.json
-ExecStart=/usr/bin/python3 -m dns_agent run /etc/aleph-dns/policy.json --port 53 --system-dns --listen-address {listen} --upstream {upstream} --upstream-port {upstream_port} --state-dir /var/lib/aleph-dns{public}
+ExecStart=/usr/bin/python3 -m dns_agent run /etc/aleph-dns/policy.json --port 53 --system-dns --listen-address {listen} --upstream {upstream} --upstream-port {upstream_port} --state-dir /var/lib/aleph-dns
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 NoNewPrivileges=yes
@@ -130,6 +129,9 @@ TimeoutStopSec=7s
 [Install]
 WantedBy=multi-user.target
 """
+    if cgroup_guard:
+        marker = 'ExecStart=/usr/bin/python3 -m dns_agent run '
+        dns = dns.replace(marker, f'ExecStartPre=+/usr/bin/python3 -B -m dns_agent.cgroup_guard {listen} {client_cidr} {upstream}\n' + marker)
     fw = """[Unit]
 Description=ALEPH DNS scoped ingress filter
 After=local-fs.target nftables.service
@@ -148,7 +150,11 @@ WantedBy=multi-user.target
 
 
 def legacy_files(listen, interface, subnet, upstream, upstream_port, allow_public):
-    dns, fw = unit_files(listen, upstream, upstream_port, allow_public, subnet)
+    dns, fw = unit_files(listen, upstream, upstream_port, subnet, cgroup_guard=False)
+    # Historical migration compatibility only. New units never write this flag.
+    if allow_public:
+        dns = dns.replace(' --state-dir /var/lib/aleph-dns\n',
+                          ' --state-dir /var/lib/aleph-dns --allow-public-domains\n')
     dns = dns.replace('ExecStartPre=+/usr/bin/python3 /opt/aleph-dns/firewall_guard.py apply /etc/aleph-dns/firewall.json',
                       'ExecStartPre=+/usr/sbin/nft -f /etc/aleph-dns/firewall.nft')
     dns = dns.replace('RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK',
@@ -290,7 +296,15 @@ def check_service_python():
         raise RuntimeError('service Python /usr/bin/python3 must be 3.11 or newer')
 
 
-def validate_policy(path, allow_public, *, installed=False):
+def check_parent_ip_allows(listen, subnet, upstream):
+    sys.path.insert(0, str(ROOT/'apps'/'dns-agent'/'src'))
+    from dns_agent.cgroup_guard import KernelBackend, allowed_networks, check_parent_allows, preflight
+    networks = allowed_networks(listen, subnet, upstream)
+    check_parent_allows(networks)
+    preflight(KernelBackend(), networks)
+
+
+def validate_policy(path, *, installed=False, allow_expired=False):
     # Policy publication must be parsed by the same root-managed code running
     # under systemd, not by a potentially newer or user-writable checkout.
     source = CODE if installed else ROOT/'apps'/'dns-agent'/'src'
@@ -301,8 +315,8 @@ def validate_policy(path, allow_public, *, installed=False):
     sys.path.insert(0, str(source))
     from dns_agent.policy import parse_policy
     from dns_agent.transaction import read_regular
-    policy = parse_policy(read_regular(path), allow_public=allow_public)
-    if policy.expires_at <= datetime.now(timezone.utc):
+    policy = parse_policy(read_regular(path))
+    if not allow_expired and policy.expires_at <= datetime.now(timezone.utc):
         raise ValueError('policy already expired; generate a new policy')
     return policy
 
@@ -625,14 +639,21 @@ def cleanup_failed_install(*, owned, remove_service_account=False, remove_state=
         raise RuntimeError('installation rollback incomplete: ' + '; '.join(errors))
 
 
-def read_options():
+def read_options(*, allow_historical=False):
     path = ETC/'options.json'
     options = json.loads(protected_text(path, forbidden=0o077))
-    if (not isinstance(options, dict) or
-            options.get('managed_by') != OWNERSHIP_MARKER or
-            type(options.get('allow_public_domains')) is not bool):
+    if not isinstance(options, dict) or options.get('managed_by') != OWNERSHIP_MARKER:
         raise RuntimeError('not a verified ALEPH installation; manual inspection required')
-    return options
+    if set(options) == {'managed_by'}:
+        return options
+    # Previous managed installations may contain a retired domain-mode flag.
+    # Recognize it only for backed-up upgrade/removal, never for live publishing.
+    if (set(options) == {'managed_by', 'allow_public_domains'}
+            and type(options['allow_public_domains']) is bool):
+        if allow_historical:
+            return options
+        raise RuntimeError('legacy domain-mode installation; run upgrade --apply before publishing')
+    raise RuntimeError('unrecognized installation options; manual inspection required')
 
 
 def protected_text(path, *, forbidden=0o022, owner=0):
@@ -652,7 +673,7 @@ def protected_text(path, *, forbidden=0o022, owner=0):
 
 
 def inspect_existing():
-    options = read_options()
+    options = read_options(allow_historical=True)
     for path in (ETC, CODE.parent, STATE_DIR):
         st = path.lstat()
         if (not stat.S_ISDIR(st.st_mode) or st.st_mode & (0o077 if path == STATE_DIR else 0o022) or
@@ -676,8 +697,8 @@ def inspect_existing():
     inventory = installed_code_inventory(allow_historical_src=historical)
     if not (ETC/'firewall.json').exists():
         opts = parse_legacy_files(dns, fw, protected_text(ETC/'firewall.nft'),
-                                  options['allow_public_domains'])
-        return {'legacy': True, 'options': opts, 'allow_public': options['allow_public_domains'],
+                                  options.get('allow_public_domains', False))
+        return {'legacy': True, 'options': opts,
                 'inventory': inventory, 'historical': historical}
     config = json.loads(protected_text(ETC/'firewall.json', forbidden=0o077))
     _guard.validate_config(config)
@@ -689,10 +710,18 @@ def inspect_existing():
     guard = protected_text(CODE.parent/'firewall_guard.py').encode()
     trusted_guards = {'05bc796f9d92f30b97becca41d3a350d89f17535de8944b643ccff8a3ce97b9a',
                       hashlib.sha256(Path(__file__).with_name('firewall_guard.py').read_bytes()).hexdigest()}
-    if (listen != config['listen'] or (dns, fw) != unit_files(listen, upstream, int(port), options['allow_public_domains'], config['subnet']) or
+    expected_dns, expected_fw = unit_files(listen, upstream, int(port), config['subnet'])
+    prior_dns, prior_fw = unit_files(listen, upstream, int(port), config['subnet'], cgroup_guard=False)
+    if options.get('allow_public_domains', False):
+        # Verify the exact historic unit before migrating; do not run the old switch.
+        expected_dns = expected_dns.replace(' --state-dir /var/lib/aleph-dns\n',
+                                            ' --state-dir /var/lib/aleph-dns --allow-public-domains\n')
+        prior_dns = prior_dns.replace(' --state-dir /var/lib/aleph-dns\n',
+                                      ' --state-dir /var/lib/aleph-dns --allow-public-domains\n')
+    if (listen != config['listen'] or (dns, fw) not in ((expected_dns, expected_fw), (prior_dns, prior_fw)) or
             hashlib.sha256(guard).hexdigest() not in trusted_guards):
         raise RuntimeError('managed unit or guard differs; preserve for inspection')
-    return {'legacy': False, 'options': opts, 'allow_public': options['allow_public_domains'], 'config': config,
+    return {'legacy': False, 'options': opts, 'config': config,
             'inventory': inventory, 'historical': historical}
 
 
@@ -792,8 +821,8 @@ def install(args):
     scope = args.client_cidr if args.client_cidr is not None else suggested_scope
     listen, interface, subnet, upstream, upstream_port = parse_options(
         listen_ip, interface, scope, args.upstream, args.upstream_port)
-    policy = validate_policy(args.policy, args.allow_public_domains)
-    dns, guard = unit_files(listen, upstream, upstream_port, args.allow_public_domains, subnet)
+    policy = validate_policy(args.policy)
+    dns, guard = unit_files(listen, upstream, upstream_port, subnet)
     token = secrets.token_hex(16)
     firewall = firewall_rules(listen, interface, subnet, token)
     print('Listener:', f'{listen}:53 UDP/TCP', 'interface:', interface)
@@ -836,6 +865,7 @@ def _install_locked(args, listen, interface, subnet, upstream, upstream_port,
     if sys.version_info < (3, 11):
         raise RuntimeError('Python 3.11 or newer required')
     check_service_python()
+    check_parent_ip_allows(listen, subnet, upstream)
     inspect_interface(listen, interface)
     check_free_port(listen)
     if table_exists():
@@ -881,8 +911,7 @@ def _install_locked(args, listen, interface, subnet, upstream, upstream_port,
         write_owned_atomic(ETC/'firewall.json', json.dumps({'listen': listen, 'interface': interface,
                            'subnet': subnet, 'token': token}).encode()+b'\n', 0o600, 0, 0, owned)
         write_owned_atomic(ETC/'options.json',
-                           json.dumps({'managed_by': OWNERSHIP_MARKER,
-                                       'allow_public_domains': args.allow_public_domains}).encode()+b'\n',
+                           json.dumps({'managed_by': OWNERSHIP_MARKER}).encode()+b'\n',
                            0o600, 0, 0, owned)
         write_owned_atomic(ETC/'installed-code.json',
                            json.dumps({'managed_by': OWNERSHIP_MARKER,
@@ -911,24 +940,22 @@ def publish(args):
     need_root()
     fd = publish_lock()
     try:
-        options = read_options()
+        read_options()  # Reject old installations until a verified upgrade.
         verify_installed_code()
         if not service_active():
             raise RuntimeError('DNS service inactive; do not publish to a stopped resolver')
-        policy = validate_policy(args.policy, options['allow_public_domains'], installed=True)
+        policy = validate_policy(args.policy, installed=True)
         from dns_agent.policy import parse_policy
         from dns_agent.transaction import read_regular
         current_path = ETC/'policy.json'
         # An expired previously published file must not prevent recovery.
-        current = parse_policy(read_regular(current_path),
-                               allow_public=options['allow_public_domains'])
+        current = parse_policy(read_regular(current_path))
         # Reject publishing while a transaction is recovering or the runtime state is absent.
         if (STATE_DIR/'pending.json').exists():
             raise RuntimeError('pending DNS recovery; inspect state before publishing')
         try:
             state = json.loads(read_regular(STATE_DIR/'state.json', 4*1024*1024))
-            acknowledged = parse_policy(state['policy'].encode(),
-                                        allow_public=options['allow_public_domains'])
+            acknowledged = parse_policy(state['policy'].encode())
         except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
             raise RuntimeError('cannot verify currently running policy; refuse publish') from exc
         for previous in (current, acknowledged):
@@ -964,7 +991,12 @@ def upgrade(args):
                 raise RuntimeError('legacy table has no owner marker; --adopt-legacy-table requires operator verification')
             # Check before stopping either unit or creating a migration archive.
             check_service_python()
-            migrate_existing(existing, 'upgrade')
+            listen, _, subnet, upstream, _ = existing['options']
+            check_parent_ip_allows(listen, subnet, upstream)
+            if getattr(args, 'preserve_expired_policy', False):
+                migrate_existing(existing, 'upgrade', preserve_expired=True)
+            else:
+                migrate_existing(existing, 'upgrade')
         finally:
             os.close(legacy_fd)
     finally:
@@ -1094,7 +1126,7 @@ def migration_status():
     print('Keep the journal, current files and backup; inspect service status and reconcile manually.')
 
 
-def migration_state(allow_public):
+def migration_state():
     """Validate saved state without importing any old installed source."""
     sys.path.insert(0, str(ROOT/'apps'/'dns-agent'/'src'))
     from dns_agent.policy import parse_policy
@@ -1107,23 +1139,36 @@ def migration_state(allow_public):
         info = path.lstat()
         if (not stat.S_ISREG(info.st_mode) or info.st_uid != uid or info.st_mode & 0o077):
             raise RuntimeError(f'unsafe DNS state file: {path}')
-    policy = parse_policy(read_regular(ETC/'policy.json'), allow_public=allow_public)
+    policy = parse_policy(read_regular(ETC/'policy.json'))
     state = Store(STATE_DIR).read_state()
     if state is None:
         raise RuntimeError('saved DNS state missing; preserve files for manual recovery')
-    previous = parse_policy(state['policy'].encode(), allow_public=allow_public)
+    previous = parse_policy(state['policy'].encode())
     if (policy.issued_at < previous.issued_at or
             (policy.issued_at == previous.issued_at and policy.digest != previous.digest)):
         raise RuntimeError('published policy is older than or conflicts with saved state')
     return policy, state
 
 
-def migrate_existing(existing, action):
+def migrate_existing(existing, action, *, preserve_expired=False):
     """A stopped service and a durable backup precede every destructive step.
 
     Interrupted operations retain their journal; they are not automatically
     rolled back over state that a newer resolver may already have accepted.
     """
+    # The running agent owns the state lock until stopped.  Check only the
+    # protected published policy while both lifecycle locks are held; its
+    # state and freshness are checked again after the agent releases its lock.
+    # An already expired policy must not take an otherwise working DNS down.
+    def check_upgrade_policy():
+        if action == 'upgrade':
+            protected_text(ETC/'policy.json')
+            if preserve_expired:
+                validate_policy(ETC/'policy.json', allow_expired=True)
+            else:
+                validate_policy(ETC/'policy.json')
+
+    check_upgrade_policy()
     listen, interface, subnet, upstream, port = existing['options']
     config = existing.get('config') or {'listen': listen, 'interface': interface,
                                         'subnet': subnet, 'token': secrets.token_hex(16)}
@@ -1154,6 +1199,10 @@ def migrate_existing(existing, action):
     sync_directory(units)
     sync_directory(archive)
     sync_directory(BACKUP_DIR)
+    # Copying a large installation can take time: recheck before writing a
+    # recovery journal or stopping a service.  Keep the post-stop check too,
+    # because expiration and unsynchronized external edits can race this check.
+    check_upgrade_policy()
     migration_record(archive, action, 'prepared')
     for name in ('aleph-dns.service', 'aleph-dns-firewall.service'):
         subprocess.run(['systemctl', 'disable', '--now', name], timeout=20, check=True)
@@ -1170,12 +1219,12 @@ def migrate_existing(existing, action):
         copy_private_tree(ETC, archive/'config')
         copy_private_tree(STATE_DIR, archive/'state')
         sync_directory(archive)
-        policy, state = migration_state(existing['allow_public'])
+        policy, state = migration_state()
         if previous_inventory is not None and installed_code_inventory(allow_historical_src=existing['historical']) != previous_inventory:
             raise RuntimeError('installed code changed after backup; preserve for inspection')
         write_atomic(archive/'backup-manifest.json', json.dumps(backup_inventory(archive), sort_keys=True).encode()+b'\n', 0o600, 0, 0)
         sync_directory(archive)
-        if action == 'upgrade' and policy.expires_at <= datetime.now(timezone.utc):
+        if action == 'upgrade' and not preserve_expired and policy.expires_at <= datetime.now(timezone.utc):
             raise RuntimeError('expired policy preserved in backup; publish a valid policy after recovery')
         migration_record(archive, action, 'state-backed-up')
         with migration_firewall_lock():
@@ -1219,7 +1268,12 @@ def migrate_existing(existing, action):
             write_atomic(ETC/'firewall.json', json.dumps(config).encode()+b'\n', 0o600, 0, 0)
             write_atomic(ETC/'installed-code.json', json.dumps({'managed_by': OWNERSHIP_MARKER,
                          'contents': installed_code_inventory()}, sort_keys=True).encode()+b'\n', 0o600, 0, 0)
-            dns, fw = unit_files(listen, upstream, port, existing['allow_public'], subnet)
+            # Upgrade removes the retired flag from the on-disk installation.
+            # The original options and units are retained in the verified archive.
+            write_atomic(ETC/'options.json',
+                         json.dumps({'managed_by': OWNERSHIP_MARKER}).encode()+b'\n',
+                         0o600, 0, 0)
+            dns, fw = unit_files(listen, upstream, port, subnet)
             write_atomic(UNIT_DIR/'aleph-dns.service', dns.encode(), 0o644, 0, 0)
             write_atomic(UNIT_DIR/'aleph-dns-firewall.service', fw.encode(), 0o644, 0, 0)
             migration_record(archive, action, 'new-files')
@@ -1278,13 +1332,14 @@ def main(argv=None):
     setup.add_argument('--upstream', required=True, help='trusted upstream IPv4 DNS server')
     setup.add_argument('--policy', type=Path, required=True)
     setup.add_argument('--upstream-port', type=int, default=53)
-    setup.add_argument('--allow-public-domains', action='store_true')
     setup.add_argument('--apply', action='store_true')
     update = cmds.add_parser('publish', help='publish an approved policy; requires sudo')
     update.add_argument('--policy', type=Path, required=True)
     migration = cmds.add_parser('upgrade', help='migrate existing installation; preview by default')
     migration.add_argument('--apply', action='store_true')
     migration.add_argument('--adopt-legacy-table', action='store_true')
+    migration.add_argument('--preserve-expired-policy', action='store_true',
+                           help='explicitly retain an expired policy during upgrade; expired blocks remain inactive')
     cmds.add_parser('migration-status', help='diagnose an interrupted migration without restoring state')
     remove = cmds.add_parser('uninstall', help='preview by default; stop service and archive data')
     remove.add_argument('--apply', action='store_true')

@@ -7,7 +7,7 @@ WARN/ALLOW도 차단될 수 있으므로 구형 입력을 자동 추측·변환�
 | 필드 | 의미 |
 | --- | --- |
 | `issued_at` / `expires_at` | 시간대가 있는 발행·만료 시각. 최대 유효기간 7일 |
-| `rules[].domain` | ASCII 이름. 소문자·끝 점 하나 정규화, 기본 `.test`만 허용 |
+| `rules[].domain` | ASCII 이름. 소문자·끝 점 하나 정규화. 실습·실제 이름에 동일한 형식 검사 적용 |
 | `rules[].decision` | BLOCK/WARN/ALLOW. 점수로 판정하지 않음 |
 | `rules[].scope` | SUBTREE만 지원. 정확한 단일 이름으로 오해하지 않음 |
 | `rules[].approved` | 검토된 로컬 파일의 집행 플래그. 인증 수단은 아님 |

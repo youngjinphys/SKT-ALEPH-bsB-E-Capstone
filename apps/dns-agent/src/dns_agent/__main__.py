@@ -30,8 +30,7 @@ def main(argv=None) -> int:
     for name in ('validate','render','run'):
         command = commands.add_parser(name)
         command.add_argument('policy', type=Path)
-        command.add_argument('--allow-public-domains', action='store_true',
-                             help='explicitly permit non-.test names; not a deployment approval')
+
         if name in ('render','run'):
             command.add_argument('--port', type=int, default=35353)
             command.add_argument('--listen-address', default='127.0.0.1',
@@ -40,6 +39,10 @@ def main(argv=None) -> int:
                                  help='explicit port 53 LAN mode, requires a managed systemd service')
             command.add_argument('--upstream', required=True, help='operator-selected trusted resolver IP')
             command.add_argument('--upstream-port', type=int, default=53)
+            command.add_argument('--http-sink-ip',
+                                 help='OPT-IN HTTP lab: redirect approved BLOCK/WARN A records to this listener')
+            command.add_argument('--ack-http-sinkhole', action='store_true',
+                                 help='accept HTTPS/HSTS failure and changed WARN DNS behavior')
         if name == 'run':
             command.add_argument('--state-dir', type=Path, required=True,
                                  help='private 0700 directory owned by the current user')
@@ -47,11 +50,14 @@ def main(argv=None) -> int:
             command.add_argument('--poll-seconds', type=float, default=1.0)
     args = parser.parse_args(argv)
     try:
+        if args.command in ('render', 'run'):
+            if bool(args.http_sink_ip) != bool(args.ack_http_sinkhole):
+                raise PolicyError('--http-sink-ip requires --ack-http-sinkhole (and vice versa)')
         if args.command == 'example':
             print(json.dumps(example(), ensure_ascii=False, indent=2)); return 0
         if args.command in ('validate', 'render'):
             raw = read_regular(args.policy)
-            policy = parse_policy(raw, allow_public=args.allow_public_domains)
+            policy = parse_policy(raw)
             if args.command == 'validate':
                 print(json.dumps({'policy_sha256': policy.digest, 'rules': len(policy.rules),
                                   'active_blocks': len(policy.blocked(utcnow())),
@@ -59,7 +65,9 @@ def main(argv=None) -> int:
             config = render_config(policy.blocked(utcnow()), port=args.port,
                                    upstream=args.upstream, upstream_port=args.upstream_port,
                                    listen_address=args.listen_address,
-                                   system_dns=args.system_dns)
+                                   system_dns=args.system_dns,
+                                   warned=policy.warned(utcnow()) if args.http_sink_ip else (),
+                                   http_sink_ip=args.http_sink_ip)
             print(config, end=''); return 0
         if os.geteuid() == 0:
             raise PolicyError('do not use sudo: the lab runner requires an unprivileged account')
@@ -67,7 +75,8 @@ def main(argv=None) -> int:
             raise PolicyError('poll-seconds must be between 0.1 and 10')
         runtime = DnsmasqRuntime(args.dnsmasq, args.port,
                                  listen_address=args.listen_address,
-                                 system_dns=args.system_dns)
+                                 system_dns=args.system_dns,
+                                 http_sink_ip=args.http_sink_ip)
         stop = threading.Event()
         def request_stop(*_): stop.set()
         signal.signal(signal.SIGINT, request_stop)
@@ -75,8 +84,9 @@ def main(argv=None) -> int:
         last_event = None
         with Store(args.state_dir) as store:
             agent = Agent(store, runtime, port=args.port, upstream=args.upstream,
-                          upstream_port=args.upstream_port, allow_public=args.allow_public_domains,
-                          listen_address=args.listen_address, system_dns=args.system_dns)
+                          upstream_port=args.upstream_port,
+                          listen_address=args.listen_address, system_dns=args.system_dns,
+                          http_sink_ip=args.http_sink_ip)
             try:
                 while not stop.is_set():
                     try:

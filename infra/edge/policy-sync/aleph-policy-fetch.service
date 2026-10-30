@@ -1,0 +1,22 @@
+[Unit]
+Description=ALEPH verified policy HTTPS fetch (unprivileged)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=aleph-policy-fetch
+Group=aleph-policy-fetch
+StateDirectory=aleph-policy-fetch
+StateDirectoryMode=0700
+Environment=PYTHONPATH=/opt/aleph-policy-code/apps/dns-agent/src:/opt/aleph-policy-code/apps/policy-sync/src
+ExecStart=/usr/bin/python3 -B -m aleph_policy_sync fetch --url https://POLICY_HOST/v1/policies/edge-69/current.json --device-id edge-69 --trust-dir /etc/aleph-policy-sync/trust --inbox-dir /var/lib/aleph-policy-fetch
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target

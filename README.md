@@ -1,137 +1,167 @@
-# SKT ALEPH · E조 Capstone
+# SKT ALEPH E조 Capstone
 
-**피싱 의심 도메인의 정책 검증, DNS 차단·철회, 장애 복구를 재현하는 보안 프로젝트입니다.**
-Linux 서버에서 허용된 LAN 클라이언트의 UDP/TCP 53번 질의를 처리할 수 있습니다.
+피싱 도메인의 **정책 검증·차단·철회·복구**를 실험하는 Protective DNS 프로젝트입니다. Linux LAN DNS, 별도 안내 포털, 실제 URL 후보 수집기를 포함합니다. **자동 AI 탐지·원격 검토 API/DB·HTTPS 강제 안내는 미구현**입니다. 단, 서명된 정책 파일의 HTTPS 수신과 로컬 발행을 위한 **선택형 동기화 도구**는 구현되어 있습니다.
 
-| 구성 | 현재 상태 |
-| --- | --- |
-| [DNS / 시스템 배포](infra/edge/README.md) | 사설 IPv4, 전용 systemd 계정·nftables, 정책 적용·복구 및 제거 |
-| [합성 정책](packages/policy-contract/campaigns/README.md) | `.test` 캠페인 4개, 정책 검증·만료·승인 시험 |
-| [실제 URL 후보 도구](apps/policy-server/README.md) | OpenPhish 후보 수집, Google Safe Browsing v5 조회, 수동 승인·만료 정책 생성. **DNS 자동 배포 없음** |
-| [프론트엔드](apps/warning-portal/README.md) | 정적 차단·경고 안내. 실제 DNS 차단을 HTTPS 화면으로 자동 전환하지 않음 |
-| [HTTP 비교 시연](docs/demo.md) | 별도 HTTP 302 실습. HTTPS 리다이렉트가 아님 |
-| 원격 정책 서버 | 인증·원격 발행 API·DB·AI 탐지 모델은 미구현 |
+## 시작하기
 
-## 격리된 Linux DNS 설치
-
-Python 3.11+, systemd, 관리자 권한과 서버의 **고정 사설 IPv4**가 필요합니다. DNS/방화벽·원래 DHCP DNS 및 복구 경로를 먼저 점검하세요.
+요구사항: Linux, Python 3.11+, `dnsmasq-base`, `dnsutils`. 시스템 설치에는 systemd·nftables와 관리자 권한도 필요합니다.
 
 ```sh
-sudo apt update
-sudo apt install -y python3 dnsmasq-base dnsutils nftables iproute2
-python3 scripts/build_campaign_policy.py > /tmp/aleph-policy.json
+sudo apt update && sudo apt install -y python3 dnsmasq-base dnsutils nftables iproute2
+export PYTHONPATH="$PWD/apps/dns-agent/src"
+python3 -m dns_agent example > /tmp/aleph-policy.json
+python3 -m dns_agent validate /tmp/aleph-policy.json
+```
 
-# 미리보기: 단일 활성 사설 IPv4/NIC 자동 탐색, 시스템 변경 없음
+### 1. 격리 DNS 실습 (기본 NXDOMAIN)
+
+```sh
+python3 -m dns_agent run /tmp/aleph-policy.json \
+  --upstream 9.9.9.9 \
+  --state-dir "$HOME/.local/state/aleph-dns-lab"
+# 다른 터미널:
+dig @127.0.0.1 -p 35353 blocked.test A
+```
+
+실습용 `.test` 응답은 원래 NXDOMAIN일 수 있으므로 **차단 성공의 단독 증거가 아닙니다**. 정상 응답을 제공하는 격리 upstream에서 적용 전후를 비교하는 통합 시험을 사용하세요. 원래 시스템 DNS 설정과 방화벽은 변경되지 않습니다.
+
+유명 사이트 세 곳을 차단 대상으로 삼아 **본인만 사용하는 격리 고포트**에서
+시험할 수도 있습니다. 이 도메인은 정상 사이트이며 악성 판정이 아닙니다.
+정책은 15분 동안 `naver.com`, `daum.net`, `google.com`과 각 하위 도메인을
+차단합니다. 자동 발행하지 않으며, 생성된 파일은 전체 정책을 교체하므로
+승인 없이 운영 DNS에 발행해서는 안 됩니다. 승인된 운영 시험이라면 현재 유효
+규칙을 보존하고 새 발행 시각과 제한된 만료 시각을 적용하며, 복구 정책을 미리
+준비해야 합니다.
+
+```sh
+# 실행마다 독립된 0700 임시 디렉터리 사용
+lab_dir=$(mktemp -d "${TMPDIR:-/tmp}/aleph-site-lab.XXXXXXXX")
+python3 scripts/build_site_test_policy.py > "$lab_dir/policy.json"
+python3 -m dns_agent validate "$lab_dir/policy.json"
+python3 -m dns_agent run "$lab_dir/policy.json" \
+  --upstream 9.9.9.9 --state-dir "$lab_dir/state"
+# 다른 터미널에서: upstream의 정상 응답과 격리 DNS의 NXDOMAIN을 비교
+dig @9.9.9.9 naver.com A
+dig @127.0.0.1 -p 35353 naver.com A
+dig +tcp @127.0.0.1 -p 35353 daum.net AAAA
+dig @127.0.0.1 -p 35353 google.com A
+```
+
+끝나면 실행 중인 실습 터미널에서 `Ctrl+C`로 종료합니다. 정책은 고포트에만
+적용되므로 브라우저의 기본 DNS가 자동으로 바뀌지는 않습니다. 만료 후에는
+새 파일을 생성해야 합니다. 운영에 발행하면 해당 사이트와 하위 도메인의 실제
+사용자 접근을 방해합니다.
+
+### 2. 선택형 HTTP 차단·경고 안내 (허가된 실습 VM)
+
+기본 DNS에서는 `BLOCK → NXDOMAIN`, `WARN/ALLOW → 비차단`입니다. **다음 실습에서만** 승인된 `BLOCK/WARN`의 DNS A 응답을 안내 서버 IP로 바꾸고, 실제 요청한 `Host`와 DNS 에이전트가 수락한 정책을 검증해 `302`로 기존 포털 화면에 연결합니다. HTTPS/HSTS에는 동작하지 않으며 연결 오류를 유발할 수 있습니다.
+
+```sh
+# 터미널 A: 전용 상태 디렉터리의 DNS 모드 (127.0.0.1:35353)
+python3 -m dns_agent run /tmp/aleph-policy.json \
+  --upstream 9.9.9.9 \
+  --state-dir "$HOME/.local/state/aleph-http-lab" \
+  --http-sink-ip 127.0.0.1 --ack-http-sinkhole
+
+# 터미널 B: 정책 기반 HTTP 서버 (38080)와 정적 포털 (35173)
+python3 -m dns_agent.http_notice \
+  --listen-ip 127.0.0.1 --client-cidr 127.0.0.1/32 \
+  --state-dir "$HOME/.local/state/aleph-http-lab" \
+  --static-dir "$PWD/apps/warning-portal/public" \
+  --http-port 38080 --portal-port 35173 --ack-plaintext-only
+
+# 터미널 C: 실제 DNS 응답과 HTTP 302를 별도로 대조
+dig @127.0.0.1 -p 35353 blocked.test A
+dig @127.0.0.1 -p 35353 warn.test A
+curl --noproxy '*' --head \
+  --resolve blocked.test:38080:127.0.0.1 http://blocked.test:38080/
+curl --noproxy '*' --head \
+  --resolve warn.test:38080:127.0.0.1 http://warn.test:38080/
+```
+
+**주의:** 고포트 `35353`/`38080` 실습은 브라우저 기본 DNS(53)/HTTP(80)와 다릅니다. 실제 `192.168.7.X → 192.168.7.69` 기본 HTTP 접속에는 해당 VM의 **53번 DNS와 80번 HTTP 안내 서버**가 필요하고, 포털 포트도 클라이언트가 접근할 수 있어야 합니다. 이 실험 모드는 기존 관리형 `aleph-dns.service`의 기본 설정에 자동 적용되지 않으며, 이를 위해 운영 서비스 파일을 직접 편집해서는 안 됩니다. [HTTP 실습 및 서버별 권한·포트 조건](docs/http-notice.md)을 확인하세요.
+
+### 3. LAN DNS 설치 (`192.168.7.69`, HTTP 기능 기본 꺼짐)
+
+```sh
+python3 scripts/build_campaign_policy.py > /tmp/aleph-policy.json
+# 실제 주소/NIC 자동 탐색만, 시스템 변경 없음
 python3 infra/edge/system_dns.py install \
   --upstream 9.9.9.9 --policy /tmp/aleph-policy.json
-
-# 탐지된 192.168.7.69 IP·NIC와 허용 대역을 확인한 뒤에만 설치
+# 확인된 사설 IP·NIC와 승인된 클라이언트 범위를 이용한 명시적 설치
 sudo python3 infra/edge/system_dns.py install \
   --client-cidr 192.168.7.0/24 \
   --upstream 9.9.9.9 --policy /tmp/aleph-policy.json --apply
-```
 
-다중 NIC·Docker·VPN으로 후보가 모호하면 `--listen-ip 192.168.7.69`를 명시합니다. `--client-cidr`는 방화벽 허용 범위이므로 설치 시 직접 승인해야 합니다. 설치 성공 후 **다른 LAN 단말에서** UDP/TCP 53을 검증하고 DHCP DNS를 변경하세요.
-
-```sh
+# 다른 LAN 단말에서 확인
 dig @192.168.7.69 example.org A
 dig +tcp @192.168.7.69 example.org A
-sudo systemctl status aleph-dns.service --no-pager
 ```
 
-정책을 재발행하려면 `sudo python3 infra/edge/system_dns.py publish --policy /tmp/new-policy.json`을 사용합니다. **입력용 `/tmp` 파일은 자동 감시 대상이 아닙니다.** [설치·발행·제거 및 기존 설치 업그레이드](infra/edge/README.md) 절차를 따르세요.
-
-## DNS 정책 JSON 작성과 적용
-
-`/tmp/aleph-policy.json`은 **입력 파일**입니다. `nano`로 수정만 해서는 이미 설치된 LAN DNS가 갱신되지 않습니다. 실행 중인 서비스가 읽는 파일은 `/etc/aleph-dns/policy.json`이며, 검증된 정책을 발행하려면 `publish`를 호출해야 합니다. **전체 정책을 교체하는 스냅샷**이므로 다른 기존 규칙을 누락하지 마세요.
+DNS 정책 갱신은 입력 파일 수정만으로 되지 않습니다. 검증한 전체 정책을 **수동 발행**해야 합니다.
 
 ```sh
-# 새 실습 정책 만들기(현재 UTC 기준 시간 자동 생성) 및 편집
-python3 scripts/build_campaign_policy.py > /tmp/aleph-policy.json
-nano /tmp/aleph-policy.json
-
-# JSON 구문 검사. 정책 의미 검사는 다음 명령에서 수행
-python3 -m json.tool /tmp/aleph-policy.json > /dev/null
-export PYTHONPATH="$PWD/apps/dns-agent/src"
 python3 -m dns_agent validate /tmp/aleph-policy.json
-
-# 위 검증과 운영 서비스의 허용 범위를 모두 통과한 경우에만 발행
 sudo python3 infra/edge/system_dns.py publish --policy /tmp/aleph-policy.json
 sudo journalctl -u aleph-dns -n 60 --no-pager
 ```
 
-JSON은 최상위 **객체** 하나이며, 그 안의 `rules` 배열에 규칙 객체를 추가합니다. 각 항목은 쉼표로 구분하고 마지막에는 쉼표를 붙이지 않습니다. JSON에는 `//` 주석을 쓸 수 없습니다.
+### 설치 후 업데이트와 정책 확인
 
-아래는 **구조 설명용 JSON 템플릿**입니다. `YYYY-MM-DD...`는 실제 값이 아니므로, 실행할 때는 **현재 UTC 발행시각 및 유효기간 안의 만료시각**으로 모두 교체해야 합니다. 자동으로 유효한 예시를 만들려면 위의 캠페인 생성 명령이나 `python3 -m dns_agent example`을 이용하세요.
+서버에서 `git pull --ff-only`를 해도 실행 중인 엔진은 바뀌지 않습니다.
+관리형 설치는 저장소가 아닌 `/opt/aleph-dns/src`의 복사본을 실행하기 때문입니다.
+기존 설치를 지우고 다시 설치할 필요는 없으며, 관리형 `upgrade --apply`로
+기존 정책·상태를 보존하면서 갱신합니다. 업그레이드는 DNS를 일시 중단하므로
+대체 DNS와 복구 접속 수단을 먼저 확보하고 유효한 정책을 확인해야 합니다.
+지원되지 않는 구형 설치나 만료된 정책은 별도 점검이 필요합니다.
 
-```json
-{
-  "issued_at": "YYYY-MM-DDTHH:MM:SS+00:00",
-  "expires_at": "YYYY-MM-DDTHH:MM:SS+00:00",
-  "rules": [
-    {
-      "domain": "blocked.test",
-      "decision": "BLOCK",
-      "scope": "SUBTREE",
-      "approved": true,
-      "expires_at": "YYYY-MM-DDTHH:MM:SS+00:00",
-      "evidence": "reviewed-lab-fixture"
-    }
-  ]
-}
-```
+현재 발행된 정책은 DNS 서버의 `/etc/aleph-dns/policy.json`, 에이전트의
+수락 상태는 `/var/lib/aleph-dns/state.json`에 있습니다. 기본 관리형 DNS 서비스에는 원격 자동 갱신이 연결돼 있지 않습니다. 별도
+`aleph-policy-fetch`/`aleph-policy-apply` 서비스를 설치하면 **서명 검증된 스냅샷만**
+자동 발행하도록 구성할 수 있습니다. 직접 관리자가 `publish`하는 경로도 유지합니다. 서버에서 조회하거나 SSH로 정책 사본을 주고받는 방법,
+코드 업그레이드·정책 발행·복구 절차는
+[LAN DNS 가이드](infra/edge/README.md#엔진-코드-업데이트와-운영-서비스-반영)를 확인하세요.
 
-| JSON 키 | 허용 형식·값 | 의미와 제약 |
-| --- | --- | --- |
-| `issued_at` | 시간대가 포함된 ISO 8601 문자열 | **정책 전체의 발행시각.** 기존 수락본보다 오래되면 거부. 같은 발행시각에 내용이 달라도 거부. 현재 시각보다 60초 넘게 미래여서는 안 됨 |
-| `expires_at` | ISO 8601 문자열 | **전체 정책 만료시각.** `issued_at`보다 나중이며 차이는 최대 **7일**. 현재 만료된 정책은 발행 거부 |
-| `rules` | JSON 배열(최대 10,000개) | 전체 규칙의 집합. 필드 누락·잘못된 규칙이 있으면 해당 정책 전체가 거부됨 |
-| `rules[].domain` | `"blocked.test"` 등 ASCII 도메인 | URL·IP가 아닌 도메인 이름. 기본 설치는 `.test`만 허용. 공용 도메인은 **설치 시** `--allow-public-domains` 승인이 필요 |
-| `rules[].decision` | `"BLOCK"`, `"WARN"`, `"ALLOW"` | `BLOCK`만 DNS 차단. 나머지 둘은 이 정책에서 차단하지 않으며 안전성을 보증하지 않음 |
-| `rules[].scope` | `"SUBTREE"` | 해당 도메인과 모든 하위 도메인에 적용. `"EXACT"`는 지원하지 않음 |
-| `rules[].approved` | `true`, `false` (따옴표 없음) | `true`이고 `BLOCK`이며 유효한 경우에만 차단. 서명·발행자 인증을 의미하지 않음 |
-| `rules[].expires_at` | ISO 8601 문자열 | **개별 규칙 만료시각.** `issued_at`보다 이후이고 **전체 `expires_at` 이하여야 함** |
-| `rules[].evidence` | 1–256자 문자열 | 사람이 검토한 근거·사례 식별자. 근거를 적었다고 자동 승인되는 것은 아님 |
+### 4. 원격 서명 정책 배포 (선택)
 
-실제 값을 가진 예시 파일은 `python3 -m dns_agent example > /tmp/aleph-example.json`으로 생성할 수 있습니다. **예시 도메인 `.test`를 우선 사용**하세요. `naver.com`처럼 정상 서비스의 최상위 도메인을 차단하면 메일·로그인·여러 하위 서비스까지 영향을 받을 수 있으므로, 허가된 격리 실습 외에는 사용하지 마세요.
-
-### 공용 도메인 규칙이 적용되지 않을 때
+원격 DB나 DNS 질의 중 원격 API 조회는 필요하지 않습니다. 사람 승인 후 생성한
+**전체 정책 JSON**을 Ed25519로 서명하여 HTTPS 정적 엔드포인트에 게시하고,
+별도 비특권 수신기가 이를 Pull합니다. root 적용기는 공개키·장치 ID·버전·유효기간을
+재검증한 후 기존 `system_dns.py publish` 경로만 호출합니다.
 
 ```sh
-# (1) 파일 전체 구조·시간·규칙 관계 확인 (공용 도메인 검증만 명시적으로 허용)
-python3 -m json.tool /tmp/aleph-policy.json > /dev/null
-PYTHONPATH="$PWD/apps/dns-agent/src" python3 -m dns_agent validate \
-  /tmp/aleph-policy.json --allow-public-domains
-
-# (2) 운영 서버가 공용 도메인 모드로 설치되어 있는지 확인
-sudo systemctl cat aleph-dns.service | grep '^ExecStart='
-
-# (3) 실제 발행된 규칙과 dnsmasq의 현재 설정 확인
-sudo grep -o '"domain":"naver.com"' /etc/aleph-dns/policy.json || true
-sudo grep -F 'address=/naver.com/' /var/lib/aleph-dns/active.conf || true
-sudo journalctl -u aleph-dns -n 80 --no-pager
-
-# (4) 다른 LAN 클라이언트에서 실제 서버의 TCP 응답 확인
-dig +tcp @192.168.7.69 naver.com A
+# 원격 정책 생성기: 비공개 서명 계정, 키 파일은 0600
+export PYTHONPATH="$PWD/apps/dns-agent/src:$PWD/apps/policy-sync/src"
+python3 -m aleph_policy_sync sign \
+  --policy /private/approved-policy.json \
+  --private-key "$HOME/aleph-signing/signing.pem" \
+  --device-id edge-69 --sequence 1 --confirm-replacement \
+  --output "$HOME/aleph-signing/releases/edge-69-1.json"
 ```
 
-`validate --allow-public-domains`는 **로컬 검증만** 바꾸며 설치된 서비스의 권한을 변경하지 않습니다. 운영 DNS의 systemd `ExecStart`에 `--allow-public-domains`가 없다면 `publish`에 임의 옵션을 붙여도 공용 도메인이 활성화되지 않습니다. 기존 설치 변경은 서비스 중단 및 복구 절차를 갖추어 [설치·업그레이드 안내](infra/edge/README.md)를 따르세요. 또한 `issued_at`이 이전 발행본과 같거나, 개별 `expires_at`이 전체 만료보다 늦거나, 발행시각 기준 전체 유효기간이 7일을 초과하면 거부됩니다. `publish`의 **`APPLIED` 또는 `UNCHANGED and ACKNOWLEDGED`** 결과와 서비스 로그를 확인해야 합니다.
+키 준비·TLS 서버·DNS 측 systemd 타이머·검증 명령·복구는
+**[원격 정책 배포 가이드](docs/policy-distribution.md)**를 따릅니다.
+**이 스크립트 자체는 DNS 설정을 수정하지 않으며**, 실제 서버에 타이머를
+설치하기 전에는 자동 갱신이 시작되지 않습니다. 다운로드 실패 시 마지막 정상 정책은
+저장되지만 **그 정책의 만료기한을 무시하고 무기한 차단하지는 않습니다**.
+HTTP 302 실습은 원격 동기화와 별개입니다.
 
-## 실제 위협 인텔리전스 (미승인 후보부터 시작)
+실제 위협 후보 수집·Google Safe Browsing v5 검증은 [인텔 가이드](apps/policy-server/README.md), 배포·백업·기존 설치 업그레이드/제거는 [LAN DNS 가이드](infra/edge/README.md)를 따릅니다. 실제 URL을 발견했다고 도메인/하위 도메인을 자동 차단해서는 안 됩니다.
 
-[실제 URL 수집·Google 검증·사람 승인 사용법](apps/policy-server/README.md)을 참고하세요. Google API 키와 각 공급자의 이용 조건 수락이 있어야 실제 온라인 검증을 수행할 수 있습니다. **원본 URL을 Google에 전달하며, DNS 전체 도메인 차단으로 변환하면 과차단 위험이 있습니다.** 후보 수집·검증은 DNS 정책을 자동 변경하지 않습니다. Google을 근거로 한 경고·차단에는 최신성·출처 표시 조건이 필요합니다.
-
-## 검증과 한계
+## 테스트·프로젝트 상태
 
 ```sh
-export PYTHONPATH="$PWD/apps/dns-agent/src"
 REQUIRE_DNSMASQ=1 python3 -m unittest discover -s apps/dns-agent/tests -v
 python3 -m unittest discover -s tests/policy -v
 python3 -m unittest discover -s tests/intel -v
 python3 -m unittest discover -s tests/deployment -v
+python3 -m unittest discover -s tests/e2e -v
 python3 -m unittest discover -s apps/warning-portal/tests -v
+# 동기화 테스트: 서명·HTTPS TLS 루프백·root/비root 역할 분리
+PYTHONPATH="$PWD/apps/dns-agent/src:$PWD/apps/policy-sync/src" \
+  python3 -m unittest discover -s tests/policy_sync -p 'test_snapshot.py' -v
 ```
 
-**보호 범위:** `BLOCK`은 요청한 도메인과 모든 하위 이름에 NXDOMAIN을 반환합니다(`SUBTREE`). `WARN/ALLOW`는 차단하지 않으며, CNAME 응답 체인·DoH/VPN·기존 DNS 캐시·HTTPS 경고 화면까지 통제하지 않습니다. 외부 위협 피드 및 URL 조회는 **피싱 탐지율 또는 운영 LAN 안전성을 입증하지 않습니다.**
+`BLOCK`은 기본적으로 도메인과 모든 하위 이름에 적용되는 `SUBTREE`입니다. `EXACT` 미지원, DNSSEC·CNAME 응답 체인·DoH/VPN·기존 연결/캐시·IPv6 클라이언트 경로는 별도 검증 대상입니다. 정책의 `approved=true` 자체가 출처 인증을 제공하지 않습니다.
 
-[아키텍처](docs/architecture.md) · [감사](docs/review/commit-audit-20261027.md) · [위협 모델](docs/threat-model.md) · [검증 범위](docs/validation-matrix.md) · [Notion](https://app.notion.com/p/4025db6797f0809ea74ffd4cf2b96240)
+[아키텍처](docs/architecture.md) · [시연](docs/demo.md) · [위협 모델](docs/threat-model.md) · [검증표](docs/validation-matrix.md) · [Notion](https://app.notion.com/p/4025db6797f0809ea74ffd4cf2b96240)

@@ -1,6 +1,8 @@
 # Linux DNS 서버 배포 · UDP/TCP 53
 
 이 디렉터리는 **별도 Linux DNS 서버에 실제 LAN 질의를 받는 서비스**를 설치합니다.
+
+**HTTP 안내 실험은 별도입니다.** 이 설치기는 기본 NXDOMAIN/WARN 비차단 DNS를 설치하며, 신규 HTTP 실습 옵션과 TCP 80/정적 포털 서비스를 자동 설치하지 않습니다. [선택형 HTTP 302 실습](../../docs/http-notice.md)은 허가된 독립 VM에서 먼저 검증하세요.
 반면 `apps/dns-agent/`의 기본 실행은 `127.0.0.1:35353` 격리 시험입니다.
 
 > **배포 경계:** 사설 IPv4의 지정된 LAN 인터페이스·고포트가 아닌 실제 53번, 전용 systemd
@@ -69,27 +71,117 @@ IP와 NIC를 둘 다 생략하면 `ip -j -4 address show`를 조회해 **UP 상�
 - nftables `inet aleph_dns`: **지정 인터페이스·클라이언트 IPv4 CIDR 외의 DNS 접근 제한**.
   systemd `IPAddressDeny/Allow`도 사용하되 실제 커널 지원 및 다른 방화벽과의 공존을 검증해야 합니다.
 
-## 실습 정책과 실제 도메인 정책 구분
+systemd의 BPF 방화벽 준비 실패 로그가 있다면 서비스가 `active`여도
+`IPAddressDeny/Allow`가 적용됐다고 판단할 수 없습니다. 서비스 cgroup의 실제
+ingress·egress BPF 부착 상태를 확인하세요. nftables 입력 테이블의 검증은
+systemd의 별도 송신 제한이 동작한다는 증거가 아닙니다.
 
-기본 설치는 검증된 **`.test` 실습 도메인만** 허용합니다. 이 설정은 실제 악성 도메인의
-보호 정책이 아니라 안전한 DNS 설치·차단·철회 검증용입니다. 공용 도메인 정책을
-적용할 필요가 있다면 사람의 IOC 출처·과차단 영향 검토 후, 초기 설치 시
-`--allow-public-domains`를 **명시적으로** 지정해야 합니다. 단순히 이 옵션을 추가하거나
-JSON의 `approved=true`를 설정해도 발행자의 신원이 인증되는 것은 아닙니다.
-실제 원격 IOC 수집·검토·승인·서명 API는 아직 없습니다.
-
-정책 게시 과정은 **설치된 DNS 에이전트의 파서**를 사용합니다. Git 저장소의 DNS 코드만
-업데이트해도 운영 프로세스는 자동 업그레이드되지 않습니다.
-
-## 기존 설치 업그레이드
-
-기존 DNS 클라이언트를 다른 정상 리졸버로 전환하고 백업 공간과 복구 접속 수단을
-확보한 뒤 검증된 새 저장소에서 실행합니다. 업그레이드 중 DNS 서비스가 중단됩니다.
-다른 버전의 설치·발행·제거 명령과 별도의 `systemctl`·nftables 관리 작업을 모두
-중지하세요. 구버전의 잠금은 모든 관리 명령을 직렬화하지 않습니다.
+이 설치의 추가 map-free cgroup BPF guard는 동일한 허용 IP 집합을 입력·출력에
+적용하고, 프로그램 로드·부착·확인에 실패하면 DNS 시작을 거부합니다. 기존
+systemd BPF가 있을 때는 교체하지 않고 함께 부착합니다. 이전 guard가 같은
+cgroup에 남아 있거나 소유권을 확인할 수 없으면 자동 제거하지 않고 시작을
+거부하므로 상태를 조사해야 합니다. 이 제한은 해당 cgroup의 직접 IP 패킷에
+관한 것이며 AF_UNIX 프록시를 통한 간접 통신까지 차단하지 않습니다. systemd의
+맵 오류 자체는 커널·systemd 구성에 따라 로그에 남을 수 있습니다.
+guard는 unified cgroup v2와 cgroup skb BPF 다중 부착을 요구하며 현재 syscall
+구현은 x86-64, AArch64, ARM EABI를 지원합니다. 설치·업그레이드 전에 두 BPF
+프로그램의 로드 지원 여부를 점검하지만 실제 서비스 cgroup에서 부착이 성공할지는
+시작 시 다시 확인합니다. 지원되지 않는 환경은 시작을 거부합니다.
+상위 `system.slice` 또는 `-.slice`의 `IPAddressAllow`가 이 서비스의 허용 집합
+밖의 IPv4 또는 IPv6를 포함하면 기존 허용 범위를 조용히 축소하지 않도록
+설치·업그레이드 및 서비스 시작을 거부합니다. 상위 설정을 변경할 때는 서비스
+관리 작업을 중지하고 재검증해야 하며, 실행 중 변경을 자동 감시하지 않습니다.
 
 ```sh
-# 변경 없이 안내만 표시
+sudo journalctl -b --no-pager | grep -i 'bpf-firewall'
+sudo systemctl show aleph-dns.service -p ControlGroup -p IPAddressAllow -p IPAddressDeny
+```
+
+## 실제 도메인 정책과 기존 설치 호환성
+
+신규 설치의 정책 파서는 `.test`와 실제 ASCII 도메인을 구분하지 않고
+**입력 유효성·범위·승인·유효기간**을 검사합니다. `--allow-public-domains` 같은
+설치 모드는 더 이상 사용하지 않습니다. 단, 실제 도메인에 대한 정책 결정과
+사용자 안내·오탐 대응 권한까지 자동 승인되는 것은 아닙니다.
+
+과거 설치에서 도메인 모드가 저장된 경우 새 관리 명령의 `publish`는 이를
+**구형 설치로 판정해 거부**합니다. 이미 실행 중인 서비스의 코드·systemd
+실행 명령은 GitHub 업데이트만으로 바뀌지 않습니다. 관리자가 운영 중인
+DNS 클라이언트를 다른 리졸버로 우선 전환하고, 아래의 `upgrade`로
+구형 구성의 원본·상태·코드를 안전하게 백업한 다음 새 서비스와 설정을
+설치해야 합니다. 업그레이드된 `options.json`에는 구형 모드가 남지 않습니다.
+
+합성 `.test` 데이터는 격리된 기능 시험에서만 사용합니다. 실사용 정책을
+생성할 때는 [실제 위협 인텔리전스와 수동 승인](../../apps/policy-server/README.md)을
+따르고 **공유 호스팅·하위 도메인 차단 영향**을 검토하세요.
+단순히 정책 파일에 `approved=true`를 넣는 것만으로 진짜 안전한 차단 목록이
+되는 것은 아닙니다.
+
+## 엔진 코드 업데이트와 운영 서비스 반영
+
+### 무엇을 갱신해야 하나요?
+
+서버의 Git 체크아웃과 실제 서비스 코드는 다릅니다. 설치기는 저장소의
+`apps/dns-agent/src`를 `/opt/aleph-dns/src`에 복사하고 systemd는 이 설치본을
+실행합니다. 따라서 **Git pull이나 기존 서비스 재시작만으로 새 엔진 코드가
+설치되지 않습니다.** 기존 설치를 삭제하거나 `install --apply`를 반복하지 말고
+검증된 저장소에서 아래의 `upgrade --apply`를 사용하세요. `publish`는 정책을
+갱신하는 명령이며 엔진 코드를 갱신하지 않습니다.
+
+### 업그레이드 전 준비
+
+1. 관리자 PC와 다른 클라이언트들을 정상 동작하는 대체 DNS로 전환하고 SSH 등
+   DNS와 독립적인 복구 접속 수단, 백업 공간과 점검 시간을 확보합니다.
+   업그레이드 중 전용 DNS와 방화벽 서비스가 중단됩니다.
+2. 설치·발행·제거 및 다른 `systemctl`·nftables 관리 작업을 중지합니다.
+   구버전의 잠금은 모든 관리 명령을 직렬화하지 않습니다.
+3. DNS 서버에서 설치된 엔진으로 정책을 확인합니다. `expired`가 `true`면
+   유효한 정책이 필요하며, `expired: false`여도 개별 규칙 만료로
+   `active_blocks`가 0일 수 있습니다. 만료가 임박하지 않았는지도 확인하세요.
+
+   ```sh
+   sudo env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/opt/aleph-dns/src /usr/bin/python3 -m dns_agent validate /etc/aleph-dns/policy.json
+   sudo systemctl is-active aleph-dns.service aleph-dns-firewall.service
+   ```
+
+   만료됐거나 업그레이드 중 만료될 수 있다면 실행 전에 새로 검토·승인한 유효
+   정책을 확보하고, 현재 설치에 맞는 `publish` 명령으로 먼저 발행해 수락을
+   확인합니다. 최신 업그레이드 명령은 만료된 정책을 서비스 중단 전에 거부합니다.
+   다만 검사 후 중단 사이 만료되거나 다른 관리자가 직접 파일을 변경하면
+   중단 뒤 검사에서 실패해 수동 복구가 필요할 수 있습니다.
+
+   기존에 만료된 정책 파일을 그대로 보존하는 것이 목적이라면, 현재 DNS가 이미
+   만료된 규칙을 적용하지 않는다는 점을 확인한 뒤 아래 업그레이드 명령에
+   `--preserve-expired-policy`를 명시할 수 있습니다. 이 옵션은 정책을 갱신하거나
+   만료된 차단을 되살리지 않습니다. 원본 정책과 상태는 백업에 유지되며, 정상
+   운용을 위한 새 정책 발행은 별도 작업입니다.
+
+   과거 설치가 `allow_public_domains` 옵션을 사용한다면 최신 관리 명령의
+   `publish`가 구형 설치를 거부할 수 있습니다. 설치 당시의 **검증된 관리 코드
+   버전**을 별도로 확보한 경우에만, 그 버전의 저장소에서 동일한 `publish --policy`
+   명령으로 새 정책을 발행하고 수락을 확인하세요. 그 버전과 옵션이 확인되지
+   않거나 발행에 실패하면 추측하여 덮어쓰지 말고 기존 상태와 백업을 보존한 채
+   복구 방안을 조사하세요. 예를 들어 해당 구형 엔진이 공인 도메인 모드로 설치된
+   경우에는 설치된 엔진으로 검증할 때 `validate` 뒤에 `--allow-public-domains`가
+   필요할 수 있습니다. 이 옵션을 최신 엔진이나 `publish` 명령에 임의로 추가하지
+   마세요.
+4. 서버의 저장소에서 현재 변경사항을 확인하고 검증한 커밋을 가져옵니다.
+   `--ff-only`가 실패하면 로컬 작업과 양쪽 이력을 조사하고 임의로 강제 초기화하지
+   않습니다. 다음 명령은 해당 저장소 디렉터리에서 실행합니다.
+
+   ```sh
+   git status --short --branch
+   git fetch origin
+   git pull --ff-only origin main
+   git rev-parse HEAD
+   ```
+
+### 업그레이드 실행
+
+다음 명령은 **DNS 서버의 갱신된 저장소**에서 실행합니다.
+
+```sh
+# 변경 없이 안내만 표시 (실제 설치 상태를 검사하는 사전 검증은 아님)
 python3 infra/edge/system_dns.py upgrade
 
 # 표식이 있는 관리형 설치
@@ -110,6 +202,12 @@ sudo python3 infra/edge/system_dns.py upgrade --apply --adopt-legacy-table
 정책·상태·코드·unit의 내용과 소유자·그룹·모드를 root 전용 아카이브에 보존하고,
 기존 상태를 유지한 채 새 서비스가 정책을 수락했는지 확인합니다. 중단되면 자동으로
 이전 정책을 덮어쓰지 않으며 진행 기록을 남깁니다.
+
+성공 메시지에 기록된 백업 경로를 보관하고, 두 서비스가 활성 상태인지와
+`journalctl -u aleph-dns -n 50 --no-pager`를 확인하세요. 아래의 정책 상태와
+허용된 다른 LAN 단말의 UDP/TCP 정상 질의도 확인한 뒤 클라이언트를 다시 전환합니다.
+업그레이드의 자체 검사만으로 외부 업스트림 질의 성공이나 모든 차단 규칙의 동작이
+증명되지는 않습니다.
 
 ```sh
 sudo python3 infra/edge/system_dns.py migration-status
@@ -139,6 +237,106 @@ dig @192.168.44.10 sub.account-session-verify.test AAAA
 공인 DNS에서 `.test` 자체가 NXDOMAIN일 수 있으므로 이 결과만으로 차단 성공을
 판정하지 마세요. 통제된 양성 업스트림 fixture와 정책 적용 전후, 로그·해시를
 함께 검증해야 합니다. 정상 이름의 통과 결과도 확인한 다음에만 DHCP/DNS를 전환하세요.
+
+## 정책은 어디에 저장되나요?
+
+- `/etc/aleph-dns/policy.json`: 관리자가 마지막으로 발행한 전체 정책 파일입니다.
+  root 소유이고 서비스 그룹이 읽을 수 있습니다. 발행 직후 오류가 나면 이 파일이
+  실행 중 상태와 다를 수 있습니다.
+- `/var/lib/aleph-dns/state.json`: 에이전트가 수락한 정책과 해시, 적용 시각,
+  차단 수 등을 담는 서비스 전용 상태입니다. `pending.json`이 있으면 트랜잭션
+  복구 중일 수 있습니다. 이 파일들을 직접 수정하거나 구버전으로 복원하지 마세요.
+- 업그레이드·제거 시 `/var/backups/` 아래 root 전용 아카이브에 원본 정책·상태가
+  보존됩니다. 실습 모드는 `--state-dir`로 지정한 별도 경로를 사용합니다.
+
+DNS 서버에서 현재 파일과 수락 상태를 확인하려면 다음을 실행합니다.
+
+```sh
+sudo env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/opt/aleph-dns/src /usr/bin/python3 -m dns_agent validate /etc/aleph-dns/policy.json
+sudo python3 -c 'import json; s=json.load(open("/var/lib/aleph-dns/state.json")); print({k:s.get(k) for k in ("policy_sha256", "applied_at", "blocked_count")})'
+sudo journalctl -u aleph-dns -n 50 --no-pager
+```
+
+`validate`의 `policy_sha256`은 정규화한 JSON의 해시이며 `state.json`의
+`policy_sha256`과 비교합니다. `sha256sum policy.json`은 원본 파일 바이트의
+해시이므로 일반적으로 둘과 다릅니다. `expired`는 정책 전체의 만료 여부이고
+각 차단 규칙의 만료는 `active_blocks`에 반영됩니다. 구형 공인 도메인 모드의
+설치 엔진에는 위의 `validate` 뒤에 `--allow-public-domains`가 필요할 수 있습니다.
+설치본을 관리자 권한으로 직접 실행할 때는 위와 같이 `PYTHONDONTWRITEBYTECODE=1`을
+지정하세요. 그렇지 않으면 설치 경로에 `__pycache__`가 생성되어 코드 소유권·무결성
+검사가 거부할 수 있습니다. 예기치 않은 설치 파일은 임의로 삭제하지 말고 점검합니다.
+
+## 원격 서버와 정책 주고받기
+
+현재 원격 정책 서버, 자동 다운로드, 정책 API 및 정책 서명 검증은 구현되어 있지
+않습니다. 아래는 관리자가 신뢰한 SSH 경로로 **파일을 수동 전송**하는 예시입니다.
+SSH 서버 호스트 키와 파일 출처를 독립적으로 확인하고, 정책에는 민감한 도메인과
+검토 정보가 있을 수 있으므로 공개 저장소에 올리지 마세요.
+
+### 관리 PC에서 DNS 서버의 현재 정책 사본 가져오기
+
+일반 SSH 계정은 원본 파일을 직접 읽을 권한이 없을 수 있습니다. 먼저 DNS 서버에
+SSH로 로그인해 관리자 비밀번호를 터미널에서 입력하고, 무작위 이름의 0600 임시
+사본을 만듭니다. 이 과정은 운영 정책을 수정하지 않습니다.
+
+```sh
+# 관리 PC에서; 계정과 IP는 환경에 맞게 변경
+ssh USER@192.168.7.69
+
+# 아래는 DNS 서버의 SSH 셸에서 실행
+export_file=$(mktemp "$HOME/aleph-policy.XXXXXXXX")
+if sudo cat /etc/aleph-dns/policy.json > "$export_file"; then
+  sha256sum "$export_file"
+  printf '내보낸 경로: %s\n' "$export_file"
+else
+  rm -f -- "$export_file"
+fi
+```
+
+출력된 전체 경로를 기록한 후 `exit`로 서버에서 나와 관리 PC에서 복사합니다.
+아래 `USER`와 `/home/USER/aleph-policy.XXXXXXXX`는 **실제 계정과 출력된
+경로로 바꾸는 자리표시자**입니다.
+
+```sh
+umask 077
+scp USER@192.168.7.69:/home/USER/aleph-policy.XXXXXXXX ./aleph-policy-copy.json
+sha256sum ./aleph-policy-copy.json
+```
+
+복사한 파일의 바이트 해시를 서버에서 출력한 값과 비교합니다. 마지막으로 DNS
+서버에 다시 로그인해 출력된 정확한 임시 경로를 `rm -- 경로`로 삭제하세요.
+같은 이름의 기존 로컬 파일을 덮어쓰지 않도록 복사 목적지를 먼저 확인합니다.
+
+### DNS 서버가 원격의 검토된 정책을 가져와 발행하기
+
+DNS 서버에 SSH로 접속한 뒤, 해당 서버에서 접근 가능한 정책 보관 호스트의 파일을
+전용 임시 디렉터리로 가져옵니다. `SOURCE_USER`, `POLICY_HOST`와 경로는 실제
+승인된 출처로 바꾸세요. 이 예시는 **DNS 서버의 저장소 디렉터리**에서 실행합니다.
+
+```sh
+umask 077
+policy_dir=$(mktemp -d)
+scp SOURCE_USER@POLICY_HOST:/path/to/reviewed-policy.json "$policy_dir/candidate.json"
+sha256sum "$policy_dir/candidate.json"
+sudo env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/opt/aleph-dns/src /usr/bin/python3 -m dns_agent validate "$policy_dir/candidate.json"
+```
+
+독립적으로 확인한 원본 해시와 비교하고, 전체 규칙·승인 여부·유효기간·기존 정책과의
+차이를 검토하세요. `validate` 성공은 출처 인증이나 사용자 영향 승인이 아닙니다.
+정책은 **전체 교체**이므로 기존 규칙이 빠지면 그 차단이 철회됩니다. 적용이 승인된
+경우에만 다음을 실행하고 응답 및 로그를 확인합니다. 구형 공인 도메인 모드라면
+설치된 구형 파서의 검증 옵션과 그 설치에 맞는 구형 관리 명령을 사용해야 합니다.
+
+```sh
+sudo python3 infra/edge/system_dns.py publish --policy "$policy_dir/candidate.json"
+sudo journalctl -u aleph-dns -n 50 --no-pager
+```
+
+실패 시 진단과 감사에 필요한 파일을 보존하세요. 성공 후 임시 사본이 더 이상
+필요하지 않으면 `rm -- "$policy_dir/candidate.json"`과 `rmdir -- "$policy_dir"`로
+삭제할 수 있습니다. DNS 서버에 정책 보관 호스트 접근 권한이 없다면 관리 PC에서
+검토한 파일을 DNS 서버의 사용자 소유 임시 디렉터리로 `scp`한 다음 같은 검증·발행
+절차를 따릅니다.
 
 ## 정책 발행 및 장애 복구
 

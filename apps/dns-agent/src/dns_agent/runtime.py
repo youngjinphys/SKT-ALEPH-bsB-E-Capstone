@@ -60,7 +60,7 @@ def _dns_name(packet: bytes, offset: int) -> tuple[str, int]:
 
 def dns_rcode(name: str, qtype: int, port: int, *, tcp=False, timeout=0.5,
               require_answer=False, expected_rdata=None,
-              server_ip='127.0.0.1') -> int:
+              require_no_answers=False, server_ip='127.0.0.1') -> int:
     labels = name.encode('ascii').split(b'.')
     question = b''.join(bytes([len(x)]) + x for x in labels) + b'\0' + struct.pack('!HH', qtype, 1)
     ident = secrets.randbits(16)
@@ -82,6 +82,8 @@ def dns_rcode(name: str, qtype: int, port: int, *, tcp=False, timeout=0.5,
         raise RuntimeError('mismatched, truncated or invalid DNS response')
     if response[12:12+len(question)] != question:
         raise RuntimeError('DNS question mismatch')
+    if require_no_answers and (flags & 15 or answers != 0):
+        raise RuntimeError('intercepted DNS type leaked a non-A answer')
     if require_answer:
         if flags & 15 or answers < 1:
             raise RuntimeError('positive DNS answer required for local health check')
@@ -109,7 +111,8 @@ def dns_rcode(name: str, qtype: int, port: int, *, tcp=False, timeout=0.5,
 
 class DnsmasqRuntime:
     def __init__(self, binary: str, port: int,
-                 listen_address: str = '127.0.0.1', system_dns: bool = False):
+                 listen_address: str = '127.0.0.1', system_dns: bool = False,
+                 http_sink_ip: str | None = None):
         resolved = shutil.which(binary)
         if resolved is None:
             raise RuntimeError('dnsmasq not installed; install dnsmasq-base in an isolated Linux VM')
@@ -131,6 +134,9 @@ class DnsmasqRuntime:
             raise RuntimeError('lab listener must be loopback')
         self.listen_address = str(listen)
         self.system_dns = system_dns
+        if http_sink_ip is not None and http_sink_ip != str(listen):
+            raise RuntimeError('HTTP sink must match DNS listen address')
+        self.http_sink_ip = http_sink_ip
         if os.stat(self.binary).st_mode & (stat.S_ISUID | stat.S_ISGID):
             raise RuntimeError('privilege-changing dnsmasq executable is not allowed')
         try:
@@ -154,6 +160,21 @@ class DnsmasqRuntime:
     def alive(self):
         return self.process is not None and self.process.poll() is None
 
+    def _check_canary(self, name: str, *, tcp: bool):
+        if self.http_sink_ip is None:
+            for qtype in (1, 28):
+                if dns_rcode(name, qtype, self.port, tcp=tcp,
+                             server_ip=self.listen_address) != 3:
+                    raise RuntimeError('normal block canary did not return NXDOMAIN')
+            return
+        sink = socket.inet_pton(socket.AF_INET, self.http_sink_ip)
+        if dns_rcode(name, 1, self.port, tcp=tcp, require_answer=True,
+                     expected_rdata=sink, server_ip=self.listen_address) != 0:
+            raise RuntimeError('HTTP notice A canary did not resolve to the sink')
+        if dns_rcode(name, 28, self.port, tcp=tcp, require_no_answers=True,
+                     server_ip=self.listen_address) != 0:
+            raise RuntimeError('HTTP notice AAAA canary must have no answers')
+
     def healthy(self) -> bool:
         """Periodically verify local DNS answers, not just process existence.
 
@@ -174,11 +195,8 @@ class DnsmasqRuntime:
                                  require_answer=True, expected_rdata=expected,
                                  server_ip=self.listen_address) != 0:
                         return False
-                if self._blocked_canary and dns_rcode(
-                    self._blocked_canary, 1, self.port, tcp=tcp,
-                    server_ip=self.listen_address
-                ) != 3:
-                    return False
+                if self._blocked_canary:
+                    self._check_canary(self._blocked_canary, tcp=tcp)
         except (OSError, RuntimeError):
             return False
         self._last_probe_at = time.monotonic()
@@ -216,9 +234,8 @@ class DnsmasqRuntime:
                                          require_answer=True, expected_rdata=expected,
                                          server_ip=self.listen_address) != 0:
                                 raise RuntimeError('health query failed')
-                            if blocked and dns_rcode(blocked[0], qtype, self.port, tcp=tcp,
-                                                     server_ip=self.listen_address) != 3:
-                                raise RuntimeError('block canary did not return NXDOMAIN')
+                        if blocked:
+                            self._check_canary(blocked[0], tcp=tcp)
                     self._health_name = health
                     self._blocked_canary = blocked[0] if blocked else None
                     self._last_probe_at = 0.0

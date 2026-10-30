@@ -10,8 +10,9 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src'))
-from dns_agent.policy import utcnow
+from dns_agent.policy import render_config, utcnow
 from dns_agent.runtime import DnsmasqRuntime, dns_rcode
 from dns_agent.transaction import Store, Agent
 
@@ -47,6 +48,9 @@ class RealDnsTests(unittest.TestCase):
                 'host-record=other-blocked.test,192.0.2.22,2001:db8::22\n'
                 'host-record=good.test,192.0.2.30,2001:db8::30\n'
                 'host-record=warn.test,192.0.2.40,2001:db8::40\n'
+                'host-record=naver.com,192.0.2.51,2001:db8::51\n'
+                'host-record=daum.net,192.0.2.52,2001:db8::52\n'
+                'host-record=google.com,192.0.2.53,2001:db8::53\n'
                 'cname=alias.test,blocked.test\n')
         path=self.root/'upstream.conf';path.write_text(config)
         self.upstream=subprocess.Popen([BINARY,'--no-daemon','--pid-file','--log-facility=-',
@@ -76,9 +80,120 @@ class RealDnsTests(unittest.TestCase):
         p=subprocess.run(cmd,text=True,capture_output=True,timeout=4)
         self.assertEqual(p.returncode,0,p.stdout+p.stderr)
         return p.stdout
+    def test_periodic_health_detects_normal_aaaa_canary_failure_on_both_transports(self):
+        self.apply()
+        for failing_tcp in (False, True):
+            with self.subTest(tcp=failing_tcp):
+                def query(name, qtype, port, **kwargs):
+                    if name == 'blocked.test' and qtype == 28 and kwargs.get('tcp') == failing_tcp:
+                        return 0
+                    return dns_rcode(name, qtype, port, **kwargs)
+                self.runtime._last_probe_at = 0
+                with patch('dns_agent.runtime.dns_rcode', side_effect=query):
+                    self.assertFalse(self.runtime.healthy())
+
+    def test_generated_site_test_policy_blocks_real_names_in_isolated_resolver(self):
+        # Fixture addresses are documentation-only; no public site is contacted.
+        script = Path(__file__).resolve().parents[3] / 'scripts/build_site_test_policy.py'
+        output = subprocess.check_output([sys.executable, str(script)], timeout=5)
+        domains = ('naver.com', 'daum.net', 'google.com')
+        for name in domains:
+            self.assertIn('status: NOERROR', self.dig(name, 'A', upstream=True))
+            self.assertIn('192.0.2.', self.dig(name, 'A', upstream=True))
+            self.assertIn('2001:db8::', self.dig(name, 'AAAA', upstream=True))
+        self.agent.cycle(output)
+        for name in domains:
+            for kind in ('A', 'AAAA'):
+                for tcp in (False, True):
+                    with self.subTest(name=name, kind=kind, tcp=tcp):
+                        self.assertIn('status: NXDOMAIN', self.dig(name, kind, tcp=tcp))
+        self.agent.cycle(None, now=utcnow() + timedelta(minutes=16))
+        for name in domains:
+            for kind in ('A', 'AAAA'):
+                for tcp in (False, True):
+                    with self.subTest(expired=name, kind=kind, tcp=tcp):
+                        self.assertIn('status: NOERROR', self.dig(name, kind, tcp=tcp))
+
+    def test_normal_start_rejects_non_nxdomain_a_canary(self):
+        # Keep the real resolver and packets, but simulate a wrong A result
+        # while the health records and AAAA answer continue to work normally.
+        config = render_config(('blocked.test',), port=self.port, upstream='127.0.0.1',
+                               upstream_port=self.upstream_port)
+        path = self.root/'normal.conf'
+        path.write_text(config)
+        def query(name, qtype, port, **kwargs):
+            if name == 'blocked.test' and qtype == 1:
+                return 0
+            return dns_rcode(name, qtype, port, **kwargs)
+        with patch('dns_agent.runtime.dns_rcode', side_effect=query):
+            with self.assertRaisesRegex(RuntimeError, 'health checks timed out'):
+                self.runtime.start(path)
+        self.assertFalse(self.runtime.alive())
+
+    def _assert_start_checks_canary_for_both_types_and_transports(self, query):
+        probes = {(c.args[1], c.kwargs['tcp']) for c in query.call_args_list
+                  if c.args[0] == 'blocked.test'}
+        self.assertEqual(probes, {(1, False), (28, False), (1, True), (28, True)})
+
+    def test_http_start_rejects_wrong_sink_a_or_positive_aaaa(self):
+        # Real dnsmasq serves a healthy health record but an invalid notice
+        # response. Startup must reject it before reporting the service ready.
+        self.runtime.stop()
+        self.runtime = DnsmasqRuntime(BINARY, self.port, http_sink_ip='127.0.0.1')
+        self.addCleanup(self.runtime.stop)
+        good = render_config(('blocked.test',), port=self.port, upstream='127.0.0.1',
+                             upstream_port=self.upstream_port, http_sink_ip='127.0.0.1')
+        for bad in (good.replace('address=/blocked.test/127.0.0.1',
+                                 'address=/blocked.test/127.0.0.2'),
+                    good + 'address=/blocked.test/::1\n'):
+            with self.subTest(config=bad):
+                path = self.root/'invalid-notice.conf'
+                path.write_text(bad)
+                try:
+                    with self.assertRaisesRegex(RuntimeError, 'health checks timed out'):
+                        self.runtime.start(path)
+                    self.assertFalse(self.runtime.alive())
+                finally:
+                    self.runtime.stop()
+
+    def test_opt_in_dns_http_notice_maps_a_and_suppresses_other_types(self):
+        # Unlike the default NXDOMAIN mode, explicitly approved BLOCK/WARN
+        # intercept A queries for the HTTP notice sink. This is a lab only.
+        self.runtime.stop()
+        self.runtime=DnsmasqRuntime(BINARY,self.port,http_sink_ip='127.0.0.1')
+        self.addCleanup(self.runtime.stop)
+        self.agent=Agent(self.store,self.runtime,port=self.port,
+                         upstream='127.0.0.1',upstream_port=self.upstream_port,
+                         http_sink_ip='127.0.0.1')
+        with patch('dns_agent.runtime.dns_rcode', wraps=dns_rcode) as query:
+            self.apply()
+        self._assert_start_checks_canary_for_both_types_and_transports(query)
+        self.runtime._last_probe_at = 0
+        with patch('dns_agent.runtime.dns_rcode', wraps=dns_rcode) as periodic_query:
+            self.assertTrue(self.runtime.healthy())
+        self._assert_start_checks_canary_for_both_types_and_transports(periodic_query)
+        for tcp in (False,True):
+            for domain in ('blocked.test','child.blocked.test','warn.test'):
+                output=self.dig(domain,'A',tcp=tcp)
+                self.assertIn('status: NOERROR',output)
+                self.assertIn('127.0.0.1',output)
+                for kind in ('AAAA','HTTPS'):
+                    other=self.dig(domain,kind,tcp=tcp)
+                    self.assertIn('status: NOERROR',other)
+                    self.assertNotIn('2001:db8',other)
+            good=self.dig('good.test','A',tcp=tcp)
+            self.assertIn('192.0.2.30',good)
+        self.assertTrue(self.runtime.healthy())
+
     def test_block_subtree_allow_warn_and_transport(self):
         self.assertIn('192.0.2.20',self.dig('blocked.test',upstream=True))
-        self.apply()
+        with patch('dns_agent.runtime.dns_rcode', wraps=dns_rcode) as query:
+            self.apply()
+        self._assert_start_checks_canary_for_both_types_and_transports(query)
+        self.runtime._last_probe_at = 0
+        with patch('dns_agent.runtime.dns_rcode', wraps=dns_rcode) as periodic_query:
+            self.assertTrue(self.runtime.healthy())
+        self._assert_start_checks_canary_for_both_types_and_transports(periodic_query)
         for tcp in (False,True):
             for kind in ('A','AAAA','HTTPS'):
                 for name in ('blocked.test','child.blocked.test'):

@@ -123,7 +123,7 @@ class RealThreatPipelineTests(unittest.TestCase):
     def test_approval_bound_to_exact_verification_and_requires_ack(self):
         v=verified([URL],matched(URL))
         r=approval(v)
-        p=m.build_policy(v,r,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+        p=m.build_policy(v,r,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
         self.assertEqual(p['rules'][0]['decision'],'BLOCK')
         self.assertEqual(p['rules'][0]['scope'],'SUBTREE')
         self.assertEqual(p['rules'][0]['domain'],'malicious-example-domain.online')
@@ -132,43 +132,43 @@ class RealThreatPipelineTests(unittest.TestCase):
             q=json.loads(json.dumps(r))
             q['reviews'][0][field]=bad
             with self.subTest(field=field),self.assertRaises(m.IntelError):
-                m.build_policy(v,q,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+                m.build_policy(v,q,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
 
     def test_missing_expired_google_evidence_cannot_compile(self):
         v=verified([URL],matched(URL))
         r=approval(v)
         with self.assertRaisesRegex(m.IntelError,'stale'):
-            m.build_policy(v,r,at=NOW+timedelta(minutes=6),allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,r,at=NOW+timedelta(minutes=6),acknowledge_replacement=True,acknowledge_notice=True)
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,r,at=NOW,allow_public=False,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,r,at=NOW,acknowledge_replacement=True,acknowledge_notice=False)
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,r,at=NOW,allow_public=True,acknowledge_replacement=False)
+            m.build_policy(v,r,at=NOW,acknowledge_replacement=False)
 
     def test_google_negative_and_unreviewed_never_block(self):
         v=verified([URL],{'threats':[],'cacheDuration':'300s'})
         a=m.review_template(v)
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,a,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,a,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
         v=verified([URL],matched(URL))
         a=m.review_template(v)
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,a,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,a,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
 
     def test_protected_shared_hosts_are_never_dns_blocked(self):
         for url in ['https://badaccount.github.io/landing',
                     'https://evil.pages.dev/login','https://www.google.com/account']:
             v=verified([url],matched(url))
             with self.subTest(url=url),self.assertRaisesRegex(m.IntelError,'shared-platform'):
-                m.build_policy(v,approval(v),at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+                m.build_policy(v,approval(v),at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
 
     def test_false_approval_or_unacknowledged_subtree_refused(self):
         v=verified([URL],matched(URL))
         a=approval(v);a['reviews'][0]['acknowledge_subtree']=False
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,a,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,a,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
         a=approval(v);a['reviews'][0]['reason']='short'
         with self.assertRaises(m.IntelError):
-            m.build_policy(v,a,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+            m.build_policy(v,a,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
 
     def test_output_private_atomic_refuses_symlink(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -222,13 +222,13 @@ class RealThreatPipelineTests(unittest.TestCase):
 
     def test_compile_emits_valid_dns_contract_when_local_agent_available(self):
         v=verified([URL],matched(URL));a=approval(v)
-        p=m.build_policy(v,a,at=NOW,allow_public=True,acknowledge_replacement=True,acknowledge_notice=True)
+        p=m.build_policy(v,a,at=NOW,acknowledge_replacement=True,acknowledge_notice=True)
         root=Path(__file__).resolve().parents[2]
         candidate=root/'apps/dns-agent/src'
         if not candidate.exists():self.skipTest('dns agent unavailable in local fixture')
         sys.path.insert(0,str(candidate))
         from dns_agent.policy import parse_policy
-        self.assertEqual(parse_policy(json.dumps(p).encode(),now=NOW,allow_public=True).blocked(NOW),
+        self.assertEqual(parse_policy(json.dumps(p).encode(),now=NOW).blocked(NOW),
                          ('malicious-example-domain.online',))
 
 if __name__=='__main__': unittest.main()

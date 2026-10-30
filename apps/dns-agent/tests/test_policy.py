@@ -30,10 +30,37 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(policy.blocked(NOW), ('blocked.test',))
         self.assertEqual(policy.blocked(NOW + timedelta(minutes=31)), ())
 
-    def test_default_is_lab_names_only(self):
-        p = sample(); p['rules'][0]['domain'] = 'example.org'
-        with self.assertRaises(PolicyError): parse(p)
-        self.assertEqual(parse(p, allow_public=True).blocked(NOW), ('example.org',))
+    def test_reviewed_public_domain_uses_same_contract(self):
+        p = sample(); p['rules'][0]['domain'] = 'Example.ORG.'
+        self.assertEqual(parse(p).blocked(NOW), ('example.org',))
+        p['rules'][0]['approved'] = False
+        self.assertEqual(parse(p).blocked(NOW), ())
+        p['rules'][0]['approved'] = True
+        p['rules'][0]['decision'] = 'WARN'
+        self.assertEqual(parse(p).blocked(NOW), ())
+
+    def test_http_notice_requires_explicit_sink_and_preserves_normal_dns(self):
+        obj=sample()
+        obj['rules'].append(dict(obj['rules'][0],domain='warn.test',decision='WARN'))
+        policy=parse(obj)
+        self.assertEqual(policy.warned(NOW),('warn.test',))
+        self.assertEqual(policy.blocked(NOW),('blocked.test',))
+        config=render_config(policy.blocked(NOW),port=35353,
+                             upstream='127.0.0.1',upstream_port=35453)
+        self.assertIn('address=/blocked.test/\n',config)
+        self.assertNotIn('warn.test',config)
+        with self.assertRaises(PolicyError):
+            render_config(policy.blocked(NOW),port=35353,upstream='127.0.0.1',
+                          upstream_port=35453,warned=policy.warned(NOW))
+        notice=render_config(policy.blocked(NOW),port=35353,
+                             upstream='127.0.0.1',upstream_port=35453,
+                             warned=policy.warned(NOW),http_sink_ip='127.0.0.1')
+        for host in ('blocked.test','warn.test'):
+            self.assertIn('address=/'+host+'/127.0.0.1\n',notice)
+            self.assertIn('local=/'+host+'/\n',notice)
+        with self.assertRaisesRegex(PolicyError, 'must match'):
+            render_config(policy.blocked(NOW),port=35353,upstream='127.0.0.1',
+                          upstream_port=35453,http_sink_ip='192.168.7.69')
 
     def test_decisions_are_not_risk_score_thresholds(self):
         for decision in ('WARN', 'ALLOW'):
