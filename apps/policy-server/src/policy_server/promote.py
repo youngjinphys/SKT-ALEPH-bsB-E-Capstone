@@ -162,11 +162,31 @@ def _recover(folder, journal, envelope, *, device, trusted_keys, now, apply):
         raise PromotionError('invalid publication journal; preserve for inspection')
     if canonical(journal['envelope']) != canonical(envelope):
         raise PromotionError('unfinished publication; retry its original signed release first')
-    payload, policy = verify_envelope(canonical(envelope), expected_device=device,
-                                     trust_dir=trusted_keys, now=now, allow_expired=True)
     current = _optional(folder / 'current.json')
     state = _optional(folder / '.publication.json', limit=4096, private=True)
     _validate_receipt(state)
+    if (state is not None and state.get('format') == 2 and current is not None
+            and _digest(current) == _digest(envelope)
+            and _digest(envelope) == state['envelope_sha256']):
+        # Both public output and the root receipt are already durable. This
+        # retry removes only the leftover journal; it must not reauthorize an
+        # old signer, rewrite public data, or prolong an expired threat verdict.
+        # Use the same receipt checks as normal signer rotation. Without this
+        # full-envelope receipt, current signature trust remains mandatory.
+        payload, policy = _previous(current, state, device=device,
+                                     trusted_keys=trusted_keys, now=now)
+        result = {'device': device, 'sequence': payload['sequence'],
+                  'published': False, 'already_published': True,
+                  'recovered': False, 'recovery_pending': True,
+                  'expired': policy.expires_at <= now,
+                  'active_blocks': len(policy.blocked(now))}
+        if apply:
+            (folder / '.pending-publication.json').unlink()
+            _fsync_dir(folder)
+            return {**result, 'recovered': True, 'recovery_pending': False}
+        return result
+    payload, policy = verify_envelope(canonical(envelope), expected_device=device,
+                                     trust_dir=trusted_keys, now=now, allow_expired=True)
     current_hash = _digest(current) if current is not None else None
     state_hash = _digest(state) if state is not None else None
     receipt = _receipt(envelope)

@@ -31,9 +31,10 @@ jobs:
           /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_snapshot.py' -v
           /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_cli.py' -v
           /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_fetch.py' -v
+          /usr/bin/python3 -m unittest discover -s tests/policy_sync -p 'test_cache_recovery.py' -v
       - name: Root-only signed policy apply and rollback tests (mock DNS publisher)
         run: |
-          sudo env PYTHONPATH="$PYTHONPATH" /usr/bin/python3 -B -m unittest discover -s tests/policy_sync -p 'test_apply.py' -v
+          sudo env PYTHONPATH="$PYTHONPATH" /usr/bin/python3 -B -m unittest discover -s tests/policy_sync -p 'test_*apply.py' -v
       - name: System DNS installer validation (no privileged changes)
         run: |
           python3 -m py_compile infra/edge/system_dns.py

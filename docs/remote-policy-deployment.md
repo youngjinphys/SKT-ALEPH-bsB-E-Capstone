@@ -127,6 +127,19 @@ dig +tcp @192.168.7.69 example.org AAAA
 
 `git pull`은 설치본을 갱신하지 않습니다. DNS 업그레이드는 [관리형 업그레이드](../infra/edge/README.md), 원격 코드 갱신은 승인된 유지보수 절차를 사용합니다. 기존 설치 경로를 새 설치기로 덮어쓰지 않습니다. 실패 시 원래 만료기한을 존중하며 무기한 차단하지 않습니다.
 
+**DNS apply 장애와 복구:** 루트 적용기는 정책 게시 전에 상태 디렉터리에
+`pending-apply.json`을 기록합니다. 이 파일은 미완료 의도이지 성공한 정책의
+증빙은 아닙니다. DNS가 수락한 뒤 `applied.json`을 갱신하며, 중간 실패 시
+같은 서명 정책으로 복구할 수 있습니다. 다운로더가 이미 더 새로운 서명 파일을
+받은 경우에는 미완료 정책 또는 직전 기록 정책의 **실제 DNS 적용 상태와
+전용 방화벽을 검증한 경우에만** 새 정책으로 진행합니다. 둘 다 확인 불가이면
+실행을 중단하고 파일·로그를 보존합니다. 서명 만료·키 회수·디스크 손상으로
+자동 복구할 수 없는 경우가 있으며, 관리자가 사유를 확인하기 전에는 저널과
+재전송 방지 기록을 임의 삭제하지 마세요. 정책의 기존 만료시간은 연장되지 않습니다.
+관리자가 긴급히 차단을 해제하거나 DNS 설정을 수정할 때는 먼저 자동 fetch/apply
+타이머를 정지하고, 수동 변경과 서명 정책의 재적용 순서를 검토해야 합니다.
+더 최신의 정식 서명 정책은 평상시 자동 적용 대상입니다.
+
 **별도 검증:** 실제 API 자격증명·운영 TLS·LAN·재부팅·CNAME/DNSSEC·DoH/VPN·IPv6·캐시·실행 중 연결. NXDOMAIN은 HTTPS 리디렉션이 아닙니다. 점수 기반 `evaluate`는 신뢰 출처/모델/시간이 붙은 EXACT 제안이고 실제 점수 계산이나 자동 승인을 하지 않습니다.
 
 출처·사용 조건: [OpenPhish](https://openphish.com/terms.html), [Community 주기](https://openphish.com/phishing_feeds.html), [GSB v5](https://developers.google.com/safe-browsing/reference/rest/v5/urls/search), [GSB 약관](https://developers.google.com/safe-browsing/terms). 두 서비스의 비상업적 사용·표시·데이터 처리 조건과 내부 재배포 권한을 확인하세요.

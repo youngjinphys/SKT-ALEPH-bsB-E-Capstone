@@ -97,10 +97,12 @@ class NftNamespaceTests(unittest.TestCase):
             if required: self.fail('unshare and nft are required for isolated tests')
             self.skipTest('unshare or nft unavailable')
         flags = namespace_flags(os.geteuid())
-        probe = subprocess.run([unshare, *flags, 'true'], capture_output=True, text=True)
+        probe = subprocess.run([unshare, *flags, '/usr/sbin/nft', '-f', '/dev/stdin'],
+                               input='add table inet aleph_probe\ndelete table inet aleph_probe\n',
+                               capture_output=True, text=True)
         if probe.returncode:
-            if required: self.fail('network namespace unavailable: ' + probe.stderr)
-            self.skipTest('network namespace unavailable: ' + probe.stderr.strip())
+            if required: self.fail('nftables mutation unavailable inside network namespace: ' + probe.stderr)
+            self.skipTest('nftables mutation unavailable: ' + probe.stderr.strip())
         result = subprocess.run([unshare, *flags, sys.executable,
                                  str(path.parent.parent.parent / 'tests' / 'deployment' / 'nft_namespace_scenarios.py')],
                                 capture_output=True, text=True, timeout=30)

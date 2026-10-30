@@ -1,0 +1,25 @@
+name: Reproducible policy evidence
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  loopback:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install lab-only binaries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends dnsmasq-base dnsutils python3-cryptography
+      - name: Evidence accounting regression tests
+        run: /usr/bin/python3 -m unittest discover -s tests/evidence -v
+      - name: Real loopback TLS, signature and DNS lifecycle
+        run: /usr/bin/python3 scripts/evidence_lab.py --rounds 2 --output /tmp/aleph-evidence.json
+      - name: Preserve raw observations, including failures
+        if: always()
+        run: |
+          if test -f /tmp/aleph-evidence.json; then cat /tmp/aleph-evidence.json; else echo 'No evidence report was generated; this is not a pass.'; fi

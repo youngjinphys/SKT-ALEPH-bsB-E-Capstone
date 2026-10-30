@@ -3,6 +3,7 @@ from datetime import timedelta
 import hashlib
 import json
 import os
+import sys
 from pathlib import Path
 from unittest.mock import patch
 import pwd
@@ -92,6 +93,210 @@ class ApplyTests(unittest.TestCase):
         self.assertEqual(self.apply(), 'already-applied')
         self.assertEqual(len(self.attested), 1)
 
+    def test_prepared_intent_is_durable_before_publish(self):
+        self.staged()
+        def fail_after_journal(_):
+            intent = json.loads((self.state/'pending-apply.json').read_bytes())
+            self.assertEqual(intent['format'], 1)
+            self.assertEqual(intent['sequence'], 1)
+            self.assertEqual(intent['policy_sha256'], intent['policy_sha256'].lower())
+            self.assertFalse((self.state/'applied.json').exists())
+            raise SyncError('simulated outage after intent persisted')
+        with self.assertRaisesRegex(SyncError, 'simulated outage'):
+            self.apply(publisher=fail_after_journal)
+        self.assertTrue((self.state/'pending-apply.json').is_file())
+        self.assertFalse((self.state/'applied.json').exists())
+        self.assertEqual(self.apply(), 'applied')
+        self.assertFalse((self.state/'pending-apply.json').exists())
+
+    def test_pending_intent_rejects_newer_signed_release_until_retry(self):
+        self.staged()
+        def fail(_): raise SyncError('first release did not finish')
+        with self.assertRaises(SyncError):
+            self.apply(publisher=fail)
+        later = NOW + timedelta(minutes=1)
+        self.staged(sequence=2, at=later)
+        with self.assertRaisesRegex(SyncError, 'no verified fallback'):
+            self.apply(when=later, attestor=lambda _: (_ for _ in ()).throw(SyncError('DNS not published')))
+        self.assertEqual(self.published, [])
+        self.staged(sequence=1)
+        self.assertEqual(self.apply(), 'applied')
+        self.staged(sequence=2, at=later)
+        self.assertEqual(self.apply(when=later), 'applied')
+        self.assertEqual(len(self.published), 2)
+
+    def test_pending_intent_rejects_same_sequence_with_different_payload(self):
+        self.staged()
+        def fail(_): raise SyncError('injected first publish failure')
+        with self.assertRaises(SyncError):
+            self.apply(publisher=fail)
+        altered = policy()
+        altered['rules'][0]['domain'] = 'replacement.example'
+        self.staged(data=altered)
+        with self.assertRaisesRegex(SyncError, 'unfinished signed-policy'):
+            self.apply()
+        self.assertEqual(self.published, [])
+
+    def test_failing_intent_write_never_invokes_publisher(self):
+        from aleph_policy_sync import sync as module
+        self.staged()
+        original = module.atomic_private
+        def fail_first(path, data, *, owner):
+            if path.name == 'pending-apply.json':
+                raise OSError('simulated disk error while saving intent')
+            return original(path, data, owner=owner)
+        with patch.object(module, 'atomic_private', side_effect=fail_first):
+            with self.assertRaisesRegex(OSError, 'disk error'):
+                self.apply()
+        self.assertEqual(self.published, [])
+        self.assertFalse((self.state/'applied.json').exists())
+        self.assertFalse((self.state/'pending-apply.json').exists())
+
+    def test_commit_write_failure_after_dns_publish_is_recoverable(self):
+        from aleph_policy_sync import sync as module
+        self.staged()
+        original = module.atomic_private
+        def fail_commit(path, data, *, owner):
+            if path.name == 'applied.json':
+                raise OSError('simulated disk-full after DNS accepted policy')
+            return original(path, data, owner=owner)
+        with patch.object(module, 'atomic_private', side_effect=fail_commit):
+            with self.assertRaisesRegex(OSError, 'disk-full'):
+                self.apply()
+        self.assertEqual(len(self.published), 1)
+        self.assertTrue((self.state/'pending-apply.json').is_file())
+        self.assertFalse((self.state/'applied.json').exists())
+        self.assertEqual(self.apply(), 'applied')
+        self.assertFalse((self.state/'pending-apply.json').exists())
+        self.assertEqual(json.loads((self.state/'applied.json').read_text())['sequence'], 1)
+
+    def test_committed_watermark_can_clean_up_interrupted_journal(self):
+        from aleph_policy_sync import sync as module
+        self.staged()
+        with patch.object(module, '_delete_intent', side_effect=OSError('injected interrupted cleanup')):
+            with self.assertRaises(OSError):
+                self.apply()
+        self.assertTrue((self.state/'pending-apply.json').is_file())
+        self.assertEqual(json.loads((self.state/'applied.json').read_text())['sequence'], 1)
+        before = len(self.published)
+        self.assertEqual(self.apply(), 'already-applied')
+        self.assertEqual(len(self.published), before)
+        self.assertFalse((self.state/'pending-apply.json').exists())
+        self.assertEqual(len(self.attested), 1)
+
+    def test_committed_pending_cleanup_before_newer_release_requires_live_attestation(self):
+        from aleph_policy_sync import sync as module
+        self.staged()
+        with patch.object(module, '_delete_intent', side_effect=OSError('simulated cleanup failure')):
+            with self.assertRaises(OSError):
+                self.apply()
+        prior = json.loads((self.state/'applied.json').read_text())
+        later = NOW + timedelta(minutes=1)
+        self.staged(sequence=2, at=later)
+        def reject(_): raise SyncError('previous DNS state not healthy')
+        with self.assertRaisesRegex(SyncError, 'not healthy'):
+            self.apply(when=later, attestor=reject)
+        self.assertTrue((self.state/'pending-apply.json').exists())
+        self.assertEqual(len(self.published), 1)
+        self.assertEqual(self.apply(when=later), 'applied')
+        self.assertEqual(self.attested, [prior['policy_sha256']])
+        self.assertFalse((self.state/'pending-apply.json').exists())
+
+    def test_new_release_repairs_previous_pending_success_before_advancing(self):
+        from aleph_policy_sync import sync as module
+        self.staged()
+        actual = module.atomic_private
+        def fail_local_commit(path, data, *, owner):
+            if path.name == 'applied.json':
+                raise OSError('publish accepted but local disk failed')
+            return actual(path, data, owner=owner)
+        with patch.object(module, 'atomic_private', side_effect=fail_local_commit):
+            with self.assertRaises(OSError):
+                self.apply()
+        self.assertEqual(len(self.published), 1)
+        self.assertFalse((self.state/'applied.json').exists())
+        later = NOW + timedelta(minutes=1)
+        self.staged(sequence=2, at=later)
+        # First attestation must prove seq1 reached the local DNS before seq2.
+        old_policy = json.loads(self.published[0])
+        def confirm_old(digest):
+            from dns_agent.policy import parse_policy
+            self.assertEqual(digest, parse_policy(json.dumps(old_policy).encode(), now=later).digest)
+            self.attested.append(digest)
+        self.assertEqual(self.apply(when=later, attestor=confirm_old), 'applied')
+        self.assertEqual(len(self.published), 2)
+        self.assertEqual(json.loads((self.state/'applied.json').read_text())['sequence'], 2)
+        self.assertFalse((self.state/'pending-apply.json').exists())
+        self.assertEqual(len(self.attested), 1)
+
+    def test_orphaned_unpublished_intent_can_be_abandoned_only_with_prior_dns_attestation(self):
+        self.staged()
+        self.apply()
+        previous = json.loads((self.state/'applied.json').read_text())
+        later = NOW + timedelta(minutes=1)
+        self.staged(sequence=2, at=later)
+        def fail_publish(_):
+            raise SyncError('DNS candidate was never accepted')
+        with self.assertRaises(SyncError):
+            self.apply(when=later, publisher=fail_publish)
+        self.staged(sequence=3, at=later + timedelta(seconds=1))
+        checked = []
+        def status(digest):
+            checked.append(digest)
+            if digest != previous['policy_sha256']:
+                raise SyncError('pending candidate is not live')
+        self.assertEqual(self.apply(when=later + timedelta(seconds=1), attestor=status), 'applied')
+        self.assertEqual(len(checked), 2)
+        self.assertEqual(checked[-1], previous['policy_sha256'])
+        self.assertEqual(json.loads((self.state/'applied.json').read_text())['sequence'], 3)
+        self.assertFalse((self.state/'pending-apply.json').exists())
+
+    def test_neither_pending_nor_prior_live_requires_operator_recovery(self):
+        self.staged()
+        self.apply()
+        later = NOW + timedelta(minutes=1)
+        self.staged(sequence=2, at=later)
+        with self.assertRaises(SyncError):
+            self.apply(when=later, publisher=lambda _: (_ for _ in ()).throw(SyncError('DNS not reached')))
+        self.staged(sequence=3, at=later + timedelta(seconds=1))
+        checked = []
+        def offline(digest):
+            checked.append(digest)
+            raise SyncError('DNS unavailable')
+        with self.assertRaisesRegex(SyncError, 'DNS unavailable'):
+            self.apply(when=later + timedelta(seconds=1), attestor=offline)
+        self.assertEqual(len(checked), 2)
+        self.assertTrue((self.state/'pending-apply.json').is_file())
+        self.assertEqual(json.loads((self.state/'applied.json').read_text())['sequence'], 1)
+
+    def test_untrusted_intent_file_symlink_is_rejected(self):
+        self.staged()
+        outside = self.root/'outside-intent.json'
+        outside.write_text('PRESERVE')
+        (self.state/'pending-apply.json').symlink_to(outside)
+        with self.assertRaises(OSError):
+            self.apply()
+        self.assertEqual(outside.read_text(), 'PRESERVE')
+        self.assertEqual(self.published, [])
+
+    def test_malformed_pending_intent_does_not_allow_publish(self):
+        self.staged()
+        pending = self.state/'pending-apply.json'
+        pending.write_text('{"sequence": 1}')
+        pending.chmod(0o600)
+        with self.assertRaisesRegex(SyncError, 'invalid pending'):
+            self.apply()
+        self.assertEqual(self.published, [])
+
+    def test_group_readable_pending_intent_is_rejected_before_publish(self):
+        self.staged()
+        pending = self.state/'pending-apply.json'
+        pending.write_text('{"sequence": 1}')
+        pending.chmod(0o640)
+        with self.assertRaises(SnapshotError):
+            self.apply()
+        self.assertEqual(self.published, [])
+
     def test_failed_publish_does_not_advance_sequence_or_erase_last_policy(self):
         self.staged();self.apply();last=(self.state/'applied.json').read_bytes()
         later=NOW+timedelta(minutes=1)
@@ -164,6 +369,10 @@ class ApplyTests(unittest.TestCase):
     def test_root_admin_guard_rejects_untrusted_path(self):
         admin=self.root/'untrusted.py';admin.write_text('print("bad")')
         with self.assertRaises(SyncError):_safe_root_program(admin)
-        self.assertTrue(_safe_root_program(Path('/usr/bin/env')).is_file())
+        # Some distributions symlink /usr/bin/env; the admin guard must
+        # require the resolved *regular*, root-owned executable instead.
+        self.assertTrue(_safe_root_program(Path(sys.executable).resolve()).is_file())
+        with self.assertRaisesRegex(SyncError, 'absolute'):
+            _safe_root_program(Path('relative-admin.py'))
 
 if __name__=='__main__':unittest.main()

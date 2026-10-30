@@ -143,6 +143,25 @@ def _etag(state):
     return etag
 
 
+
+def _read_fetch_metadata(path: Path):
+    """HTTP hints are disposable, unlike root replay/application receipts.
+
+    Fail closed on unsafe file ownership, symlinks, oversized data or I/O
+    errors. Only bounded JSON/metadata-format damage permits a full fetch.
+    """
+    try:
+        raw = _regular_read(path, 2048, forbidden=0o077, owner=os.geteuid())
+    except FileNotFoundError:
+        return None
+    try:
+        value = strict_load(raw, limit=2048)
+        _etag(value)
+        return value
+    except (SnapshotError, SyncError):
+        return None
+
+
 def _fetch_locked(*, url: str, device: str, trust_dir: Path, inbox_dir: Path,
                ca_file: Path | None = None, token_file: Path | None = None,
                timeout=8, now=None):
@@ -154,31 +173,30 @@ def _fetch_locked(*, url: str, device: str, trust_dir: Path, inbox_dir: Path,
     folder = owner_dir(inbox_dir, os.geteuid(), create=True)
     current = folder / "current.json"
     meta = folder / "fetch-state.json"
-    prior = read_state(meta, owner=os.geteuid(), optional=True)
-    old_etag = _etag(prior)
-    old_raw = None
-    if prior and current.exists():
+    prior = _read_fetch_metadata(meta)
+    old_etag = None
+    old_raw, old_payload = None, None
+    try:
         old_raw = _regular_read(current, MAX_ENVELOPE_BYTES, forbidden=0o077,
                                 owner=os.geteuid())
-        if hashlib.sha256(old_raw).hexdigest() != prior["envelope_sha256"]:
-            # Crash between atomic inbox and metadata writes. Force a full
-            # download instead of permanently deadlocking future updates.
-            old_raw, old_etag, old_payload = None, None, None
+    except FileNotFoundError:
+        pass
+    if old_raw is not None:
+        try:
+            # The signature, not a disposable HTTP sidecar, authenticates the
+            # cached sequence. Keep its rollback bound even after a torn write.
+            old_payload, _ = verify_envelope(old_raw, expected_device=device,
+                                             trust_dir=trust_dir, now=now,
+                                             allow_expired=True)
+        except (SnapshotError, FileNotFoundError):
+            # An invalid or retired cached signer cannot authorize any successor.
+            # The freshly downloaded envelope must pass independent verification.
+            old_raw, old_payload = None, None
         else:
-            try:
-                # An expired but once-valid snapshot must not stop fetching
-                # its successor. Never use an ETag for an expired snapshot.
-                old_payload, _ = verify_envelope(old_raw, expected_device=device,
-                                                 trust_dir=trust_dir, now=now,
-                                                 allow_expired=True)
-                expiry = datetime.fromisoformat(old_payload["valid_until"])
-                if expiry <= (now or now_utc()):
-                    old_etag = None
-            except SnapshotError:
-                # Key rotation can revoke a signer; force a fresh download.
-                old_raw, old_etag, old_payload = None, None, None
-    else:
-        old_etag, old_payload = None, None
+            if (prior is not None
+                    and hashlib.sha256(old_raw).hexdigest() == prior["envelope_sha256"]
+                    and timestamp(old_payload["valid_until"], "valid_until") > (now or now_utc())):
+                old_etag = _etag(prior)
     headers = {"Accept": "application/json", "Accept-Encoding": "identity",
                "Cache-Control": "no-cache", "User-Agent": "ALEPH-PolicySync/1"}
     if old_etag:
@@ -201,17 +219,25 @@ def _fetch_locked(*, url: str, device: str, trust_dir: Path, inbox_dir: Path,
             blob = response.read(MAX_ENVELOPE_BYTES + 1)
             new_etag = response.headers.get("ETag")
     except HTTPError as exc:
-        if exc.code == 304:
-            if old_raw is None or old_etag is None:
-                raise SyncError("unexpected 304 without a valid conditional request") from exc
-            return "not-modified"
-        raise SyncError(f"policy download HTTP error {exc.code}") from exc
+        try:
+            if exc.code == 304:
+                if old_raw is None or old_etag is None:
+                    raise SyncError("unexpected 304 without a valid conditional request") from exc
+                # A matching HTTP ETag does not renew signature validity or trust.
+                # Recheck at response time: the policy may have expired or its
+                # signing key may have been removed while HTTPS was in flight.
+                verify_envelope(old_raw, expected_device=device,
+                                trust_dir=trust_dir, now=now)
+                return "not-modified"
+            raise SyncError(f"policy download HTTP error {exc.code}") from exc
+        finally:
+            exc.close()
     except (URLError, TimeoutError, OSError) as exc:
         raise SyncError("policy HTTPS download failed") from exc
     if len(blob) > MAX_ENVELOPE_BYTES:
         raise SyncError("HTTP policy exceeds maximum size")
     payload, _ = verify_envelope(blob, expected_device=device, trust_dir=trust_dir, now=now)
-    if prior is not None and old_raw is not None:
+    if old_payload is not None:
         if payload["sequence"] < old_payload["sequence"]:
             raise SyncError("downloaded policy sequence rollback")
         if (payload["sequence"] == old_payload["sequence"]
@@ -228,7 +254,7 @@ def _fetch_locked(*, url: str, device: str, trust_dir: Path, inbox_dir: Path,
 
 
 def _safe_root_program(path: Path):
-    path = Path(path).absolute()
+    path = Path(path)
     if not path.is_absolute():
         raise SyncError("administrator program path must be absolute")
     for directory in (path.parent, *path.parents):
@@ -268,12 +294,51 @@ def _locked_attest(script: Path, digest: str):
         raise SyncError("DNS no longer attests the signed policy; inspect DNS service") from exc
 
 
+def _intent(payload, policy, digest):
+    """Small durable pre-publish journal. Not a committed replay watermark."""
+    return {"format": 1, "sequence": payload["sequence"],
+            "payload_sha256": digest, "policy_sha256": policy.digest}
+
+
+def _checked_intent(value):
+    if (type(value) is not dict or set(value) !=
+            {"format", "sequence", "payload_sha256", "policy_sha256"}
+            or type(value["format"]) is not int or value["format"] != 1
+            or type(value["sequence"]) is not int
+            or not 1 <= value["sequence"] <= (1 << 63) - 1
+            or any(not isinstance(value[k], str) or
+                   re.fullmatch(r"[0-9a-f]{64}", value[k]) is None
+                   for k in ("payload_sha256", "policy_sha256"))):
+        raise SyncError("invalid pending signed-policy intent")
+    return value
+
+
+def _attest_policy(admin, digest, attestor):
+    if attestor is None:
+        _locked_attest(admin, digest)
+    else:
+        attestor(digest)
+
+
+def _delete_intent(path):
+    if path.is_symlink():
+        raise SyncError("unsafe pending intent symlink")
+    path.unlink()
+    fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
 def _apply_locked(*, device: str, trust_dir: Path, inbox_dir: Path,
                fetch_user: str, state_dir: Path, dns_admin: Path, now=None,
                publisher=None, attestor=None):
-    """Root-only: reverify the signed input, publish, THEN persist replay watermark.
+    """Prepare a durable intent, publish, then commit the replay watermark.
 
-    Never performs HTTP requests; rejects snapshots below the last good sequence.
+    The journal is not evidence of a successful publish. A failed metadata
+    write is retryable only with the identical signed input; a different
+    release must not silently supersede a possibly-applied predecessor.
     """
     if os.geteuid() != 0:
         raise SyncError("apply must run as root")
@@ -289,8 +354,15 @@ def _apply_locked(*, device: str, trust_dir: Path, inbox_dir: Path,
     payload, policy = verify_envelope(raw, expected_device=device, trust_dir=trust_dir, now=now)
     dest = owner_dir(state_dir, 0, create=True)
     metadata_path = dest / "applied.json"
+    pending_path = dest / "pending-apply.json"
+    candidate = dest / "pending-policy.json"
     previous = read_state(metadata_path, owner=0, optional=True)
+    pending = read_state(pending_path, owner=0, optional=True)
+    if pending is not None:
+        pending = _checked_intent(pending)
     digest = hashlib.sha256(canonical(payload)).hexdigest()
+    incoming = _intent(payload, policy, digest)
+    attested_prior = False
     if previous is not None:
         if (not isinstance(previous, dict) or
             set(previous) != {"sequence", "payload_sha256", "policy_sha256", "applied_at"}):
@@ -310,30 +382,67 @@ def _apply_locked(*, device: str, trust_dir: Path, inbox_dir: Path,
             raise SyncError("local clock rollback detected")
         if payload["sequence"] < prior_seq:
             raise SyncError("signed policy rollback rejected")
+        if pending is not None and pending["sequence"] == prior_seq:
+            if (pending["payload_sha256"] != previous["payload_sha256"]
+                    or pending["policy_sha256"] != previous["policy_sha256"]):
+                raise SyncError("pending intent conflicts with recorded application")
+            # Metadata was committed but cleanup interrupted. Do not discard
+            # the journal without verifying the policy still active in DNS.
+            _attest_policy(dns_admin, previous["policy_sha256"], attestor)
+            attested_prior = True
+            _delete_intent(pending_path)
+            pending = None
         if payload["sequence"] == prior_seq:
             if (digest != previous["payload_sha256"]
                     or policy.digest != previous["policy_sha256"]):
                 raise SyncError("conflicting policy at same signed sequence")
-            # Root metadata by itself is not a live DNS attestation: the local
-            # policy may have been withdrawn, replaced or its firewall removed.
-            # Check without rewriting the DNS policy or extending the sequence.
-            if attestor is None:
-                _locked_attest(dns_admin, policy.digest)
-            else:
-                attestor(policy.digest)  # offline test injection only
+            if pending is not None:
+                raise SyncError("another signed policy application is still pending")
+            if not attested_prior:
+                _attest_policy(dns_admin, policy.digest, attestor)
             return "already-applied"
-    # The policy applied by the signed producer is always canonicalised before
-    # invoking existing trusted DNS publish machinery.
-    candidate = dest / "pending-policy.json"
+    if pending is not None and pending != incoming:
+        # The downloader may already have replaced an unfinished release with
+        # a newer signed one. Recover what actually reached the live resolver,
+        # rather than deadlocking solely because the old inbox has vanished.
+        if (pending["sequence"] >= incoming["sequence"] or
+                previous is not None and pending["sequence"] <= previous["sequence"]):
+            raise SyncError("unfinished signed-policy application; retry the original release first")
+        try:
+            _attest_policy(dns_admin, pending["policy_sha256"], attestor)
+        except SyncError as pending_error:
+            if previous is None:
+                raise SyncError("unfinished signed-policy application; no verified fallback DNS policy") from pending_error
+            # A newer signed policy may replace an abandoned attempt only if
+            # the previous recorded policy is demonstrably STILL active.
+            _attest_policy(dns_admin, previous["policy_sha256"], attestor)
+        else:
+            # Publisher succeeded, but saving the old replay watermark failed.
+            # Repair it from the durable root-owned intent before advancing.
+            reconciled = {"sequence": pending["sequence"],
+                          "payload_sha256": pending["payload_sha256"],
+                          "policy_sha256": pending["policy_sha256"],
+                          "applied_at": (now or now_utc()).isoformat()}
+            atomic_private(metadata_path, canonical(reconciled) + b"\n", owner=0)
+        _delete_intent(pending_path)
+        pending = None
+    if pending is None:
+        # This record survives a publisher success followed by a failed local
+        # watermark write. It also prevents a newer release from skipping the
+        # recovery of an older partially-applied one.
+        atomic_private(pending_path, canonical(incoming) + b"\n", owner=0)
     atomic_private(candidate, canonical(payload["policy"]) + b"\n", owner=0)
     if publisher is None:
         _locked_publish(dns_admin, candidate)
     else:
         publisher(candidate)  # dependency injection only for offline tests
-    accepted = {"sequence":payload["sequence"], "payload_sha256":digest,
-                "policy_sha256":policy.digest, "applied_at":(now or now_utc()).isoformat()}
+    accepted = {"sequence": payload["sequence"], "payload_sha256": digest,
+                "policy_sha256": policy.digest, "applied_at": (now or now_utc()).isoformat()}
     atomic_private(metadata_path, canonical(accepted) + b"\n", owner=0)
+    # After the replay watermark is durably committed, leftover cleanup is
+    # recoverable via the same-sequence live attestation path above.
     candidate.unlink()
+    _delete_intent(pending_path)
     return "applied"
 
 

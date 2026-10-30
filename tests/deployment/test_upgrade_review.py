@@ -322,10 +322,12 @@ class LegacyFixtureTests(unittest.TestCase):
         if not unshare or not Path('/usr/sbin/nft').exists():
             if required: self.fail('unshare and nft are required')
             self.skipTest('unshare or nft unavailable')
-        probe = subprocess.run([unshare, *flags, 'true'], capture_output=True, text=True)
+        probe = subprocess.run([unshare, *flags, '/usr/sbin/nft', '-f', '/dev/stdin'],
+                               input='add table inet aleph_probe\ndelete table inet aleph_probe\n',
+                               capture_output=True, text=True)
         if probe.returncode:
-            if required: self.fail('network namespace unavailable: ' + probe.stderr)
-            self.skipTest('network namespace unavailable')
+            if required: self.fail('nftables mutation unavailable inside network namespace: ' + probe.stderr)
+            self.skipTest('nftables mutation unavailable: ' + probe.stderr.strip())
         script = '''
 import importlib.util, json, subprocess, sys
 spec = importlib.util.spec_from_file_location('guard', sys.argv[1])

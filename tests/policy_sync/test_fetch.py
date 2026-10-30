@@ -7,9 +7,13 @@ import os
 import ssl
 import tempfile
 import threading
+import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest import TestCase, skipIf
 from unittest.mock import patch
+from urllib.error import HTTPError
+
+from aleph_policy_sync import sync
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -161,6 +165,94 @@ class FetchTests(TestCase):
             state.write_text(json.dumps(meta));state.chmod(0o600)
             self.assertEqual(self.download(server),'downloaded')
             self.assertIsNone(server.calls[-1][1])
+
+    def test_revoked_cached_key_does_not_prevent_trusted_successor(self):
+        with FixtureServer(self.root) as server:
+            server.body=self.signed()
+            self.download(server)
+            retired=public_key_id(self.key.public_key())
+            self.key=ed25519.Ed25519PrivateKey.generate()
+            trust(self.trust,self.key)
+            (self.trust/(retired+'.pem')).unlink()
+            later=NOW+timedelta(minutes=1)
+            server.etag='"successor"';server.body=self.signed(2,later)
+            try:
+                result=self.download(server,at=later)
+            except OSError as exc:
+                self.fail(f'retired cached signer blocked a trusted new download: {exc}')
+            self.assertEqual(result,'downloaded')
+            self.assertIsNone(server.calls[-1][1])
+            self.assertEqual((self.inbox/'current.json').read_bytes(),server.body)
+
+    def test_revoked_cached_key_never_authorizes_an_unknown_successor(self):
+        with FixtureServer(self.root) as server:
+            server.body=self.signed()
+            self.download(server)
+            previous=(self.inbox/'current.json').read_bytes()
+            retired=public_key_id(self.key.public_key())
+            self.key=ed25519.Ed25519PrivateKey.generate()  # intentionally NOT trusted
+            (self.trust/(retired+'.pem')).unlink()
+            later=NOW+timedelta(minutes=1)
+            server.etag='"unknown"';server.body=self.signed(2,later)
+            before=len(server.calls)
+            with self.assertRaises((SnapshotError,FileNotFoundError)):
+                self.download(server,at=later)
+            self.assertEqual(len(server.calls),before+1,
+                             'fresh download must be checked independently of the retired cache')
+            self.assertIsNone(server.calls[-1][1])
+            self.assertEqual((self.inbox/'current.json').read_bytes(),previous)
+
+    def _advance_on_304(self, clock, *, revoke=False):
+        # Keep real localhost TLS and Ed25519 checks. Only inject what changes
+        # while the request is in flight; no wall-clock sleep is needed.
+        make_opener=sync.build_opener
+        def factory(*handlers):
+            opener=make_opener(*handlers)
+            open_request=opener.open
+            def intercepted(*args,**kwargs):
+                try:
+                    return open_request(*args,**kwargs)
+                except HTTPError as exc:
+                    if exc.code==304:
+                        if revoke:
+                            kid=public_key_id(self.key.public_key())
+                            (self.trust/(kid+'.pem')).unlink()
+                        else:
+                            clock[0]=NOW+timedelta(minutes=12,seconds=1)
+                    raise
+            opener.open=intercepted
+            return opener
+        return factory
+
+    def test_304_cannot_confirm_a_policy_that_expired_in_flight(self):
+        with FixtureServer(self.root) as server:
+            server.body=self.signed()
+            self.download(server)
+            before=(self.inbox/'current.json').read_bytes()
+            metadata=(self.inbox/'fetch-state.json').read_bytes()
+            clock=[NOW+timedelta(minutes=11)]
+            with patch('aleph_policy_sync.snapshot.now_utc',side_effect=lambda:clock[0]), \
+                 patch('aleph_policy_sync.sync.now_utc',side_effect=lambda:clock[0]), \
+                 patch('aleph_policy_sync.sync.build_opener',side_effect=self._advance_on_304(clock)):
+                with self.assertRaises((SyncError,SnapshotError)):
+                    self.download(server,at=None)
+            self.assertEqual((self.inbox/'current.json').read_bytes(),before)
+            self.assertEqual((self.inbox/'fetch-state.json').read_bytes(),metadata)
+
+    def test_304_cannot_confirm_a_signer_revoked_in_flight(self):
+        with FixtureServer(self.root) as server:
+            server.body=self.signed()
+            self.download(server)
+            before=(self.inbox/'current.json').read_bytes()
+            metadata=(self.inbox/'fetch-state.json').read_bytes()
+            clock=[NOW]
+            with patch('aleph_policy_sync.snapshot.now_utc',side_effect=lambda:clock[0]), \
+                 patch('aleph_policy_sync.sync.now_utc',side_effect=lambda:clock[0]), \
+                 patch('aleph_policy_sync.sync.build_opener',side_effect=self._advance_on_304(clock,revoke=True)):
+                with self.assertRaises((SyncError,SnapshotError,FileNotFoundError)):
+                    self.download(server,at=None)
+            self.assertEqual((self.inbox/'current.json').read_bytes(),before)
+            self.assertEqual((self.inbox/'fetch-state.json').read_bytes(),metadata)
 
     def test_never_accept_plaintext_credentials_redirects_or_fragments(self):
         for url in ('http://localhost/policy.json','https://u:p@host/policy',
