@@ -9,6 +9,11 @@
 | `apps/dns-agent/` · `infra/edge/` | 허용된 LAN 클라이언트의 기본 SUBTREE BLOCK → NXDOMAIN, 적용·만료·복구 |
 | `apps/warning-portal/` | 독립 안내 화면. 선택형 **평문 HTTP 실습**은 별도 응답 방식이며 HTTPS 해결책이 아님 |
 
+
+## 운영자 관제 GUI
+
+`policy_server.console`은 로컬 전용 인증형 대시보드입니다. 검증 후보 검토, 블랙리스트 정책 초안 생성, EXACT 제안 엔진 설정, 서명된 게시 정책 조회 및 감사 기록을 제공합니다. 실제 정책 생성기와 서명 검증기를 재사용하며 **서명·발행·DNS 적용은 분리**합니다. [설치 및 제한 사항](apps/policy-server/CONSOLE.md)을 참고하세요.
+
 ## 설치·사용
 
 Linux/systemd와 Python 3.11+가 필요합니다. DNS 서버에는 `dnsmasq-base dnsutils nftables iproute2 python3-cryptography`, 원격 서버에는 `python3-cryptography nginx`를 준비합니다. 두 서버는 **같은 검토된 커밋**을 사용하세요.

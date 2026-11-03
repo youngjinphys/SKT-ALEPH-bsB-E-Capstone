@@ -44,6 +44,10 @@ jobs:
           bash -n scripts/deploy/install-policy-server.sh
           bash -n scripts/deploy/install-dns-server.sh
           python3 -m compileall -q apps/policy-server/src/policy_server
+      - name: Verify bundled console JavaScript syntax
+        run: |
+          python3 -c "from policy_server.console_script import JS; open('/tmp/aleph-ops-console.js', 'w', encoding='utf-8').write(JS)"
+          node --check /tmp/aleph-ops-console.js
       - name: Preview independent server installers without mutating DNS
         run: |
           tmp=$(mktemp -d)
