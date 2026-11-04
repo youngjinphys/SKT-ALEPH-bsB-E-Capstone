@@ -15,6 +15,7 @@
 .deck-root .reference-slide-group summary:focus-visible,.deck-root .reference-slide-group a:focus-visible{outline:3px solid #ffcf91;outline-offset:3px}
 .deck-root .reference-slide-footnote{margin:14px 0 0}
 /* A bibliography is a document: use the outer viewport's natural scroll flow. */
+.deck-root .deck-viewport:has(.slide-active .slide-sources){overflow-y:auto;overflow-x:hidden}
 .deck-root .deck-stage:has(>.slide-active .slide-sources){height:auto;min-height:100%;overflow:visible}
 .deck-root .deck-stage>.slide-active:has(.slide-sources){position:relative;height:auto;min-height:100%;overflow:visible}
 .deck-root .slide-sources{height:auto;min-height:100%}
