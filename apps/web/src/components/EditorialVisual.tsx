@@ -4,7 +4,7 @@ import {useStageIntroduction} from "./useStageIntroduction";
 import "./stage-introduction.css";
 import {useDiagramVisibility} from "./useDiagramVisibility";
 import type {DeckSlide,SourceRegistry} from "@/lib/deck";
-import {TermExplanation,TermDefinition} from "./TermExplanation";
+import {TermExplanation,TermTarget} from "./TermExplanation";
 import {CnameWalkthrough} from "./CnameWalkthrough";
 import {ServerDnsObservation} from "./ServerDnsObservation";
 import "./server-dns-observation.css";
@@ -49,7 +49,7 @@ export function AdoptionCompare({paused=false}:{paused?:boolean}){
  const lanes=diagrams.protectionRoles;
  const selected=lanes.find(l=>l.id===active)!;
  return <TermExplanation term="fqdn" paused={paused}><section className="diagram-panel editorial-adoption" aria-label="브라우저, 추가 보안 앱, 보호 DNS의 보완 역할">
-  <p className="diagram-caption fqdn-caption">조회 이름 · <span data-term-target="fqdn">FQDN</span></p><TermDefinition term="fqdn"/><h2>기존 보호에 DNS 방어를 더합니다</h2>
+  <p className="diagram-caption fqdn-caption">조회 이름 · <TermTarget term="fqdn">FQDN</TermTarget></p><h2>기존 보호에 DNS 방어를 더합니다</h2>
   <div className="adoption-lanes" role="group" aria-label="보호 역할 선택">{lanes.map((l,i)=><button type="button" className={"adoption-lane adoption-"+l.id} key={l.id} aria-pressed={active===l.id} aria-controls="adoption-role-detail" onClick={()=>setActive(l.id)}>
    <span className="adoption-role"><span aria-hidden="true">0{i+1}</span><span><small>{l.kicker}</small><strong>{l.title}</strong></span></span>
    <span className="adoption-target">{l.target}</span>

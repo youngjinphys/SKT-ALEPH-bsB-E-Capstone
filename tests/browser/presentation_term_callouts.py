@@ -21,7 +21,7 @@ def _assert_clear(scene, required=False):
     scene.evaluate("el => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))")
     result = scene.evaluate("""root => {
         const note = root.querySelector('.term-note'), target = root.querySelector('[data-term-target]');
-        const described = target.getAttribute('aria-describedby')?.split(/\\s+/).includes(note.id);
+        const described = target.getAttribute('aria-describedby')?.split(/\\s+/).some(id => document.getElementById(id)?.textContent.includes(target.textContent.trim()));
         const svg = root.querySelector('.term-leader');
         // A dense layout may omit the decorative leader rather than cover text.
         // The definition and its accessible association must still be present.
@@ -40,7 +40,7 @@ def _assert_clear(scene, required=False):
         while ((node = walker.nextNode())) {
             if (!node.textContent.trim()) continue;
             const parent = node.parentElement, css = getComputedStyle(parent);
-            if (css.visibility === 'hidden' || css.visibility === 'collapse' || parent.closest('[hidden],svg,script,style')) continue;
+            if (css.visibility === 'hidden' || css.visibility === 'collapse' || parent.closest('[hidden],.sr-only,.term-note,svg,script,style')) continue;
             range.selectNodeContents(node);
             for (const r of range.getClientRects()) if (r.width && r.height)
                 obstacles.push({left:r.left-2, top:r.top-2, right:r.right+2, bottom:r.bottom+2});
@@ -72,50 +72,65 @@ def _assert_clear(scene, required=False):
     return result
 
 
-def _assert_near_word(scene):
-    """The definition reserves a local row and never covers existing content."""
+def _assert_overlay(scene):
+    """HUD uses existing background and never changes underlying geometry."""
     result = scene.evaluate("""root => {
-        const note=root.querySelector('.term-note'), dock=note.parentElement;
-        const target=root.querySelector('[data-term-target]');
-        const slot=dock.getBoundingClientRect(), box=note.getBoundingClientRect(), word=target.getBoundingClientRect();
-        const scale=slot.width/dock.offsetWidth || 1;
-        const before=dock.previousElementSibling;
-        const adjacent=before===target || before?.contains(target);
-        const ids=[...document.querySelectorAll('[id]')].filter(el=>el.id===note.id).length;
-        const failures=[];
-        if(!adjacent)failures.push('definition is not immediately after its word/caption');
-        if(box.left<slot.left-1 || box.right>slot.right+1 || box.top<slot.top-1 || box.bottom>slot.bottom+1)failures.push('definition leaves reserved row');
-        const gap=(box.top-word.bottom)/scale;
-        if(gap<0 || gap>72)failures.push(`definition is too far from word: ${gap}px`);
-        if((word.left+word.right)/2<box.left-1 || (word.left+word.right)/2>box.right+1)failures.push('definition does not align toward word');
-        // scrollWidth includes the translated decorative ::before sheen. Test
-        // rendered glyphs instead so decoration cannot masquerade as clipped text.
-        const noteWalker=document.createTreeWalker(note,NodeFilter.SHOW_TEXT),noteRange=document.createRange();
-        let noteNode;
-        while((noteNode=noteWalker.nextNode())){
-            if(!noteNode.textContent.trim())continue;
-            noteRange.selectNodeContents(noteNode);
-            for(const r of noteRange.getClientRects())if(r.width&&r.height &&
-                (r.left<box.left-1 || r.right>box.right+1 || r.top<box.top-1 || r.bottom>box.bottom+1))
-                failures.push('definition text clips');
-        }
+        const note=root.querySelector('.term-note'), target=root.querySelector('[data-term-target]');
+        const box=note.getBoundingClientRect(), word=target.getBoundingClientRect(), scale=root.getBoundingClientRect().width/root.offsetWidth || 1;
+        const failures=[], visible=getComputedStyle(note).visibility==='visible';
+        if(getComputedStyle(note).position!=='absolute'||note.parentElement!==root)failures.push('HUD is not a scene overlay');
+        if(root.querySelector('.term-dock'))failures.push('HUD still reserves a row');
+        const elements=[root,...root.querySelectorAll('.term-anchor,.diagram-panel,button,.restored-node,.chain-step,.cname-link')];
+        const geometry=()=>elements.map(el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height]});
+        const before=geometry();note.style.display='none';const after=geometry();note.style.display='';
+        if(before.some((r,i)=>r.some((v,k)=>Math.abs(v-after[i][k])>.1)))failures.push('HUD reflows underlying content');
+        if(!visible)return {failures,visible,layout:root.dataset.termLayout};
+        const gap=Math.hypot(Math.max(0,word.left-box.right,box.left-word.right),Math.max(0,word.top-box.bottom,box.top-word.bottom))/scale;
+        if(gap>181)failures.push('HUD too far from target');
+        if(box.left<-.5||box.right>innerWidth+.5||box.top<-.5||box.bottom>innerHeight+.5)failures.push('HUD leaves viewport');
         const overlaps=r=>Math.min(box.right,r.right)-Math.max(box.left,r.left)>1 && Math.min(box.bottom,r.bottom)-Math.max(box.top,r.top)>1;
-        const walker=document.createTreeWalker(root.querySelector('.term-anchor'),NodeFilter.SHOW_TEXT),range=document.createRange();
+        const walker=document.createTreeWalker(root.closest('.deck-slide'),NodeFilter.SHOW_TEXT),range=document.createRange();
         let node;
         while((node=walker.nextNode())){
-            if(!node.textContent.trim() || note.contains(node))continue;
+            if(!node.textContent.trim())continue;
             const parent=node.parentElement,css=getComputedStyle(parent);
-            if(css.visibility==='hidden'||css.visibility==='collapse'||parent.closest('[hidden],svg,script,style'))continue;
+            if(css.visibility==='hidden'||css.visibility==='collapse'||parent.closest('[hidden],.sr-only,.term-note,svg,script,style'))continue;
             range.selectNodeContents(node);
-            for(const r of range.getClientRects())if(r.width&&r.height&&overlaps(r))failures.push('definition covers neighboring text');
+            for(const r of range.getClientRects())if(r.width&&r.height&&overlaps(r))failures.push('HUD covers diagram text');
         }
-        for(const control of root.querySelectorAll('button,input,select,textarea,.chain-step,.cname-arrow'))
-            if(control.getClientRects().length && overlaps(control.getBoundingClientRect()))failures.push('definition covers control/card/arrow');
-        return {failures,gap,ids,term:root.dataset.term};
+        for(const control of root.closest('.deck-slide').querySelectorAll('button,input,select,textarea,.restored-node,.chain-step,.cname-arrow,.slide-point'))
+            if(control.getClientRects().length&&overlaps(control.getBoundingClientRect()))failures.push('HUD covers control/card/arrow');
+        const noteWalker=document.createTreeWalker(note,NodeFilter.SHOW_TEXT);
+        while((node=noteWalker.nextNode())){
+            if(!node.textContent.trim())continue;
+            range.selectNodeContents(node);
+            for(const r of range.getClientRects())if(r.width&&r.height&&(r.left<box.left-1||r.right>box.right+1||r.top<box.top-1||r.bottom>box.bottom+1))failures.push('HUD text clips');
+        }
+        return {failures,gap,visible,layout:root.dataset.termLayout};
     }""")
     assert not result['failures'], result
-    assert result['ids'] == 1, result
+    assert result['layout'] == ('overlay' if result['visible'] else 'on-demand'), result
     return result
+
+
+def _assert_dialog(page, scene):
+    target=scene.locator('[data-term-target]').first
+    target.focus()
+    page.keyboard.press('Enter')
+    dialog=page.locator('.term-definition-dialog[open]')
+    expect(dialog).to_be_visible()
+    before=page.url
+    page.keyboard.press('ArrowRight')
+    assert page.url == before, 'Dialog must own its keyboard interaction'
+    result=dialog.evaluate("""el=>{
+        const r=el.getBoundingClientRect();
+        return {viewport:r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight,
+            readable:getComputedStyle(el).fontSize,close:!!el.querySelector('button'),text:el.textContent.length};
+    }""")
+    assert result['viewport'] and result['close'] and result['text']>30, result
+    page.keyboard.press('Escape')
+    expect(dialog).to_have_count(0)
+    expect(target).to_be_focused()
 
 
 def _assert_chain_connectors(scene):
@@ -140,6 +155,7 @@ def _assert_chain_connectors(scene):
 def check_term_callouts(browser, origin):
     page = browser.new_page(reduced_motion='reduce')
     errors = []
+    overlays = 0
     page.on('pageerror', lambda error: errors.append(str(error)))
     try:
         # The SNI precedent was intentionally removed from the authored table.
@@ -164,20 +180,23 @@ def check_term_callouts(browser, origin):
                 if term == 'cname':
                     _assert_chain_connectors(scene)
                 baseline = (width, height) == (1440, 900)
-                result = _assert_clear(scene, required=baseline)
+                _assert_clear(scene)
+                placement = _assert_overlay(scene)
+                overlays += placement["visible"]
+                if baseline and term == "dnsmasq":
+                    assert placement["visible"], "Reported spacious DNS case must show the background HUD"
+                _assert_dialog(page, scene)
                 if width in (1440, 390, 320) and height != 667:
                     screenshots = Path(os.environ.get('ALEPH_CALLOUT_SCREENSHOTS', '/tmp/aleph-build-artifacts/callouts'))
                     screenshots.mkdir(parents=True, exist_ok=True)
-                    scene.locator('.term-note').scroll_into_view_if_needed()
+                    scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                     page.screenshot(path=str(screenshots / f'{term}-{width}x{height}.png'))
-                _assert_near_word(scene)
-                if term == 'dnsmasq' and baseline:
-                    assert result['side'] == 'bottom', result
+                _assert_overlay(scene)
                 # Reflow at fractional browser zoom, then nested slide scrolling.
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = '1.25'; }")
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 _assert_clear(scene)
-                _assert_near_word(scene)
+                _assert_overlay(scene)
                 if term == 'cname':
                     _assert_chain_connectors(scene)
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
@@ -187,13 +206,15 @@ def check_term_callouts(browser, origin):
                     page.get_by_role('button', name='CNAME 보호 공백', exact=True).click()
                     scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                     _assert_clear(scene)
-                    _assert_near_word(scene)
-                # Large zoom must reflow the same local row, not revive a remote HUD.
+                    _assert_overlay(scene)
+                # Large zoom must never create a row or cover content to force a HUD.
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = '2'; }")
-                scene.locator('.term-note').scroll_into_view_if_needed()
+                scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 _assert_clear(scene)
-                _assert_near_word(scene)
+                _assert_overlay(scene)
+                _assert_dialog(page, scene)
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
+        assert overlays > 0, 'At least one spacious layout must render the requested automatic HUD'
         assert not errors, errors
     finally:
         page.close()

@@ -166,6 +166,16 @@ def check_controls(page, origin, slides):
             button.focus()
             _assert_focus_indicator(button, context)
             page.keyboard.press(activation)
+        if button.get_attribute("data-term-target"):
+            # Definitions are dialogs, not display-choice buttons. Their native
+            # focus owner keeps arrows until Escape returns to the original word.
+            dialog = page.locator(".term-definition-dialog[open]")
+            expect(dialog).to_be_visible()
+            before = page.url
+            page.keyboard.press("ArrowRight")
+            assert page.url == before, context
+            page.keyboard.press("Escape")
+            expect(dialog).to_have_count(0)
         expect(button).to_be_focused()
         if pressed is not None:
             expected = "false" if full_toggle and pressed == "true" else "true"

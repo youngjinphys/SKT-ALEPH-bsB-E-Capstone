@@ -39,11 +39,12 @@ function simplify(points:LeaderPoint[]):LeaderPoint[] {
  * corridors. Text, controls and the note are hard exclusions, not score penalties.
  * A crowded layout may omit the decorative leader; it must never obscure content.
  */
-export function routeTermLeader({targets,text,controls=[],note,anchor,width,height}:{targets:LeaderRect[];text:LeaderRect[];controls?:LeaderRect[];note:LeaderRect;anchor:LeaderRect;width:number;height:number}):TermLeader|null {
+export function routeTermLeader({targets,text,controls=[],note,anchor,width,height,bounds:availableBounds}:{targets:LeaderRect[];text:LeaderRect[];controls?:LeaderRect[];note:LeaderRect;anchor:LeaderRect;width:number;height:number;bounds?:LeaderRect}):TermLeader|null {
  if(width<=0||height<=0||!targets.length)return null;
  const obstacles=[...text,...targets].map(r=>inflate(r,LEADER_TEXT_GAP)).concat(controls.map(r=>inflate(r,LEADER_TEXT_GAP)),[note]);
  const markerObstacles=[...text,...targets].map(r=>inflate(r,LEADER_TEXT_GAP+LEADER_MARKER_RADIUS)).concat(controls.map(r=>inflate(r,LEADER_MARKER_RADIUS)),[inflate(note,LEADER_MARKER_RADIUS)]);
- const bounds={left:LEADER_MARKER_RADIUS,top:LEADER_MARKER_RADIUS,right:width-LEADER_MARKER_RADIUS,bottom:height-LEADER_MARKER_RADIUS};
+ const available=availableBounds??{left:0,top:0,right:width,bottom:height};
+ const bounds={left:available.left+LEADER_MARKER_RADIUS,top:available.top+LEADER_MARKER_RADIUS,right:available.right-LEADER_MARKER_RADIUS,bottom:available.bottom-LEADER_MARKER_RADIUS};
  const inBounds=(p:LeaderPoint)=>p.x>=bounds.left&&p.x<=bounds.right&&p.y>=bounds.top&&p.y<=bounds.bottom;
  const clear=(points:LeaderPoint[])=>points.every(inBounds)&&points.slice(1).every((point,index)=>obstacles.every(r=>!leaderSegmentIntersectsRect(points[index],point,r)));
  // Exterior gutters are reserved by CSS. Obstacle edges supply interior lanes
@@ -104,12 +105,23 @@ export function relativeLeaderRect(rect:LeaderRect,scene:Pick<LeaderRect,"left"|
  return {left:rect.left-scene.left,top:rect.top-scene.top,right:rect.right-scene.left,bottom:rect.bottom-scene.top};
 }
 
-/** Nearest horizontal position in the definition's own, reserved layout row.
- * Input and output are rendered coordinates; caller converts once to CSS pixels.
- * Keeping the whole box inside this row makes overlap impossible by construction.
- */
-export function nearestTermNoteOffset(target:LeaderRect,slot:LeaderRect,noteWidth:number):number {
- const available=Math.max(0,slot.right-slot.left);
- if(!Number.isFinite(noteWidth)||noteWidth<=0||available<=0)return 0;
- return clamp((target.left+target.right)/2-slot.left-noteWidth/2,0,Math.max(0,available-noteWidth));
+/** A real overlay may use only existing empty background. Text/card collisions
+ * are hard constraints, never a distance penalty. All units are rendered pixels. */
+export function placeTermNote({target,bounds,width,height,obstacles,gap=8,maxDistance=180}:{target:LeaderRect;bounds:LeaderRect;width:number;height:number;obstacles:LeaderRect[];gap?:number;maxDistance?:number}):{rect:LeaderRect;score:number}|null {
+ if(width<=0||height<=0||width>bounds.right-bounds.left||height>bounds.bottom-bounds.top)return null;
+ const blocked=obstacles.map(rect=>inflate(rect,gap));
+ const cx=(target.left+target.right)/2,cy=(target.top+target.bottom)/2;
+ const xs=[cx-width/2,target.right+gap,target.left-width-gap,bounds.left,bounds.right-width,...blocked.flatMap(r=>[r.right,r.left-width])];
+ const ys=[cy-height/2,target.bottom+gap,target.top-height-gap,bounds.top,bounds.bottom-height,...blocked.flatMap(r=>[r.bottom,r.top-height])];
+ const unique=(values:number[],low:number,high:number,center:number,size:number)=>[...new Set(values.map(value=>clamp(value,low,high)))].sort((a,b)=>Math.abs(a+size/2-center)-Math.abs(b+size/2-center)).slice(0,40);
+ let best:{rect:LeaderRect;score:number}|null=null;
+ for(const left of unique(xs,bounds.left,bounds.right-width,cx,width))for(const top of unique(ys,bounds.top,bounds.bottom-height,cy,height)){
+  const rect={left,top,right:left+width,bottom:top+height};
+  const dx=Math.max(0,target.left-rect.right,rect.left-target.right),dy=Math.max(0,target.top-rect.bottom,rect.top-target.bottom);
+  const distance=Math.hypot(dx,dy);
+  if(distance>maxDistance||blocked.some(r=>Math.min(rect.right,r.right)>Math.max(rect.left,r.left)+EPSILON&&Math.min(rect.bottom,r.bottom)>Math.max(rect.top,r.top)+EPSILON))continue;
+  const score=distance+Math.hypot(left+width/2-cx,top+height/2-cy)*.1;
+  if(!best||score<best.score)best={rect,score};
+ }
+ return best;
 }

@@ -1,6 +1,6 @@
 "use client";
 import {Fragment} from "react";
-import {TermDefinition} from "./TermExplanation";
+import {TermTarget} from "./TermExplanation";
 import {DiagramText} from "./DiagramText";
 import type {DeckSlide} from "@/lib/deck";
 import {useDiagramPlayback} from "./useDiagramPlayback";
@@ -18,7 +18,7 @@ export function CnameWalkthrough({visual,paused=false}:{visual:CnameVisual;pause
    <span>{node.label}</span><strong>{node.value}</strong>
    <b data-state={node.state}>{["ALLOW","BLOCK"].includes(node.state)?`정책 ${node.state}`:node.state==="A"?"A 레코드":node.state}</b>
   </div>
-   {i<visual.links.length&&<div className="cname-link" data-active={step===i}><span className="cname-arrow" aria-hidden="true"><i key={epoch} className="cname-packet"/>↓</span><span className="cname-link-label" data-term-target={visual.links[i]==="CNAME"?"cname":undefined}>{visual.links[i]}</span>{visual.links[i]==="CNAME"&&<TermDefinition term="cname"/>}</div>}
+   {i<visual.links.length&&<div className="cname-link" data-active={step===i}><span className="cname-arrow" aria-hidden="true"><i key={epoch} className="cname-packet"/>↓</span>{visual.links[i]==="CNAME"?<TermTarget className="cname-link-label" term="cname">{visual.links[i]}</TermTarget>:<span className="cname-link-label">{visual.links[i]}</span>}</div>}
   </Fragment>)}</div>
   <p className="cname-progress" aria-live={automatic?"off":"polite"} aria-atomic="true">
    {/* Reserve the tallest authored phase at this width. Hidden copies affect

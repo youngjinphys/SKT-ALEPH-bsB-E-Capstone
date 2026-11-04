@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {LEADER_TEXT_GAP,LEADER_MARKER_RADIUS,leaderSegmentIntersectsRect,relativeLeaderRect,routeTermLeader,nearestTermNoteOffset} from '../../apps/web/src/components/term-leader-geometry.ts';
+import {LEADER_TEXT_GAP,LEADER_MARKER_RADIUS,leaderSegmentIntersectsRect,relativeLeaderRect,routeTermLeader,placeTermNote} from '../../apps/web/src/components/term-leader-geometry.ts';
 
 const rect=(left,top,right,bottom)=>({left,top,right,bottom});
 const expand=(r,n)=>rect(r.left-n,r.top-n,r.right+n,r.bottom+n);
@@ -89,15 +89,35 @@ test('dense 100/200-fragment layouts stay clear while neighboring nodes move',()
 });
 
 
-test('local note chooses the nearest safe horizontal position without leaving its row',()=>{
- const slot=rect(20,100,620,250);
- assert.equal(nearestTermNoteOffset(rect(35,70,75,90),slot,300),0);
- assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,300),150);
- assert.equal(nearestTermNoteOffset(rect(580,70,610,90),slot,300),300);
- assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,600),0);
- assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,0),0);
+test('HUD uses existing clear background near the word without covering text or cards',()=>{
+ const target=rect(100,30,160,48),bounds=rect(0,0,800,500),obstacles=[rect(30,30,290,48),rect(30,70,270,130),rect(350,220,760,330)];
+ const placed=placeTermNote({target,bounds,width:320,height:120,obstacles});
+ assert.ok(placed);
+ for(const r of obstacles.map(r=>expand(r,8)))assert.ok(placed.rect.right<=r.left||placed.rect.left>=r.right||placed.rect.bottom<=r.top||placed.rect.top>=r.bottom);
+ assert.ok(placed.rect.left>=bounds.left&&placed.rect.right<=bounds.right&&placed.rect.top>=bounds.top&&placed.rect.bottom<=bounds.bottom);
+ assert.deepEqual(placeTermNote({target,bounds,width:320,height:120,obstacles}),placed);
+});
+
+test('a crowded/narrow viewport requests on-demand content instead of reflow or overlap',()=>{
+ const target=rect(100,30,160,48);
+ assert.equal(placeTermNote({target,bounds:rect(0,0,160,500),width:280,height:140,obstacles:[]}),null);
+ assert.equal(placeTermNote({target,bounds:rect(0,0,800,500),width:320,height:120,obstacles:[rect(0,0,800,500)]}),null);
+ assert.equal(placeTermNote({target,bounds:rect(0,1000,800,1500),width:320,height:120,obstacles:[]}),null);
+});
+
+test('overlay placement preserves clearances under fractional and large rendered zoom',()=>{
  for(const scale of [.65,1,1.25,2]){
   const scaled=r=>Object.fromEntries(Object.entries(r).map(([key,value])=>[key,value*scale]));
-  assert.equal(nearestTermNoteOffset(scaled(rect(300,70,340,90)),scaled(slot),300*scale)/scale,150);
+  const input={target:scaled(rect(100,30,160,48)),bounds:scaled(rect(0,0,800,500)),width:320*scale,height:120*scale,obstacles:[scaled(rect(30,30,290,48)),scaled(rect(30,70,270,130))],gap:8*scale,maxDistance:180*scale};
+  const placed=placeTermNote(input);assert.ok(placed);
+  assert.ok(placed.rect.left>=input.bounds.left&&placed.rect.right<=input.bounds.right);
  }
+});
+
+// The HUD may use real slide background outside the diagram's own rectangle.
+test('leader can connect a nearby overlay in surrounding slide background',()=>{
+ const input={width:400,height:300,anchor:rect(0,0,400,300),bounds:rect(-200,-180,500,350),note:rect(10,-160,330,-40),targets:[rect(100,20,150,38)],text:[rect(30,20,250,38)]};
+ const line=routeTermLeader(input);assert.ok(line);assert.ok(line.points.some(point=>point.y<0));
+ for(const point of line.points)assert.ok(point.x>=input.bounds.left&&point.x<=input.bounds.right&&point.y>=input.bounds.top&&point.y<=input.bounds.bottom);
+ for(const r of input.text.map(r=>expand(r,LEADER_TEXT_GAP)))for(let i=1;i<line.points.length;i++)assert.equal(leaderSegmentIntersectsRect(line.points[i-1],line.points[i],r),false);
 });

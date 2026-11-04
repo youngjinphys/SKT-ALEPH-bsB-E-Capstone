@@ -1,23 +1,22 @@
 "use client";
 import {createContext,useContext,useId,useLayoutEffect,useRef,useState,type ReactNode} from "react";
+import {createPortal} from "react-dom";
 import terms from "../../capstone/data/term-explanations.json";
-import {LEADER_MARKER_RADIUS,relativeLeaderRect,routeTermLeader,nearestTermNoteOffset,type LeaderRect,type TermLeader} from "./term-leader-geometry";
+import {LEADER_MARKER_RADIUS,relativeLeaderRect,routeTermLeader,placeTermNote,type LeaderRect,type TermLeader} from "./term-leader-geometry";
 import "./term-explanation.css";
 
 export type ExplainedTerm=keyof typeof terms;
 type LeaderLayout=TermLeader&{width:number;height:number};
-const TermContext=createContext<{term?:ExplainedTerm;id:string}|null>(null);
+const TermContext=createContext<{term?:ExplainedTerm;id:string;open:()=>void}|null>(null);
 
-/** Reserve real layout space next to the word, never float over the diagram. */
-export function TermDefinition({term}:{term:ExplainedTerm}){
+/** The highlighted word keeps the same inline footprint and exposes the complete
+ * definition on demand, including when no safe automatic overlay fits. */
+export function TermTarget({term,children,className}:{term:ExplainedTerm;children:ReactNode;className?:string}){
  const context=useContext(TermContext);
- if(context?.term!==term)return null;
- const entry=terms[term];
- return <div className="term-dock" data-term-definition={term}>
-  <aside className="term-note" role="note" id={context.id} aria-label={entry.title}>
-   <strong>{entry.title}</strong><p>{entry.body}</p>
-  </aside>
- </div>;
+ if(context?.term!==term)return <span className={className}>{children}</span>;
+ return <button type="button" className={["term-target",className].filter(Boolean).join(" ")} data-term-target={term}
+  aria-label={`${term} 용어 설명`} aria-describedby={`${context.id}-description`} aria-haspopup="dialog"
+  aria-controls={`${context.id}-dialog`} onClick={context.open}>{children}</button>;
 }
 
 /** Measure complete text fragments, including siblings after the selected word. */
@@ -31,7 +30,7 @@ function textRects(element:HTMLElement,scene:DOMRect):LeaderRect[]{
   const parent=node.parentElement;
   if(!parent)continue;
   const css=getComputedStyle(parent);
-  if(css.visibility==='hidden'||css.visibility==='collapse'||parent.closest('[hidden],svg,script,style'))continue;
+  if(css.visibility==='hidden'||css.visibility==='collapse'||parent.closest('[hidden],.sr-only,.term-note,svg,script,style'))continue;
   // Opacity-only text handoffs keep both variants as exclusions. A label becoming
   // visible must not suddenly be under a leader chosen for the previous variant.
   range.selectNodeContents(node);
@@ -42,41 +41,53 @@ function textRects(element:HTMLElement,scene:DOMRect):LeaderRect[]{
 
 /** Shared, collision-aware callouts for every slide using an explained term. */
 export function TermExplanation({term,children,paused=false}:{term?:ExplainedTerm;children:ReactNode;paused?:boolean}){
- const id=useId(),scene=useRef<HTMLDivElement>(null);
+ const id=useId(),scene=useRef<HTMLDivElement>(null),dialog=useRef<HTMLDialogElement>(null);
+ const [portal,setPortal]=useState<HTMLElement|null>(null);
+ useLayoutEffect(()=>setPortal(document.body),[]);
  const [line,setLine]=useState<LeaderLayout|null>(null);
  useLayoutEffect(()=>{
   const root=scene.current;
   if(!root||!term){setLine(null);return;}
   const note=root.querySelector<HTMLElement>('.term-note');
-  const dock=root.querySelector<HTMLElement>('.term-dock');
   const anchor=root.querySelector<HTMLElement>('.term-anchor');
-  if(!note||!dock||!anchor)return;
+  if(!note||!anchor)return;
+  const surface=root.closest<HTMLElement>('.deck-slide')??root;
   let frame=0,disposed=false,target:HTMLElement|null=null;
-  const descriptions=new Map<HTMLElement,string|null>();
-  const describe=(next:HTMLElement)=>{
-   if(descriptions.has(next))return;
-   const previous=next.getAttribute('aria-describedby');
-   descriptions.set(next,previous);
-   next.setAttribute('aria-describedby',[...new Set([...(previous?.split(/\s+/).filter(Boolean)??[]),id])].join(' '));
-  };
   const measure=()=>{
    if(disposed)return;
    const next=anchor.querySelector<HTMLElement>(`[data-term-target="${term}"]`);
-   if(next!==target){if(target){observer.unobserve(target);const previous=descriptions.get(target);if(previous==null)target.removeAttribute('aria-describedby');else target.setAttribute('aria-describedby',previous);descriptions.delete(target);}target=next;if(target){describe(target);observer.observe(target);}}
+   if(next!==target){if(target)observer.unobserve(target);target=next;if(target)observer.observe(target);}
    const r=root.getBoundingClientRect();
-   if(!target||r.width<=0||r.height<=0){setLine(null);return;}
-   // The authored slot is directly after the marked caption/link. Center within
-   // that reserved row as closely as its edges permit; never place over content.
-   const dockRect=dock.getBoundingClientRect(),noteRect=note.getBoundingClientRect();
-   const scale=dock.offsetWidth>0?dockRect.width/dock.offsetWidth:1;
-   const offset=nearestTermNoteOffset(target.getBoundingClientRect(),dockRect,noteRect.width)/scale;
-   const offsetValue=`${Math.round(offset*100)/100}px`;
-   if(note.style.getPropertyValue('--term-note-offset')!==offsetValue)note.style.setProperty('--term-note-offset',offsetValue);
-   // Use rendered rectangles for target, obstacles AND note. Mixing offsetLeft
-   // with getBoundingClientRect caused the old line to drift at zoom/scale.
-   const route=routeTermLeader({targets:textRects(target,r),text:textRects(anchor,r),
-    controls:Array.from(anchor.querySelectorAll<HTMLElement>('button,input,select,textarea,[role="button"],[role="tab"]')).filter(el=>el.getClientRects().length>0).map(el=>relativeLeaderRect(el.getBoundingClientRect(),r)),
-    note:relativeLeaderRect(note.getBoundingClientRect(),r),anchor:relativeLeaderRect(anchor.getBoundingClientRect(),r),width:r.width,height:r.height});
+   if(!target||r.width<=0||r.height<=0){note.style.visibility="hidden";root.dataset.termLayout="on-demand";setLine(null);return;}
+   const scale=r.width/root.offsetWidth || 1;
+   // Intersect actual clipping ancestors and viewport; an off-screen gap is not
+   // available background. Never make a new row or stretch a connector to fit.
+   const viewport=window.visualViewport;
+   const viewLeft=viewport?.offsetLeft??0,viewTop=viewport?.offsetTop??0;
+   const surfaceBox=relativeLeaderRect(surface.getBoundingClientRect(),r);
+   const bounds={left:Math.max(surfaceBox.left,viewLeft-r.left),top:Math.max(surfaceBox.top,viewTop-r.top),right:Math.min(surfaceBox.right,viewLeft+(viewport?.width??innerWidth)-r.left),bottom:Math.min(surfaceBox.bottom,viewTop+(viewport?.height??innerHeight)-r.top)};
+   for(let parent=root.parentElement;parent;parent=parent.parentElement){
+    const css=getComputedStyle(parent),box=relativeLeaderRect(parent.getBoundingClientRect(),r);
+    if(/hidden|clip|auto|scroll/.test(css.overflowX)){bounds.left=Math.max(bounds.left,box.left);bounds.right=Math.min(bounds.right,box.right);}
+    if(/hidden|clip|auto|scroll/.test(css.overflowY)){bounds.top=Math.max(bounds.top,box.top);bounds.bottom=Math.min(bounds.bottom,box.bottom);}
+   }
+   bounds.left+=4*scale;bounds.right-=4*scale;bounds.top+=4*scale;bounds.bottom-=4*scale;
+   const text=textRects(surface,r);
+   const controls=Array.from(surface.querySelectorAll<HTMLElement>('button,a,input,select,textarea,[role="button"],[role="tab"],.restored-node,.restored-lane,.bidirectional-lane,.chain-step,.cname-arrow,.adoption-lane,.policy-timeline-result,.server-dns-observation,.slide-point,svg:not(.term-leader)')).filter(el=>el.getClientRects().length>0).map(el=>relativeLeaderRect(el.getBoundingClientRect(),r));
+   let placement:ReturnType<typeof placeTermNote>=null,chosenWidth=360;
+   for(const width of [360,320,280]){
+    note.style.width=`${width}px`;
+    const box=note.getBoundingClientRect();
+    const candidate=placeTermNote({target:relativeLeaderRect(target.getBoundingClientRect(),r),bounds,width:box.width,height:box.height,obstacles:[...text,...controls],gap:8*scale,maxDistance:180*scale});
+    if(candidate&&(!placement||candidate.score<placement.score)){placement=candidate;chosenWidth=width;}
+   }
+   note.style.width=`${chosenWidth}px`;
+   note.style.visibility=placement?'visible':'hidden';
+   root.dataset.termLayout=placement?'overlay':'on-demand';
+   if(placement){note.style.left=`${placement.rect.left/scale}px`;note.style.top=`${placement.rect.top/scale}px`;}
+   // The same rendered coordinate system is used for note, line and obstacles.
+   const route=placement?routeTermLeader({targets:textRects(target,r),text,controls,
+    note:placement.rect,anchor:relativeLeaderRect(anchor.getBoundingClientRect(),r),width:r.width,height:r.height,bounds}):null;
    const nextLine=route?{...route,width:r.width,height:r.height}:null;
    setLine(previous=>previous?.d===nextLine?.d&&previous?.width===nextLine?.width&&previous?.height===nextLine?.height?previous:nextLine);
    // Follow finite layout/transform transitions, not infinite decorative packets.
@@ -86,7 +97,7 @@ export function TermExplanation({term,children,paused=false}:{term?:ExplainedTer
   };
   const schedule=()=>{if(disposed)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(measure);};
   const observer=new ResizeObserver(schedule);
-  [root,note,dock,anchor].forEach(el=>observer.observe(el));
+  [root,note,anchor,surface].forEach(el=>observer.observe(el));
   const mutations=new MutationObserver(schedule);
   mutations.observe(anchor,{subtree:true,childList:true,characterData:true,attributes:true});
   window.addEventListener('resize',schedule);
@@ -109,11 +120,17 @@ export function TermExplanation({term,children,paused=false}:{term?:ExplainedTer
    root.removeEventListener('transitionrun',schedule);root.removeEventListener('transitionend',schedule);root.removeEventListener('transitioncancel',schedule);
    root.removeEventListener('animationstart',schedule);root.removeEventListener('animationend',schedule);root.removeEventListener('animationcancel',schedule);
    document.fonts.removeEventListener('loadingdone',schedule);
-   for(const [element,previous] of descriptions){if(previous===null)element.removeAttribute('aria-describedby');else element.setAttribute('aria-describedby',previous);}
   };
  },[term,id]);
- return <TermContext.Provider value={{term,id}}><div ref={scene} className="term-scene" data-term={term} data-motion={paused?'paused':'enter'}>
+ const entry=term?terms[term]:null;
+ return <TermContext.Provider value={{term,id,open:()=>dialog.current?.showModal()}}><div ref={scene} className="term-scene" data-term={term} data-motion={paused?'paused':'enter'}>
   <div className="term-anchor">{children}</div>
+  {entry&&<><span className="sr-only" id={`${id}-description`}>{entry.title}. {entry.body}</span>
+   <aside className="term-note" aria-hidden="true"><strong>{entry.title}</strong><p>{entry.body}</p></aside></>}
   {term&&line&&<svg className="term-leader" viewBox={`0 0 ${line.width} ${line.height}`} preserveAspectRatio="none" data-term-side={line.side} aria-hidden="true"><path d={line.d}/><circle cx={line.x} cy={line.y} r={LEADER_MARKER_RADIUS}/></svg>}
+  {entry&&portal&&createPortal(<dialog ref={dialog} className="term-definition-dialog" id={`${id}-dialog`} aria-labelledby={`${id}-title`}
+   onKeyDown={event=>event.stopPropagation()} onClick={event=>{if(event.target===dialog.current)dialog.current.close();}}>
+   <h2 id={`${id}-title`}>{entry.title}</h2><p>{entry.body}</p><button type="button" autoFocus onClick={()=>dialog.current?.close()}>닫기</button>
+  </dialog>,portal)}
  </div></TermContext.Provider>;
 }
