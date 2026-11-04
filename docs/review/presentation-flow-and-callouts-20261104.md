@@ -34,3 +34,9 @@ No backend policy, authentication, dashboard, DNS deployment or experiment data 
 The first run on `61ab9ac` passed the build, dashboard browser checks, keyboard navigation and text transitions, then the new all-term audit exposed an orphan SNI definition on the precedents table. Its authored data explicitly removed the SNI example because TLS is a different layer, but EvidenceTable still selected the annotation by slide ID. Remove that stale binding, the special text rewrite and unused SNI layout styles rather than restoring unrelated content. The browser suite now checks the four active annotations and explicitly rejects the orphan definition on precedents.
 
 Responsive stress tests permit safe omission of a decorative leader only while retaining the visible target and accessible explanation. All four desktop baselines must show a collision-free leader; text inside both the diagram and its explanation is checked. The dnsmasq baseline also verifies that its marker can choose the top of the word.
+
+## CNAME connector placement
+
+The CNAME connector was nested inside each card. A compact mobile grid placed it beside the domain in the lower-right cell. Render connectors as sibling rows between cards instead. The arrow stays on the shared card centerline, with the relationship label beside it and the existing packet/replay behavior preserved. Remove the obsolete child-grid rule. Browser checks assert the between-card bounds, centered arrow and unclipped label at all five viewports and zoom.
+
+The second exact run (`58e27ca`) passed all four active callouts at five viewports and zoom and the DNS loop/manual selection checks. It then exposed a timing/focus-sensitive replay assertion. The test now sends R from the current scrolled view, waits for the replayed cycle/old decorative element removal, and still requires the old element to detach. It waits for route visibility before testing replay rather than racing IntersectionObserver.

@@ -69,6 +69,25 @@ def _assert_clear(scene, required=False):
     return result
 
 
+def _assert_chain_connectors(scene):
+    result = scene.locator('.chain-nodes').evaluate("""root => {
+        const cards = [...root.querySelectorAll(':scope > .chain-step')];
+        const links = [...root.querySelectorAll(':scope > .cname-link')];
+        const failures = [];
+        if (links.length !== cards.length - 1) failures.push('missing between-card connector');
+        for (let i = 0; i < links.length; i++) {
+            const before = cards[i].getBoundingClientRect(), after = cards[i+1].getBoundingClientRect();
+            const link = links[i].getBoundingClientRect(), arrow = links[i].querySelector('.cname-arrow').getBoundingClientRect();
+            if (link.top < before.bottom - 1 || link.bottom > after.top + 1) failures.push('connector overlaps a card');
+            if (Math.abs((arrow.left+arrow.right)/2 - (before.left+before.right)/2) > 1) failures.push('arrow not centered between cards');
+            const label = links[i].querySelector('.cname-link-label');
+            if (label.scrollWidth > label.clientWidth+1) failures.push('connector label clipped');
+        }
+        return failures;
+    }""")
+    assert not result, result
+
+
 def check_term_callouts(browser, origin):
     page = browser.new_page(reduced_motion='reduce')
     errors = []
@@ -91,6 +110,8 @@ def check_term_callouts(browser, origin):
                     visual.first.click()
                 scene = page.locator(f'.slide-active .term-scene[data-term="{term}"]').first
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
+                if term == 'cname':
+                    _assert_chain_connectors(scene)
                 baseline = (width, height) == (1440, 900)
                 result = _assert_clear(scene, required=baseline)
                 if term == 'dnsmasq' and baseline:
@@ -99,6 +120,8 @@ def check_term_callouts(browser, origin):
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = '1.25'; }")
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 _assert_clear(scene)
+                if term == 'cname':
+                    _assert_chain_connectors(scene)
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
                 if term == 'cname':
                     page.get_by_role('button', name='SUBTREE 과차단', exact=True).click()

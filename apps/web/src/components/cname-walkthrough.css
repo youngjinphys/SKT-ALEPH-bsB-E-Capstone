@@ -4,9 +4,13 @@
 .deck-root .cname-walkthrough .chain-step[data-active=true]{border-left-color:#ffe3a6;background:#12394b;box-shadow:inset 0 0 0 1px #ffe3a666}
 .deck-root .cname-walkthrough .chain-step>span{color:#bcd7e4;overflow-wrap:anywhere}
 .deck-root .cname-walkthrough .chain-step strong{overflow-wrap:anywhere}
-.deck-root .cname-walkthrough .cname-link{position:relative;padding-left:14px;line-height:1.3}
+/* Connections are their own rows: center the arrow on the card column, not
+   beside card text. The label occupies the right half without moving that axis. */
+.deck-root .cname-walkthrough .cname-link{display:grid;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr);gap:8px;align-items:center;min-height:24px;line-height:1.3;color:var(--gold);font-size:12px}
+.cname-arrow{position:relative;grid-column:2;text-align:center;line-height:24px}
+.cname-link-label{grid-column:3;justify-self:start;min-width:0;overflow-wrap:anywhere}
 .cname-walkthrough .cname-packet{display:none}
-.cname-walkthrough[data-playing=true] .chain-step[data-active=true] .cname-packet{display:block;position:absolute;left:1px;top:1px;width:5px;height:5px;border-radius:50%;background:#a5f2fa;animation:cname-packet 1.8s linear 1 both}
+.cname-walkthrough[data-playing=true] .cname-link[data-active=true] .cname-packet{display:block;position:absolute;left:calc(50% - 2.5px);top:1px;width:5px;height:5px;border-radius:50%;background:#a5f2fa;animation:cname-packet 1.8s linear 1 both}
 .cname-progress{display:grid;grid-template-columns:minmax(0,1fr);margin:7px 0 0;color:#c6e7f0;font-size:12px;line-height:1.4}
 .deck-root .cname-walkthrough .visual-caveat{margin:8px 0 0;flex-shrink:0}
 @keyframes cname-packet{from{transform:translateY(0);opacity:0}20%,80%{opacity:1}to{transform:translateY(14px);opacity:0}}

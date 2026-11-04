@@ -211,7 +211,6 @@
  .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>span{grid-column:1;grid-row:1;font-size:12px;line-height:1.3}
  .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>b{grid-column:2;grid-row:1;font-size:12px;line-height:1.3;white-space:nowrap}
  .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>strong{grid-column:1;grid-row:2;font-size:13px;line-height:1.35;word-break:keep-all;overflow-wrap:normal}
- .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>.cname-link{grid-column:2;grid-row:2;justify-self:end;padding-left:7px;font-size:12px;line-height:1.35;white-space:nowrap}
  .deck-root .deck-slide[data-mobile-budget=short] .cname-progress{margin-top:6px;font-size:12px;line-height:1.35}
 }
 
