@@ -287,26 +287,31 @@ def check_controls(page, origin, slides):
 
             index = indexes["pi-network-plan"]
             conditions = json.loads((DATA / "dns-latency.json").read_text())["series"]
-            for condition in conditions:
-                for key in ("ArrowLeft", "ArrowRight"):
-                    open_slide(index)
-                    group = page.locator(ACTIVE).get_by_role("group", name="측정 조건", exact=True)
-                    expect(group.get_by_role("button")).to_have_count(len(conditions))
-                    condition_button = group.get_by_role("button", name=condition["label"], exact=True)
-                    activate(condition_button, "click", (viewport, condition["id"], "combined"))
-                    expect(condition_button).to_have_attribute("aria-pressed", "true")
-                    chart = page.locator("#latency-chart")
-                    expect(chart).to_have_attribute("data-metric", "combined")
-                    expect(chart.locator(".latency-arm")).to_have_count(len(condition["arms"]))
-                    expect(chart).to_have_attribute("aria-label", re.compile(r"^p50·p95 함께 비교"))
-                    for arm in condition["arms"]:
-                        row = chart.locator(f'[data-arm="{arm["id"]}"]')
-                        for metric in ("p50", "p95"):
-                            expect(row.locator(f'[data-percentile="{metric}"] strong')).to_have_text(f'{Decimal(str(arm[metric])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)} ms')
-                        expect(row.locator('.latency-dot')).to_have_count(2)
-                    _assert_readable(chart, (viewport, condition["id"], "chart"))
-                    _assert_readable(page.locator(".latency-source"), (viewport, condition["id"], "source footer"))
-                    arrow(index, key, condition_button)
+            condition = next(item for item in conditions if item["id"] == "warm_paired")
+            displayed_arms = [arm for arm in condition["arms"] if arm["id"] in ("no_dns", "local_upstream")]
+            for key in ("ArrowLeft", "ArrowRight"):
+                open_slide(index)
+                results = page.locator(ACTIVE).locator(".latency-results")
+                # The presentation has one fixed, comparable population, not
+                # a selector mixing operating DNS and a temporary cache test.
+                expect(results.get_by_role("button")).to_have_count(0)
+                expect(results.locator("fieldset")).to_have_count(0)
+                chart = results.locator("#latency-chart")
+                expect(chart).to_have_attribute("data-series", "warm_paired")
+                expect(chart).to_have_attribute("data-metric", "combined")
+                expect(chart.locator(".latency-arm")).to_have_count(len(displayed_arms))
+                expect(chart).to_have_attribute("aria-label", re.compile(r"^p50·p95 함께 비교"))
+                for arm in displayed_arms:
+                    row = chart.locator(f'[data-arm="{arm["id"]}"]')
+                    for metric in ("p50", "p95"):
+                        expect(row.locator(f'[data-percentile="{metric}"] strong')).to_have_text(f'{Decimal(str(arm[metric])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)} ms')
+                    expect(row.locator('.latency-dot')).to_have_count(2)
+                expect(chart.locator('[data-arm="local_repeat"]')).to_have_count(0)
+                expect(results.locator(".latency-quality, .latency-source")).to_have_count(0)
+                expect(results.get_by_role("link")).to_have_count(0)
+                _assert_readable(chart, (viewport, "warm_paired", "chart"))
+                page.locator("#slide-area").focus()
+                arrow(index, key)
 
             index = indexes["http"]
             for protocol in (("HTTP", "HTTPS") if viewport[0] <= 780 else (None,)):
@@ -334,8 +339,7 @@ def check_controls(page, origin, slides):
         page.set_viewport_size({"width": viewport[0], "height": viewport[1]})
         for slide_id, selector in (("dns", ".mobile-pane-tabs"),
                                    ("http", ".protocol-path-tabs"),
-                                   ("http", ".protocol-standard-tabs"),
-                                   ("pi-network-plan", ".latency-series-select")):
+                                   ("http", ".protocol-standard-tabs")):
             open_slide(indexes[slide_id])
             group = page.locator(ACTIVE).locator(selector)
             buttons = group.get_by_role("button")
