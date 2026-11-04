@@ -1,0 +1,81 @@
+{
+  "id": "runbook",
+  "chapter": "부록",
+  "title": "재현 절차",
+  "subtitle": "합성 도메인·시험용 업스트림 DNS를 사용하는 격리 실험",
+  "seconds": 0,
+  "kind": "repro",
+  "status": "reference",
+  "points": [
+    {
+      "title": "코드 기준",
+      "body": "08f3880f · 환경 버전 별도 기록"
+    },
+    {
+      "title": "DNS 시연",
+      "body": "정상 → 차단 → 철회 원문 응답 확인"
+    },
+    {
+      "title": "HTTP 시연",
+      "body": "python3 -m dns_agent.http_notice --help"
+    }
+  ],
+  "notes": "재현 코드 기준은 08f3880f입니다. DNS와 HTTP는 각각 격리 실험이며, 해당 HEAD의 DNS validation 41028706421에서 루프백 DNS·서명·HTTPS TLS·root 적용·복구·HTTP 안내 검증 성공을 확인했습니다. 283개 통과 수치는 이전 7c01910d의 CI 40986807994 스냅샷으로 따로 유지합니다. 선택형 HTTP 싱크는 docs/http-notice.md를 따릅니다. 발표의 개념 시뮬레이션, CI 증빙, 현장 실측은 각각의 실행 조건과 함께 설명합니다.",
+  "sources": [
+    "ci",
+    "ci-current",
+    "demo",
+    "policy-sync",
+    "validation",
+    "review-current",
+    "execution-current"
+  ],
+  "mood": "focused",
+  "presentation": {
+    "title": "재현 절차와 인수할 항목",
+    "subtitle": "코드·환경 → 정책 전후 응답 → 실패 복구 → 팀 검토",
+    "reviewNote": "새 실험과 이전 CI는 실행 시점·커밋별로 구분합니다. 최신 실행 방법과 실패를 포함한 JSON 형식은 검증 자료 링크에 있습니다. 실험 대상은 임시 키·loopback·합성 위협 이름으로 한정합니다.",
+    "points": [
+      {
+        "title": "새 실험 기준",
+        "body": "397df3f4 · 원문 응답·환경·해시 기록"
+      },
+      {
+        "title": "비특권 실행",
+        "body": "python3 scripts/evidence_lab.py --rounds 3"
+      },
+      {
+        "title": "검증 경계",
+        "body": "root 적용·LAN·캐시·운영 성능과 구분"
+      }
+    ]
+  },
+  "reading": {
+    "title": "발표 재현에서 함께 남길 기록",
+    "columns": [
+      "자료",
+      "확인할 내용",
+      "완료 증거"
+    ],
+    "rows": [
+      [
+        "코드·환경",
+        "Git SHA · OS · dnsmasq · 업스트림",
+        "동일 환경의 실제 실행 원문"
+      ],
+      [
+        "기능·실패",
+        "정상 → 차단 → 철회 / 갱신 장애",
+        "질의 응답·정책/설정 해시·복구"
+      ],
+      [
+        "현장 인수",
+        "장비·담당자·IOC 파일·발표 역할",
+        "팀의 재현과 검토 기록"
+      ]
+    ],
+    "takeaway": "기술 상태는 실행 근거에, 계획과 팀 인수는 Notion 기록에 연결합니다.",
+    "source": "https://app.notion.com/p/4065db6797f081daa7a1d2986501c516",
+    "sourceLabel": "노션 설계 근거 ↗"
+  }
+}

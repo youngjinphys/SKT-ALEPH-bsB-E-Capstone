@@ -1,0 +1,86 @@
+/* All six cards remain visible; focus advances, not the topology. */
+.protocol-walkthrough .restored-node{transition:box-shadow .18s ease,background-color .18s ease}
+.protocol-walkthrough .restored-node[data-active=true]{box-shadow:0 0 0 2px #9beaff;background:#173e53}
+.protocol-walkthrough [data-protocol=https] .restored-node[data-active=true]{box-shadow:0 0 0 2px #ffd7a4;background:#352d24}
+.protocol-walkthrough .restored-protocol-arrow{position:relative;min-width:0;overflow:hidden}
+.protocol-walkthrough [data-protocol=https] .restored-protocol-arrow{color:#ffd7a4}
+.protocol-walkthrough .restored-protocol-arrow[data-active=true] b{filter:drop-shadow(0 0 4px currentColor)}
+.protocol-walkthrough .protocol-packet{display:none;position:absolute;top:calc(50% - 3px);left:5%;width:6px;height:6px;background:#b8f3ff;border-radius:50%;pointer-events:none}
+.protocol-walkthrough[data-playback=running] [data-active=true] .protocol-packet{display:block;animation:protocol-request 1.8s linear 1 both}
+.protocol-control-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin-top:8px}
+.protocol-stage{display:flex;gap:10px;align-items:baseline;padding:5px 8px;margin-top:0;border-left:3px solid #8edff1;background:#0a2033;font-size:clamp(12px,.85vw,18px);line-height:1.45}
+.protocol-stage>span{white-space:nowrap;color:#a6c8da}.protocol-stage strong{word-break:keep-all}
+@keyframes protocol-request{from{left:5%}to{left:90%}}
+@media(max-width:780px){.protocol-stage{align-items:flex-start}.protocol-walkthrough .protocol-packet{left:calc(50% - 3px);top:5%}.protocol-walkthrough[data-playback=running] [data-active=true] .protocol-packet{animation-name:protocol-request-vertical}}
+@keyframes protocol-request-vertical{from{top:5%}to{top:90%}}
+@media(prefers-reduced-motion:reduce){.protocol-walkthrough *{animation:none!important;transition:none!important}.protocol-walkthrough .protocol-packet{display:none!important}}
+html[data-motion=off] .protocol-walkthrough .protocol-packet{display:none!important}
+
+/* EDE is a published RFC; SDE is an IETF draft. No HTML redirect implied. */
+.protocol-standard-panel{margin-top:13px;border-top:1px solid #5ba7b04b;padding-top:12px}
+.protocol-standard-tabs{display:flex;gap:7px}
+.protocol-standard-tabs button{flex:1;background:#0c293a;color:#c8dce8;border:1px solid #577a8f66;border-radius:8px;padding:8px 5px;font-size:11px;font-weight:720;cursor:pointer}
+.protocol-standard-tabs button[aria-pressed="true"]{color:#dffcff;border-color:#6de0e7;background:#164257}
+.protocol-standard-explainer{display:grid;gap:5px;min-height:70px;padding:10px 4px 0}
+.protocol-standard-explainer strong{font-size:12px;color:#92ead5}
+.protocol-standard-explainer p{margin:0;color:#b1ccd8;font-size:11px;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
+
+/* Compact projector budget: preserve all six cards and both standards explanations.
+   Put standard selection beside its explanation, reclaiming spacing rather than type. */
+@media(min-width:781px) and (max-width:1499px) and (max-height:850px){
+ .deck-root .protocol-walkthrough{padding:14px}
+ .deck-root .protocol-walkthrough .diagram-caption{margin-bottom:4px}
+ .deck-root .protocol-walkthrough .restored-protocol-row{padding:4px 0}
+ .deck-root .protocol-walkthrough .restored-protocol-row>.visual-caveat{margin-bottom:0}
+ .deck-root .protocol-walkthrough .protocol-standard-panel{display:grid;grid-template-columns:146px minmax(0,1fr);align-items:start;gap:12px;margin-top:8px;padding-top:8px}
+ .protocol-walkthrough .protocol-standard-tabs{flex-direction:column;gap:6px}
+ .protocol-walkthrough .protocol-standard-tabs button{min-height:32px;padding:6px 5px}
+ .protocol-walkthrough .protocol-standard-explainer{min-height:0;align-content:start;padding:0;gap:5px}
+}
+
+/* Mobile presents one complete path at a time; desktop retains the paired comparison. */
+.protocol-path-tabs{display:flex;gap:8px;margin:6px 0}
+.protocol-path-tabs button{flex:1;min-height:34px;border:1px solid #6594a8;border-radius:8px;background:#102c3e;color:#e0f4fc;font:inherit;font-size:14px;font-weight:750}
+.protocol-path-tabs button[aria-pressed=true]{background:#1d5360;border-color:#a2eee2}
+.protocol-path-tabs button:focus-visible{outline:3px solid #ffd7a4;outline-offset:2px}
+.protocol-walkthrough .restored-protocol-row[hidden]{display:none!important}
+@media(max-width:780px){
+ .deck-root .protocol-walkthrough{padding:12px}
+ .deck-root .protocol-walkthrough>.diagram-caption{margin:0 0 4px;font-size:12px}
+ .deck-root .protocol-walkthrough>h2{font-size:18px;line-height:1.3;margin:0 0 3px}
+ .deck-root .protocol-walkthrough .restored-protocol-row{margin:0;padding:4px 0;border:0}
+ .deck-root .protocol-walkthrough .restored-protocol-row>h3{font-size:14px;line-height:1.3;margin:0 0 5px}
+ .deck-root .protocol-walkthrough .restored-protocol-path{display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+ .deck-root .protocol-walkthrough .restored-node{display:grid;grid-template-columns:24px minmax(68px,.8fr) minmax(0,1.2fr);align-items:center;gap:7px;padding:7px 8px;min-height:53px;text-align:left}
+ .deck-root .protocol-walkthrough .restored-node .restored-icon{width:22px;height:22px;grid-row:auto}
+ .deck-root .protocol-walkthrough .restored-node strong{font-size:14px;line-height:1.3;word-break:keep-all}
+ .deck-root .protocol-walkthrough .restored-node small{grid-column:auto;font-size:12px;line-height:1.35;word-break:keep-all}
+ .deck-root .protocol-walkthrough .restored-protocol-arrow{height:17px;min-height:17px;font-size:17px;line-height:1}
+ .deck-root .protocol-walkthrough .restored-protocol-arrow b{display:block;transform:rotate(90deg)}
+ .deck-root .protocol-walkthrough .restored-protocol-row>.visual-caveat{font-size:12px;line-height:1.35;margin:5px 0 0}
+ .deck-root .protocol-walkthrough .protocol-control-strip{gap:5px;margin-top:5px}
+ .deck-root .protocol-walkthrough .protocol-stage{width:100%;font-size:12px;line-height:1.3;padding:4px 6px;gap:7px}
+ .deck-root .protocol-walkthrough .protocol-standard-panel{margin-top:7px;padding-top:7px}
+ .deck-root .protocol-walkthrough .protocol-standard-tabs button{min-height:32px;padding:5px 3px;font-size:12px}
+ .deck-root .protocol-walkthrough .protocol-standard-explainer{min-height:0;padding:6px 0 0;gap:3px}
+ .deck-root .protocol-walkthrough .protocol-standard-explainer strong{font-size:12px}
+ .deck-root .protocol-walkthrough .protocol-standard-explainer p{font-size:14px;line-height:1.35}
+}
+
+/* Short portrait pane: reclaim ornament/spacing, preserving the 12/14px text budget.
+   This is intentionally not applied to full view, zoom or landscape scrolling. */
+@media(max-width:780px){
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-walkthrough{padding:8px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-walkthrough>.diagram-caption{margin-bottom:2px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-walkthrough>h2{margin-bottom:2px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-path-tabs{margin:3px 0}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .restored-protocol-row{padding:2px 0}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .restored-protocol-row>h3{margin-bottom:3px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-walkthrough .restored-node{min-height:45px;padding:4px 7px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .restored-protocol-arrow{height:14px;min-height:14px;font-size:14px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .restored-protocol-row>.visual-caveat{margin-top:3px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-control-strip{margin-top:3px;gap:3px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-stage{padding:2px 6px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-standard-panel{margin-top:4px;padding-top:4px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes][data-mobile-pane=visual] .protocol-standard-explainer{padding-top:4px;gap:2px}
+}

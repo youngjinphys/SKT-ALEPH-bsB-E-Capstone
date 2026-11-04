@@ -1,0 +1,170 @@
+/* Scoped diagram restoration: connectors own lanes, cards never borrow their space. */
+.deck-root .restored-diagram{height:auto;max-height:none;overflow:visible;justify-content:flex-start;padding:clamp(16px,1.4vw,32px);gap:0}
+.restored-diagram .restored-icon{width:clamp(25px,2vw,42px);height:clamp(25px,2vw,42px);flex:none;color:#8edff1}
+.restored-diagram h2{margin-bottom:14px;font-size:clamp(18px,1.45vw,30px)}
+.restored-controls{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:10px 0 16px}
+.restored-controls button{border:1px solid #688eaa;border-radius:8px;background:#10283d;color:#d7edf7;padding:8px 11px;min-height:40px;font:inherit;font-size:clamp(12px,.85vw,17px);cursor:pointer}
+.restored-controls button[aria-pressed=true]{background:#b3eff1;color:#082335;border-color:#d8ffff;font-weight:750}
+.restored-controls button:disabled{opacity:.45;cursor:default}
+.restored-controls button:focus-visible{outline:3px solid #ffe3a6;outline-offset:3px}
+.restored-node{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:12px 9px;border:1px solid #5386a3;border-radius:10px;background:linear-gradient(145deg,#15384e,#0b2438);text-align:center;overflow-wrap:anywhere}
+.restored-node strong{font-size:clamp(13px,1vw,22px);line-height:1.45;word-break:keep-all}
+.restored-node small,.restored-lane small{font-size:clamp(11px,.77vw,16px);line-height:1.45;color:#c0d7e5;word-break:keep-all}
+.restored-lane{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;font-size:clamp(11px,.75vw,16px);color:#9edaf1;word-break:keep-all;overflow-wrap:anywhere}
+/* Query processing is a left-to-right chain; supply and web traffic branch separately. */
+.restored-dns-map{display:grid;grid-template-columns:minmax(0,1fr) clamp(80px,5.4vw,140px) minmax(0,1fr) clamp(80px,5.4vw,140px) minmax(0,1fr);grid-template-areas:'. . policy . .' '. . control . .' 'client query resolver upstream-link upstream' 'web-link . . . .' 'web . . . .';gap:6px 8px;align-items:stretch}
+.dns-policy{grid-area:policy}.dns-policy-link{grid-area:control;min-height:42px}.dns-client{grid-area:client}.dns-query-link{grid-area:query}.dns-resolver{grid-area:resolver}.dns-upstream-link{grid-area:upstream-link}.dns-upstream{grid-area:upstream}.dns-web-link{grid-area:web-link;min-height:40px}.dns-web{grid-area:web;flex-direction:row;flex-wrap:wrap;padding:10px}
+.restored-dns [data-unused=true]{border-style:dashed;color:#a1b5c4;opacity:.68}
+.restored-verdict{display:flex;flex-wrap:wrap;gap:8px 16px;margin:8px 0;font-size:clamp(13px,1vw,20px);line-height:1.5}.restored-verdict strong{color:#a7e8fa}
+.restored-diagram .visual-caveat,.restored-diagram .diagram-footnote{margin-top:12px;font-size:clamp(12px,.85vw,18px);line-height:1.55;word-break:keep-all}
+.restored-protocol-row{padding:13px 0;border-top:1px solid #54778e;margin-top:9px}
+.restored-protocol-row h3{margin:0 0 12px;font-size:clamp(15px,1.1vw,24px);color:#b5e9f6}
+.restored-protocol-row[data-protocol=https] h3{color:#ffd7a4}
+.restored-protocol-path{display:grid;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 34px minmax(0,1fr);align-items:stretch;gap:5px}
+.restored-protocol-arrow{display:flex;align-items:center;justify-content:center;font-size:24px;color:#88cfe3}
+.restored-protocol-row[data-protocol=https] .restored-node{border-color:#b39466}
+.deck-root .restored-topology .topology-flow{display:grid;grid-template-columns:minmax(0,1fr) clamp(52px,3.5vw,92px) minmax(0,1fr) clamp(76px,5vw,140px) minmax(0,1fr);gap:8px}
+.deck-root .restored-topology .topology-step{min-height:0;min-width:0;padding:14px 10px;gap:9px;align-items:center;text-align:center;overflow-wrap:anywhere}
+.deck-root .restored-topology .topology-step strong{font-size:clamp(13px,1vw,24px)}
+.deck-root .restored-topology .topology-step small,.deck-root .restored-topology .topology-lane{font-size:clamp(11px,.8vw,17px)}
+@media(min-width:2400px){.restored-dns-map{gap:12px}.restored-node{padding:18px 12px}.restored-protocol-path{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr) 60px minmax(0,1fr)}}
+@media(max-width:780px){
+ .restored-dns-map{grid-template-columns:minmax(0,1fr) clamp(84px,18vw,112px) minmax(0,1fr);grid-template-areas:'. . policy' '. . control' 'client query resolver' 'web-link . upstream-link' 'web . upstream';gap:6px}
+ .restored-protocol-path{grid-template-columns:minmax(0,1fr);gap:6px}.restored-protocol-arrow{height:22px}.restored-protocol-arrow b{display:block;transform:rotate(90deg)}
+ .restored-protocol-path .restored-node{display:grid;grid-template-columns:32px minmax(0,1fr);text-align:left;gap:5px 10px;justify-items:start}.restored-protocol-path .restored-icon{grid-row:span 2}.restored-protocol-path small{grid-column:2}
+ .deck-root .restored-topology .topology-flow{grid-template-columns:minmax(0,1fr)}
+ .deck-root .restored-topology .topology-step{min-height:0;gap:7px}.deck-root .restored-topology .topology-lane{min-height:48px}
+}
+@media(prefers-reduced-motion:reduce){.restored-diagram *{animation:none!important;transition:none!important}}
+
+.restored-node[data-active=true]{border-color:#b2f2ff;box-shadow:0 0 0 2px #78d9ed55;background:#173e54}
+@media(max-width:780px){
+ .restored-topology .topology-policy-lane b{transform:rotate(90deg)}
+}
+
+/* Desktop budget: widen the working diagram rather than shrinking type to fit. */
+@media(min-width:781px){
+ .deck-root .slide-dns .slide-columns,.deck-root .slide-http .slide-columns{grid-template-columns:minmax(280px,.68fr) minmax(0,1.32fr);gap:clamp(20px,2vw,44px)}
+ .deck-root .slide-dns .slide-heading h1{font-size:clamp(30px,2.5vw,56px);margin-bottom:14px}
+ .deck-root .slide-dns .slide-heading p{margin-bottom:16px;line-height:1.5}
+ .deck-root .slide-dns .slide-visual-container{height:100%;align-items:stretch}
+ .deck-root .restored-dns{padding:clamp(18px,1.6vw,32px);gap:0;max-height:100%;overflow-y:auto}
+ .restored-dns .diagram-caption{margin:0 0 8px;letter-spacing:.1em}
+ .restored-dns .restored-controls{margin:6px 0 12px;gap:7px}
+ .restored-dns .restored-controls button{padding:7px 12px;min-height:38px;font-size:clamp(12px,.85vw,15px)}
+ .restored-dns .restored-node{padding:clamp(10px,1.2vh,16px) clamp(10px,.9vw,16px);gap:4px 8px;display:grid;grid-template-columns:26px minmax(0,1fr);align-content:center;text-align:left;justify-items:start}
+ .restored-dns .restored-node .restored-icon{width:26px;height:26px;grid-row:span 2}
+ .restored-dns .restored-node strong{font-size:clamp(14px,1.05vw,19px);line-height:1.35}
+ .restored-dns .restored-node small{grid-column:2;font-size:clamp(12px,.85vw,15px);line-height:1.4}
+ .restored-dns .dns-policy-link,.restored-dns .dns-web-link{min-height:32px;gap:2px}
+ .restored-dns .restored-verdict{margin:10px 0 6px;font-size:clamp(15px,1.1vw,20px);gap:4px 10px;line-height:1.45}
+ .restored-dns .visual-caveat,.restored-dns .diagram-footnote{margin:6px 0 0;font-size:clamp(12px,.82vw,15px);line-height:1.45}
+ .restored-protocol .restored-node{display:grid;grid-template-columns:26px minmax(0,1fr);gap:6px;text-align:left;padding:clamp(10px,1.2vh,16px) clamp(10px,.9vw,16px);align-content:center}
+ .restored-protocol .restored-icon{width:26px;height:26px;grid-row:span 2}
+ .restored-protocol .restored-node small{grid-column:1/-1;font-size:clamp(12px,.85vw,15px);line-height:1.4}
+ .restored-protocol .restored-node strong{font-size:clamp(14px,1.05vw,18px);line-height:1.4}
+ .restored-protocol .restored-protocol-row{margin-top:8px;padding:12px 0}
+ .restored-protocol .restored-protocol-row h3{margin-bottom:8px}
+ .restored-protocol .visual-caveat,.restored-protocol .diagram-footnote{margin-top:8px;font-size:clamp(12px,.82vw,15px);line-height:1.45}
+ .restored-protocol .diagram-caption{margin-bottom:8px}
+ .restored-protocol h2{margin-bottom:10px}
+}
+/* Arrow labels stay in their assigned lane, never in adjacent cards. */
+.deck-root .restored-topology .topology-lane span{white-space:normal;text-align:center;font-size:clamp(13px,.9vw,18px);line-height:1.25}
+.deck-root .restored-topology .topology-lane b{font-size:clamp(34px,2.25vw,52px);line-height:1}
+@media(min-width:1800px) and (min-height:900px){
+ .deck-root .restored-dns{padding:28px}
+ .restored-dns .restored-node{padding:14px;grid-template-columns:32px minmax(0,1fr)}
+ .restored-dns .restored-node strong,.restored-protocol .restored-node strong{font-size:20px}
+ .restored-dns .restored-node small,.restored-dns .visual-caveat,.restored-dns .diagram-footnote,.restored-protocol .restored-node small,.restored-protocol .visual-caveat,.restored-protocol .diagram-footnote{font-size:17px}
+ .restored-dns .restored-controls button{font-size:17px;min-height:44px}
+ .restored-dns .restored-verdict{font-size:20px}
+}
+
+/* Preserve keyboard-accessible overflow as a fallback, without requiring it. */
+@media(min-width:781px){
+ .deck-root .slide-visual-container > .restored-diagram{max-height:100%;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ .deck-root .slide-visual-container > .restored-diagram:focus-visible{outline:3px solid #ffe3a6;outline-offset:-3px}
+}
+
+/* Reusable two-way connector: identical endpoints, separate labels, no text wrapping. */
+.restored-bidirectional{min-width:0;display:grid;grid-template-columns:minmax(0,1fr);align-content:center;justify-items:center;gap:3px;color:#9edaf1;text-align:center}
+.restored-bidirectional .lane-query-label,.restored-bidirectional .lane-response-label{white-space:nowrap;font-size:clamp(12px,.8vw,20px);line-height:1.3}
+.restored-bidirectional svg{display:block;width:100%;height:24px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.restored-bidirectional .lane-vertical{display:none}
+@media(max-width:780px){
+ .restored-bidirectional[data-mobile-vertical=true]{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:4px 3px;padding:5px 0}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-horizontal{display:none}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-vertical{display:block;width:28px;height:44px}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-query-label{grid-column:1;grid-row:1;justify-self:end}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-response-label{grid-column:3;grid-row:1;justify-self:start}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-vertical{grid-column:2;grid-row:1}
+ .restored-bidirectional[data-mobile-vertical=true] .lane-label-prefix{display:none}
+}
+
+/* Equal DNS lanes keep the two query/response hops visually balanced. */
+.restored-dns .dns-client,.restored-dns .dns-resolver,.restored-dns .dns-upstream{min-height:82px}
+.restored-dns :is(.dns-query-link,.dns-upstream-link){min-height:82px;gap:4px}
+.restored-dns :is(.dns-query-link,.dns-upstream-link) :is(.lane-query-label,.lane-response-label){font-size:clamp(15px,.85vw,20px);font-weight:750;line-height:1.25}
+.restored-dns :is(.dns-query-link,.dns-upstream-link) .lane-horizontal{height:28px}
+.restored-bidirectional [data-flow=query],.restored-bidirectional .lane-query-label{color:#9beaff;stroke:currentColor}
+.restored-bidirectional [data-flow=response],.restored-bidirectional .lane-response-label{color:#77f0c7;stroke:currentColor}
+@media(max-width:780px){
+ .restored-dns .dns-client,.restored-dns .dns-resolver,.restored-dns .dns-upstream{min-height:70px}
+ .restored-dns :is(.dns-query-link,.dns-upstream-link) :is(.lane-query-label,.lane-response-label){font-size:15px}
+ .deck-root .restored-topology .topology-lane span{font-size:14px}
+ .deck-root .restored-topology .topology-lane b{font-size:44px}
+}
+
+
+/* These labels are atomic, including inside the legacy topology lane layout. */
+.deck-root .restored-diagram .restored-bidirectional .lane-query-label,
+.deck-root .restored-diagram .restored-bidirectional .lane-response-label{white-space:nowrap;height:auto;min-height:0;align-self:center}
+
+/* Each direct arrow sits on the shared centreline of its source and target.
+   Labels occupy a separate row, never pushing the shaft toward a card edge. */
+@media(min-width:781px){
+ .restored-dns .dns-policy-link,.restored-dns .dns-web-link{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+ .restored-dns .dns-policy-link .direct-flow-line,.restored-dns .dns-web-link .direct-flow-line{align-self:center}
+}
+/* Keep the same endpoint geometry on phones: web below client, never below
+   the upstream resolver. No duplicate explanatory label is needed. */
+@media(max-width:780px){
+ .restored-dns .dns-policy-link,.restored-dns .dns-web-link{align-items:center;justify-content:center}
+ .restored-dns .dns-policy-link .direct-flow-line,.restored-dns .dns-web-link .direct-flow-line{display:block;align-self:center}
+}
+
+
+/* Policy arrows use the same vertical centre as adjacent topology cards;
+   the label sits above that centre instead of shifting the arrow down. */
+@media(min-width:781px){
+ .deck-root .restored-topology .topology-policy-lane{display:grid;grid-template-rows:minmax(0,1fr) auto minmax(0,1fr);align-self:stretch;justify-items:center;gap:0}
+ .deck-root .restored-topology .topology-policy-lane>span{grid-row:1;align-self:end;margin-bottom:4px}
+ .deck-root .restored-topology .topology-policy-lane>b{grid-row:2;align-self:center}
+}
+
+@media(min-width:781px) and (max-width:999px){
+ .deck-root .slide-dns .slide-columns{grid-template-columns:minmax(0,1fr)}
+ .deck-root .slide-dns .slide-visual-container{height:auto}
+}
+
+
+/* Anchor the compact DNS panel at the top after removing the duplicate flow UI. */
+.deck-root .slide-dns .slide-visual-container>.restored-dns{align-self:start}
+
+/* A blocked upstream edge owns its gate; response traffic uses the separate client lane. */
+.restored-dns .restored-bidirectional[data-blocked=true]{position:relative;opacity:1}
+.restored-dns .restored-bidirectional[data-blocked=true] :is(.lane-query-label,.lane-response-label){opacity:.68}
+.restored-dns .dns-block-gate{position:absolute;left:calc(50% - 16px);top:calc(50% - 16px);width:32px;height:32px;display:flex;align-items:center;justify-content:center;pointer-events:none;color:#ffd2a3;z-index:1}
+.restored-dns .restored-bidirectional .dns-block-gate-icon{display:block;width:28px;height:32px;position:relative;z-index:1;stroke:currentColor;stroke-width:1.8;filter:drop-shadow(0 0 3px #ffb56b99) drop-shadow(0 0 7px #ff9b4b40)}
+@media(forced-colors:active){.restored-dns .restored-bidirectional .dns-block-gate-icon{fill:Canvas;stroke:CanvasText;filter:none}}
+
+/* A single frosted shield; no X, text or secondary blocking badge. */
+.restored-dns .dns-block-gate::before{content:"";position:absolute;inset:2px 3px 0;background:#57351f88;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);clip-path:polygon(50% 0,100% 16%,100% 49%,90% 72%,50% 100%,10% 72%,0 49%,0 16%)}
+@media(forced-colors:active){.restored-dns .dns-block-gate::before{background:Canvas;backdrop-filter:none}.restored-dns .dns-block-gate-icon path{fill:Canvas;stroke:CanvasText}}
+
+@media(max-width:780px){.restored-dns .restored-bidirectional[data-mobile-vertical=true][data-blocked=true]{grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr)}}
+
+
+/* Short connector labels name one unit; never split them into syllables. */
+.dns-policy-link>span,.topology-policy-lane>span{white-space:nowrap;word-break:keep-all;overflow-wrap:normal}

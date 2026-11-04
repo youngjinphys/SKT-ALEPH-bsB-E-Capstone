@@ -1,0 +1,59 @@
+name: Unified dashboard checks
+on:
+  push:
+    branches: [main]
+    paths: ['apps/web/**','cloud/**','tests/cloud/**','tests/browser/**','apps/policy-server/**','apps/policy-sync/**','apps/dns-agent/**','vercel.json','requirements.txt','.github/workflows/unified-dashboard.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    # Playwright 1.57 is tested on Ubuntu 24.04; do not follow ubuntu-latest drift.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Record public tracked source for reproducible browser review
+        run: |
+          mkdir -p /tmp/aleph-browser-artifacts
+          git rev-parse HEAD > /tmp/aleph-browser-artifacts/source-commit.txt
+          git archive --format=tar.gz HEAD > /tmp/aleph-browser-artifacts/source.tar.gz
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Isolate Python test dependencies from runner system packages
+        run: |
+          python3 -m venv "$RUNNER_TEMP/aleph-ci-venv"
+          echo "$RUNNER_TEMP/aleph-ci-venv/bin" >> "$GITHUB_PATH"
+      - run: python3 -m pip install -r requirements.txt httpx==0.28.1
+      - run: python3 -B -m unittest discover -s tests/cloud -v
+      - run: node --test tests/cloud/*.test.mjs
+      - run: python3 -c "from cloud.assets import assets; open('/tmp/ops.js','w').write(assets()[2])" && node --check /tmp/ops.js
+      - name: Install browser acceptance dependency
+        run: python3 -m pip install playwright==1.57.0 && python3 -m playwright install --with-deps chromium
+      - name: Verify responsive dashboard header
+        run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts/header python3 -B tests/browser/dashboard_header.py
+      - name: Verify dashboard-only tutorial and landing navigation
+        run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts/tutorial python3 -B tests/browser/dashboard_tutorial.py
+      - name: Verify local and cloud operator workflows
+        run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts python3 -B tests/browser/console_smoke.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: operator-workbench-browser-checks
+          path: /tmp/aleph-browser-artifacts
+          retention-days: 7
+      - run: npm ci --no-audit --no-fund && npm run check
+        working-directory: apps/web
+      - name: Verify immutable web build timestamp
+        run: node --test tests/browser/build_timestamp.test.mjs && python3 -B tests/browser/build_timestamp.py
+      - name: Verify presentation keyboard navigation and focus guards
+        run: python3 -B tests/browser/presentation_keyboard.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: web-build-watermark-checks
+          path: /tmp/aleph-build-artifacts
+          retention-days: 7

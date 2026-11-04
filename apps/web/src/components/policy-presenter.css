@@ -1,0 +1,52 @@
+/* Four-stage trust pipeline · evidence dashboard · policy verdict contract.
+   Large enough for projection, vertically collapses without hiding definitions. */
+.policy-flow-panel,.intel-evidence,.verdict-matrix{width:100%;max-width:840px;max-height:100%;padding:clamp(17px,1.7vw,26px)!important;overflow:auto;scrollbar-width:thin}
+.policy-flow-modes{display:flex;gap:8px;margin:0 0 15px}
+.policy-flow-modes button,.verdict-grid button{flex:1;border:1px solid #54829566;border-radius:10px;padding:10px 13px;background:#132e3c;color:#c6e5ed;font-size:12px;font-weight:770;cursor:pointer}
+.policy-flow-modes button[aria-pressed="true"],.verdict-grid button[aria-pressed="true"]{border-color:#72dbe6;background:#1e5360;color:#f4ffff;box-shadow:0 0 0 1px #72dbe64d}
+.policy-flow-steps{list-style:none;display:grid;grid-template-columns:minmax(0,1fr);gap:14px;padding:0;margin:0 0 12px}
+.policy-flow-steps li{position:relative;min-width:0}
+.policy-flow-stage{width:100%;text-align:left;border:1px solid #406276;border-radius:12px;background:#102a3b;color:#eaf6fa;display:flex;flex-direction:column;gap:6px;padding:14px 15px;min-height:120px;cursor:pointer}
+.policy-flow-stage[aria-current="step"]{border-color:#6fdfeb;background:#1a4252;box-shadow:0 0 0 2px #4dd7ed26}
+.policy-flow-stage small{color:#73d9e9;font-size:11px;font-weight:780}
+.policy-flow-stage strong{font-size:clamp(14px,1.13vw,18px);line-height:1.25;word-break:keep-all}
+.policy-flow-stage span{color:#aac9d5;font-size:11px;line-height:1.4;word-break:keep-all}
+.policy-flow-detail,.intel-detail,.verdict-detail{padding:14px 17px;background:linear-gradient(145deg,#123c4b,#0d2b3d);border-left:3px solid #69e2b1;border-radius:9px}
+.policy-flow-detail>span,.intel-detail>span,.verdict-detail>small{display:block;font-size:10px;color:#93d8e5;margin-bottom:6px;letter-spacing:.08em;font-weight:750}
+.policy-flow-detail>strong{display:block;font-size:18px;color:#f5ffff}
+.policy-flow-detail p,.intel-detail p{font-size:12px;line-height:1.55;color:#c0d5df;margin:7px 0 0}
+.intel-evidence>.visual-caveat,.verdict-matrix>.visual-caveat{font-size:11px;line-height:1.55;margin:12px 0 0}
+.intel-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:5px 0 17px}
+.intel-metric{border:1px solid #3b6679;background:#0d2b40;border-radius:12px;min-height:130px;padding:14px 9px;display:flex;flex-direction:column;justify-content:center;gap:6px;cursor:pointer}
+.intel-metric[aria-pressed="true"]{border-color:#69e0f0;background:#1a4654}
+.intel-metric strong{font-size:clamp(35px,3.65vw,57px);line-height:1;letter-spacing:-.06em;color:#6be3f0;font-variant-numeric:tabular-nums}
+.intel-metric span{font-size:11px;line-height:1.38;color:#bdd6e2;word-break:keep-all;font-weight:720}
+.intel-review-boundary{display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.2vw,20px);padding:18px 14px;background:rgba(10,34,50,.5);border:1px solid rgba(100,157,177,.25);border-radius:12px;margin-top:12px}
+.intel-review-boundary span{padding:6px 12px;border-radius:8px;background:rgba(20,50,70,.6);border:1px solid rgba(132,215,242,.2);font-size:13px;color:#c6e3e9}
+.intel-review-boundary b{color:#7fe4f1;font-size:16px;transform:none}
+.intel-review-boundary strong{font-family:ui-monospace,monospace;color:#ffce92;border:1px solid #f4c37a55;padding:6px 12px;border-radius:8px;background:#44352163;font-size:13px}
+.verdict-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 16px}
+.verdict-grid button{padding:13px 2px;font-size:11px;letter-spacing:.04em}
+.verdict-grid button[data-verdict="block"]{color:#ffa3ab}
+.verdict-grid button[data-verdict="warn"]{color:#ffd28a}
+.verdict-grid button[data-verdict="allow"]{color:#79e4b8}
+.verdict-detail{min-height:220px;display:flex;flex-direction:column;gap:9px;justify-content:center}
+.verdict-detail h2{font-size:clamp(19px,1.9vw,27px);line-height:1.35;letter-spacing:-.04em;margin:0 0 9px;word-break:keep-all}
+.verdict-detail span{color:#8bc8d4;font-size:11px}
+.verdict-detail strong{font-size:clamp(20px,2vw,29px);color:#86ecbd}
+.verdict-detail p{font-size:12px;line-height:1.6;color:#bacfdb;margin:9px 0 0}
+@media(max-width:1000px){.policy-flow-panel,.intel-evidence,.verdict-matrix{max-height:none}.policy-flow-stage{min-height:112px}.intel-metrics{gap:7px}}
+@media(max-width:650px){.policy-flow-stage{min-height:83px}.intel-metrics{grid-template-columns:repeat(3,1fr)}.intel-metric{min-height:94px}.intel-metric strong{font-size:28px}.intel-review-boundary{gap:5px;grid-template-columns:minmax(0,1fr)}.intel-review-boundary b{transform:none}.intel-review-boundary>*{font-size:10px}.verdict-detail{min-height:205px}}
+@media(prefers-reduced-motion:reduce){.policy-flow-panel *, .intel-evidence *, .verdict-matrix *{transition:none!important;animation:none!important}}
+
+/* Four checks have a single top-to-bottom reading order. */
+.policy-flow-stage{min-height:69px;padding:9px 13px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto;gap:3px 10px}
+.policy-flow-stage small{grid-column:1;grid-row:1}
+.policy-flow-stage strong{grid-column:1;grid-row:2}
+.policy-flow-stage span{grid-column:2;grid-row:1/span 2;align-self:center}
+@media(max-width:650px){.policy-flow-stage{display:flex;min-height:78px}.policy-flow-stage span{align-self:auto}}
+
+/* Direction occupies the dedicated gap, outside both adjacent cards. */
+.policy-flow-connector{position:absolute;top:100%;left:50%;transform:translateX(-50%);width:18px;height:14px;display:grid;place-items:center;color:#8ce3e8;pointer-events:none}
+.policy-flow-connector svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media(forced-colors:active){.policy-flow-connector{color:CanvasText}}

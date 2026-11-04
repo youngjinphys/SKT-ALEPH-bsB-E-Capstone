@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import grp
+import hashlib
 import os
 from pathlib import Path
 import pwd
@@ -131,6 +132,95 @@ def copy_source(source, destination):
         shutil.rmtree(staging)
 
 
+
+
+RUNTIME_PATHS = tuple(
+    Path("apps") / app / "src" for app in ("dns-agent", "policy-sync", "policy-server")
+)
+
+
+def _runtime_inventory(root, *, installed):
+    """Read only canonical source files. Reject stale extras or writable installed code."""
+    root = Path(root)
+    paths = {}
+    expected_owner = 0 if os.geteuid() == 0 else os.geteuid()
+    for folder in RUNTIME_PATHS:
+        directory = root / folder
+        if directory.is_symlink() or not directory.is_dir():
+            raise ValueError(f"runtime component unavailable: {folder}")
+        if installed:
+            # This also covers the package/src parents, not only leaf files.
+            check_directory(directory)
+        for entry in directory.rglob("*"):
+            rel = entry.relative_to(root)
+            info = entry.lstat()
+            if not (stat.S_ISDIR(info.st_mode) or stat.S_ISREG(info.st_mode)):
+                raise ValueError(f"runtime contains symlink or special file: {rel}")
+            if installed and (info.st_uid != expected_owner or info.st_mode & 0o022):
+                raise ValueError(f"installed runtime is not owned and protected: {rel}")
+            if stat.S_ISDIR(info.st_mode):
+                if installed and entry.name == "__pycache__":
+                    raise ValueError("unreviewed bytecode directory in installed runtime")
+                continue
+            excluded = any(x.startswith(".") or x == "__pycache__" for x in rel.parts)
+            if excluded or entry.suffix not in (".py", ".json"):
+                if installed:
+                    raise ValueError(f"extra unexpected installed code/data: {rel}")
+                continue
+            fd = os.open(entry, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                info = os.fstat(fd)
+                if (not stat.S_ISREG(info.st_mode) or info.st_size > 2 * 1024 * 1024
+                        or installed and (info.st_nlink != 1 or info.st_uid != expected_owner
+                                          or info.st_mode & 0o022)):
+                    raise ValueError(f"untrusted runtime file: {rel}")
+                with os.fdopen(os.dup(fd), "rb") as stream:
+                    data = stream.read(2 * 1024 * 1024 + 1)
+            finally:
+                os.close(fd)
+            if len(data) > 2 * 1024 * 1024:
+                raise ValueError(f"runtime source too large: {rel}")
+            paths[rel.as_posix()] = hashlib.sha256(data).digest()
+    return paths
+
+
+def verify_runtime(source_root, installed_root, *, role=None):
+    """Ensure installed Python modules match the operator-reviewed checkout.
+
+    This compares content, not commit provenance. Always select a trusted SHA
+    and inspect local modifications before privileged deployment.
+    """
+    if role not in (None, "policy", "dns"):
+        raise ValueError("invalid runtime role")
+    source_root, installed_root = Path(source_root), Path(installed_root)
+    if installed_root.is_symlink() or not installed_root.is_dir():
+        raise ValueError("installed runtime root must be a directory")
+    check_directory(installed_root)
+    if role is not None:
+        dns_admin = installed_root / "infra/edge/system_dns.py"
+        if (dns_admin.is_file()) != (role == "dns"):
+            raise ValueError("installed runtime role mismatch")
+        if role == "dns":
+            for name in ("system_dns.py", "firewall_guard.py"):
+                rel = Path("infra/edge") / name
+                src, dst = source_root / rel, installed_root / rel
+                if dst.is_symlink() or not dst.is_file() or src.read_bytes() != dst.read_bytes():
+                    raise ValueError(f"installed DNS administration source differs: {rel}")
+                info = dst.stat()
+                owner = 0 if os.geteuid() == 0 else os.geteuid()
+                if info.st_uid != owner or info.st_mode & 0o022:
+                    raise ValueError(f"unsafe installed DNS administration code: {rel}")
+    source = _runtime_inventory(source_root, installed=False)
+    installed = _runtime_inventory(installed_root, installed=True)
+    if source != installed:
+        delta = sorted(set(source) ^ set(installed))
+        mismatched = sorted(x for x in set(source) & set(installed) if source[x] != installed[x])
+        sample = (delta + mismatched)[:4]
+        raise ValueError("installed Python runtime differs from checked-out code; "
+                         "run an approved code-only upgrade first: " + ", ".join(sample))
+    return len(installed)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
@@ -140,12 +230,19 @@ def main(argv=None):
     copy = sub.add_parser('copy-source')
     copy.add_argument('source', type=Path)
     copy.add_argument('destination', type=Path)
+    verify = sub.add_parser('verify-runtime')
+    verify.add_argument('source_root', type=Path)
+    verify.add_argument('installed_root', type=Path)
+    verify.add_argument('--role', choices=('policy', 'dns'))
     args = parser.parse_args(argv)
     try:
         if args.command == 'check':
             check_install(args.role, args.device_id)
-        else:
+        elif args.command == 'copy-source':
             copy_source(args.source, args.destination)
+        else:
+            count = verify_runtime(args.source_root, args.installed_root, role=args.role)
+            print(f'VERIFIED_RUNTIME_FILES={count}')
         return 0
     except (OSError, ValueError) as exc:
         parser.exit(2, f'INSTALL_PREFLIGHT_ERROR: {exc}\n')

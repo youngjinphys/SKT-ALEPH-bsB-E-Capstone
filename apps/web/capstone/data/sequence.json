@@ -1,0 +1,73 @@
+{
+  "mainSlideCount": 14,
+  "rawMainSlideCount": 20,
+  "slides": [
+    {
+      "id": "opening",
+      "seconds": 0
+    },
+    {
+      "id": "introduction",
+      "seconds": 60
+    },
+    {
+      "id": "friction",
+      "seconds": 80
+    },
+    {
+      "id": "friction-barriers",
+      "seconds": 75
+    },
+    {
+      "id": "precedents",
+      "seconds": 40
+    },
+    {
+      "id": "dns",
+      "seconds": 110
+    },
+    {
+      "id": "architecture",
+      "seconds": 125
+    },
+    {
+      "id": "policy-demo",
+      "seconds": 100
+    },
+    {
+      "id": "bypass",
+      "seconds": 150
+    },
+    {
+      "id": "pi-network-plan",
+      "seconds": 115
+    },
+    {
+      "id": "http",
+      "seconds": 125
+    },
+    {
+      "id": "topology-public",
+      "seconds": 90
+    },
+    {
+      "id": "closing",
+      "seconds": 100
+    },
+    {
+      "id": "thanks",
+      "seconds": 30
+    }
+  ],
+  "archived": [
+    "evidence",
+    "governance",
+    "https",
+    "precision",
+    "topology-lab",
+    "metrics",
+    "runbook",
+    "status",
+    "sources"
+  ]
+}

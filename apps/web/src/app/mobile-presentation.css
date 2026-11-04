@@ -1,0 +1,248 @@
+/* Mobile presentation budget. Import last.
+   Preserve every authored block, native text sizing, and a readable escape hatch:
+   dense diagrams cannot truthfully fit a phone in one frame without pagination.
+   No clipping, scale transform, content removal, or fixed visual-height budget. */
+@media (max-width:780px){
+ .deck-root{
+  height:100vh;height:var(--presentation-viewport-height,100dvh);min-height:0;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+ }
+ .deck-root .deck-topbar{
+  min-height:48px;flex:0 0 auto;
+  padding:4px max(12px,env(safe-area-inset-right,0px)) 4px max(12px,env(safe-area-inset-left,0px));
+ }
+ .deck-root .deck-header-actions>button{min-height:40px;padding:8px 10px}
+ .deck-root .deck-viewport{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
+ .deck-root .deck-slide{
+  height:auto;min-height:100%;overflow:visible;
+  padding:8px max(12px,env(safe-area-inset-right,0px)) 12px max(12px,env(safe-area-inset-left,0px));
+ }
+ .deck-root .slide-overline{flex:0 0 auto;min-height:20px;font-size:11px;letter-spacing:.06em;gap:10px;margin-bottom:6px}
+ .deck-root .deck-slide .slide-columns{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;flex:0 0 auto;gap:12px;min-height:0}
+ .deck-root .deck-slide .slide-narrative{max-height:none;justify-content:flex-start;min-height:0}
+ .deck-root .deck-slide .slide-heading h1{font-size:clamp(24px,6.2vw,32px);line-height:1.2;margin:0 0 8px;letter-spacing:-.045em}
+ .deck-root .deck-slide .slide-heading p{font-size:14px;line-height:1.4;margin:0 0 9px;padding:0}
+ .deck-root .deck-slide .slide-points{max-height:none;overflow:visible;gap:4px;padding:0;grid-template-columns:minmax(0,1fr)}
+ .deck-root .deck-slide .slide-point{display:flex;gap:8px;padding:6px 0;background:none}
+ .deck-root .deck-slide .point-index{min-width:20px;margin:0;font-size:11px;line-height:1.5}
+ .deck-root .deck-slide .slide-point h2{font-size:14px;line-height:1.3;margin:0 0 3px}
+ .deck-root .deck-slide .slide-point p{font-size:14px;line-height:1.4}
+ .deck-root .deck-slide .slide-visual-container{height:auto;min-height:0;max-height:none;place-items:stretch}
+ .deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack){height:auto;max-height:none;min-height:0;overflow:visible;padding:12px}
+ .deck-root .slide-visual-container>:is(.policy-flow-panel,.intel-evidence,.verdict-matrix){padding:12px!important}
+ .deck-root .diagram-caption{margin:0 0 6px;line-height:1.35}
+ .deck-root .diagram-panel>h2{font-size:18px;line-height:1.3;margin:0 0 8px}
+ .deck-root .diagram-panel :is(.visual-caveat,.diagram-footnote){font-size:13px;line-height:1.4;margin-top:8px;margin-bottom:0}
+ .deck-root .restored-controls{gap:6px;margin:6px 0 8px}
+ .deck-root .restored-controls button{min-height:40px;padding:7px 9px;font-size:13px}
+ /* Remove decorative minimum card heights, not information. */
+ .deck-root .policy-flow-modes{gap:6px;margin-bottom:8px}
+ .deck-root .policy-flow-modes button{min-height:40px;padding:7px;font-size:13px}
+ .deck-root .policy-flow-steps{gap:14px;margin-bottom:8px}
+ .deck-root .policy-flow-stage{min-height:0;padding:8px 10px;gap:3px}
+ .deck-root .policy-flow-stage strong{font-size:15px;line-height:1.3}
+ .deck-root .policy-flow-stage span{font-size:13px;line-height:1.4}
+ .deck-root :is(.policy-flow-detail,.intel-detail,.verdict-detail){padding:10px;min-height:0;gap:6px}
+ .deck-root :is(.policy-flow-detail,.intel-detail,.verdict-detail) p{font-size:14px;line-height:1.4;margin-top:6px}
+ .deck-root .intel-metrics{margin:4px 0 8px;gap:6px}
+ .deck-root .intel-metric{min-height:0;padding:10px 6px;gap:5px}
+ .deck-root .intel-metric span{font-size:12px;line-height:1.4}
+ .deck-root .intel-review-boundary{padding:8px 0 0;gap:4px}
+ .deck-root .intel-review-boundary>*{font-size:13px}
+ .deck-root .verdict-grid{gap:5px;margin-bottom:8px}
+ .deck-root .verdict-grid button{min-height:40px;padding:8px 2px;font-size:12px}
+ .deck-root .slide-opening .slide-heading .slide-credits{padding:6px 9px;margin-bottom:8px;font-size:14px;line-height:1.4}
+ .deck-root .slide-thanks .editorial-thanks{min-height:220px;height:auto;padding:20px 12px}
+ .deck-root .slide-friction .bar-chart{margin:12px 0;gap:14px}
+ /* The opener keeps the globe, mascot and all four role cards, without a
+    full-width square globe consuming the entire second half of the screen. */
+ .deck-root .slide-opening .restored-scene{height:auto;min-height:0;gap:8px;padding:0;aspect-ratio:auto}
+ .deck-root .slide-opening .restored-globe{width:160px;max-width:48%;grid-row:1}
+ .deck-root .slide-opening .restored-globe-orbit{width:180px;height:110px;top:80px}
+ .deck-root .slide-opening .restored-scene-mascot{width:72px;left:calc(50% - 120px);bottom:auto;top:90px}
+ .deck-root .slide-opening .cyber-space-infos{gap:6px}
+ .deck-root .slide-opening .cyber-space-panel{min-height:56px;padding:7px;gap:5px}
+ .deck-root .slide-opening .cyber-info-copy strong{font-size:14px}
+ .deck-root .slide-opening .cyber-info-copy span{font-size:13px}
+ .deck-root .slide-opening .globe-role-icon{width:18px;height:18px}
+ .deck-root .intro-architecture{gap:6px}
+ .deck-root .intro-architecture h2{font-size:18px;line-height:1.3;margin:0 0 4px}
+ .deck-root .intro-stage{padding:8px;grid-template-columns:24px minmax(0,1fr);gap:8px}
+ .deck-root .intro-stage h3{font-size:16px;line-height:1.3;margin:0 0 3px}
+ .deck-root .intro-stage strong,.deck-root .intro-stage p{font-size:14px;line-height:1.4}
+ .deck-root .intro-stage p{margin:4px 0 0}
+ .deck-root .intro-stage-connector{height:20px}
+ .deck-root .intro-stage-connector svg{width:18px;height:18px}
+ .deck-root .editorial-roadmap ol{gap:6px}
+ .deck-root .editorial-roadmap li{padding:7px 9px;gap:8px}
+ .deck-root .editorial-roadmap li h3{font-size:15px;line-height:1.3}
+ .deck-root .editorial-roadmap li p{font-size:14px;line-height:1.4}
+ /* Dialogs use the same dynamic safe area as the actual presentation frame. */
+ .deck-root .slide-details{top:calc(48px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);max-height:none}
+}
+/* Phone landscape and browser chrome can leave <400px. Keep all text accessible
+   rather than silently cropping or reducing it to illegible scaled thumbnails. */
+@media (max-height:500px) and (max-width:1000px){
+ .deck-root{height:100vh;height:var(--presentation-viewport-height,100dvh);min-height:0}
+ .deck-root .deck-viewport{overflow-y:auto}
+ .deck-root .deck-slide{height:auto;min-height:100%;overflow:visible}
+ .deck-root .slide-columns{min-height:0;flex:0 0 auto}
+ .deck-root .slide-narrative{max-height:none}
+ .deck-root .slide-points{max-height:none;overflow:visible}
+ .deck-root .slide-visual-container{height:auto;max-height:none;min-height:0}
+ .deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack){height:auto;max-height:none;overflow:visible}
+}
+
+/* Explicit mobile panes are controlled by React; full view restores every block.
+   We do not hide content by slide kind or infer a 'fit' from overflow clipping. */
+@media (max-width:780px){
+ .deck-root .mobile-pane-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 4px}
+ .deck-root .mobile-pane-tabs{display:flex;gap:5px;flex:1 1 auto}
+ .deck-root .mobile-pane-controls button{min-height:40px;padding:7px 11px;border:1px solid #688eaa;border-radius:8px;background:#10283d;color:#d7edf7;font-size:13px;line-height:1.3;white-space:nowrap}
+ .deck-root .mobile-pane-tabs button{flex:1}
+ .deck-root .mobile-pane-tabs button[aria-pressed=true]{background:#b3eff1;color:#082335;border-color:#d8ffff;font-weight:750}
+ .deck-root .mobile-pane-controls button:focus-visible{outline:3px solid #ffe3a6;outline-offset:2px}
+ .deck-root .deck-slide[data-mobile-layout=panes] .slide-narrative{display:contents}
+ .deck-root .deck-slide[data-mobile-layout=panes] .slide-columns{gap:8px}
+ .deck-root .deck-slide[data-mobile-layout=panes] .slide-heading p{margin-bottom:0}
+ .deck-root .deck-slide [hidden]{display:none!important}
+ .deck-root .deck-slide[data-mobile-layout=full] .slide-columns{gap:12px}
+ /* Five actors retain their endpoints, including direct client-to-web traffic.
+    Compact padding/icon tracks replace vertical card ornament, not label text. */
+ .deck-root .restored-dns-map{gap:4px;grid-template-columns:minmax(0,1fr) 84px minmax(0,1fr)}
+ .deck-root .restored-dns .restored-node{padding:6px 5px;gap:3px;min-height:0}
+ .deck-root .restored-dns .restored-icon{width:22px;height:22px}
+ .deck-root .restored-dns .restored-node strong{font-size:14px;line-height:1.25}
+ .deck-root .restored-dns .restored-node small{font-size:13px;line-height:1.3}
+ .deck-root .restored-dns .dns-policy-link{min-height:28px;gap:2px;font-size:12px;line-height:1.3}
+ .deck-root .restored-dns .dns-web-link{min-height:36px}
+ .deck-root .restored-dns :is(.dns-query-link,.dns-upstream-link){min-height:48px;gap:2px}
+ .deck-root .restored-dns .restored-verdict{margin:6px 0;font-size:14px;line-height:1.35}
+ .deck-root .restored-dns .restored-controls{margin:4px 0 6px}
+ .deck-root .restored-dns :is(.visual-caveat,.diagram-footnote){margin-top:6px;font-size:13px;line-height:1.35}
+}
+
+/* The hook selects full view for short landscape or pinch zoom at ANY width.
+   Scope to its explicit state so ordinary desktop presentation is unchanged. */
+.deck-root:has(.deck-slide[data-mobile-layout=full]){
+ height:100vh;height:var(--presentation-viewport-height,100dvh);min-height:0;
+}
+.deck-root:has(.deck-slide[data-mobile-layout=full]) .deck-viewport{overflow-y:auto;min-height:0}
+.deck-root .deck-slide[data-mobile-layout=full]{height:auto;min-height:100%;overflow:visible}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-columns{display:flex;flex-direction:column;align-items:stretch;flex:0 0 auto;gap:12px;min-height:0}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-narrative{display:flex;max-height:none;min-height:0;justify-content:flex-start}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-points{max-height:none;overflow:visible}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-point :is(h2,p){font-size:max(14px,1em);line-height:1.4}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-visual-container{height:auto;max-height:none;min-height:0;place-items:stretch}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack){height:auto;max-height:none;overflow:visible}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-visual-container :is(p,small,button,td,th){font-size:max(12px,1em)}
+.deck-root .deck-slide[data-mobile-layout=full] .restored-scene{height:auto;min-height:320px}
+
+/* Lifecycle states are selectors, not three full-height detail cards. The
+   selected response and explanatory note remain in the adjacent result panel. */
+@media (min-width:361px) and (max-width:780px){
+ .deck-root .policy-lifecycle .policy-timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+ .deck-root .policy-lifecycle .policy-timeline-stage{position:relative;display:flex;flex-direction:column;align-items:stretch;min-width:0}
+ .deck-root .policy-lifecycle .policy-timeline-stage button{width:100%;min-height:92px;flex:1;gap:5px;padding:7px 5px;justify-content:center}
+ .deck-root .policy-lifecycle .policy-timeline-stage button span{font-size:13px;line-height:1.3}
+ .deck-root .policy-lifecycle .policy-timeline-stage button strong{font-size:12px;line-height:1.4;word-break:keep-all;overflow-wrap:normal}
+ .deck-root .policy-lifecycle .policy-timeline-stage button small{font-size:12px;line-height:1.4;word-break:keep-all}
+ .deck-root .policy-lifecycle .policy-timeline-arrow{left:100%;top:50%;width:16px;height:20px;transform:translateY(-50%)}
+ .deck-root .policy-lifecycle .policy-timeline-arrow svg{width:16px;height:16px}
+}
+@media (max-width:780px){
+ .deck-root .policy-lifecycle .policy-review-gates{margin-bottom:8px;gap:5px}
+ .deck-root .policy-lifecycle .policy-review-gates>span{padding:5px;font-size:12px;line-height:1.3}
+ .deck-root .policy-lifecycle .policy-timeline-result{margin-top:10px;padding:10px 12px}
+ .deck-root .policy-lifecycle .policy-timeline-result>span{font-size:13px;line-height:1.35;margin-bottom:5px}
+ .deck-root .policy-lifecycle .policy-timeline-result strong{font-size:18px;line-height:1.35}
+ .deck-root .policy-lifecycle .policy-timeline-result p{font-size:14px;line-height:1.4;margin-top:6px}
+}
+
+/* Verdict-to-DNS mapping is evidence, not fine print. */
+@media(max-width:780px){
+ .deck-root .verdict-mapping,.deck-root .verdict-mapping :is(th,td){font-size:12px;line-height:1.35}
+ .deck-root .policy-flow-stage small{font-size:12px;line-height:1.3}
+ .deck-root :is(.policy-flow-detail,.intel-detail)>span,.deck-root .verdict-detail>small{font-size:12px;line-height:1.3}
+}
+
+/* CI 390px audit: <figure>'s UA margin escaped the grid while document width
+   stayed unchanged. Reset the figure itself; never mask the overhang. */
+@media(max-width:780px){
+ .deck-root .slide-friction .slide-visual-container>.chart-card{margin:0;min-width:0;max-width:100%}
+ .deck-root .independent-trends{gap:6px}
+ .deck-root .independent-trends .independent-series{padding:10px}
+ .deck-root .independent-trends .series-column-chart{--plot-height:100px}
+ .deck-root .independent-trends .series-heading{margin-bottom:6px}
+ .deck-root .independent-trends .series-footer{margin-top:6px;gap:5px}
+ .deck-root .dns-evidence-dashboard .cname-walkthrough .visual-caveat{font-size:12px;line-height:1.4}
+ /* Supply and direct-web arrows remain on their actual endpoint centerlines.
+    Use the empty lane beside the supply arrow for its label, not extra rows. */
+ .deck-root .restored-dns .dns-policy-link{position:relative;min-height:28px;gap:0}
+ .deck-root .restored-dns .dns-policy-link>span{position:absolute;right:calc(50% + 16px);top:50%;transform:translateY(-50%);width:160px;text-align:right;font-size:12px;line-height:1.3}
+ .deck-root .restored-dns :is(.dns-policy,.dns-web){display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;justify-items:start;gap:3px 4px;text-align:left}
+ .deck-root .restored-dns :is(.dns-policy,.dns-web) small{grid-column:1/-1;width:100%}
+ .deck-root .restored-dns .dns-policy-link .direct-flow-line{height:28px}
+}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-heading p:not(.slide-credits){font-size:max(14px,1em);line-height:1.4}
+/* At the common Safari toolbar budget, shrink only the illustrative globe,
+   not its four role labels or the project title. */
+@media(max-width:780px){
+ .deck-root .slide-opening[data-mobile-tight=true] .restored-globe{width:120px}
+ .deck-root .slide-opening[data-mobile-tight=true] .restored-globe-orbit{width:140px;height:90px;top:60px}
+ .deck-root .slide-opening[data-mobile-tight=true] .restored-scene-mascot{width:56px;left:calc(50% - 94px);top:66px}
+}
+
+@media(max-width:780px){
+ .deck-root .slide-governance .verdict-mapping thead th{font-size:12px;line-height:1.35}
+}
+.deck-root .deck-slide[data-mobile-layout=full] .slide-visual-container>.chart-card{margin:0;min-width:0;max-width:100%}
+
+/* Short Safari viewport: preserve the entire CNAME chain, using two rows per
+   node (label + policy, then address + downward relationship) rather than three.
+   Each relationship remains owned by the node preceding its destination. */
+@media(max-width:780px){
+ .deck-root .deck-slide[data-mobile-budget=short] .dns-evidence-top{grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
+ .deck-root .deck-slide[data-mobile-budget=short] .dns-evidence-top>div small{font-size:12px;line-height:1.3}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-nodes{gap:4px}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:3px 7px;padding:5px 7px;align-items:center}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>span{grid-column:1;grid-row:1;font-size:12px;line-height:1.3}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>b{grid-column:2;grid-row:1;font-size:12px;line-height:1.3;white-space:nowrap}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>strong{grid-column:1;grid-row:2;font-size:13px;line-height:1.35;word-break:keep-all;overflow-wrap:normal}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-walkthrough .chain-step>.cname-link{grid-column:2;grid-row:2;justify-self:end;padding-left:7px;font-size:12px;line-height:1.35;white-space:nowrap}
+ .deck-root .deck-slide[data-mobile-budget=short] .cname-progress{margin-top:6px;font-size:12px;line-height:1.35}
+}
+
+/* On short screens only, two redundant decorative icons yield their width to
+   the full actor names. Client/resolver/upstream icons and all five roles remain. */
+@media(max-width:780px){
+ .deck-root .deck-slide[data-mobile-budget=short] .slide-visual-container>.restored-dns{padding:8px}
+ .deck-root .deck-slide[data-mobile-budget=short] .restored-dns :is(.dns-policy,.dns-web){grid-template-columns:minmax(0,1fr);text-align:center;justify-items:center}
+ .deck-root .deck-slide[data-mobile-budget=short] .restored-dns :is(.dns-policy,.dns-web)>.restored-icon{display:none}
+ .deck-root .deck-slide[data-mobile-budget=short] .restored-dns :is(.dns-policy,.dns-web)>strong{grid-column:1/-1;width:100%}
+}
+
+/* 390x700 measured follow-up: reclaim ornament/spacing, not facts or type. */
+@media(max-width:780px){
+ .deck-root .deck-slide[data-mobile-budget=short] .independent-trends>figcaption>.diagram-caption{display:none}
+ .deck-root .deck-slide[data-mobile-budget=short] .independent-trends .series-column-chart{--plot-height:76px}
+ .deck-root .deck-slide[data-mobile-budget=short] .independent-trends .series-exact-values{row-gap:3px;margin-top:2px}
+ .deck-root .deck-slide[data-mobile-budget=short] .policy-flow-stage{padding:5px 10px;gap:2px}
+ .deck-root .deck-slide[data-mobile-budget=short] .policy-flow-detail{padding:8px 10px}
+ .deck-root .deck-slide[data-mobile-budget=short] .policy-flow-steps{gap:12px}
+ .deck-root .deck-slide[data-mobile-budget=short] .policy-flow-connector{height:12px}
+ .deck-root .deck-slide[data-mobile-budget=short] .policy-flow-connector svg{height:12px;width:12px}
+ /* Keep all three core actor icons, but share their row with the role name.
+    This removes a whole icon row at both DNS hops without shrinking labels. */
+ .deck-root .deck-slide[data-mobile-budget=short] .restored-dns :is(.dns-client,.dns-resolver,.dns-upstream){display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;justify-items:start;gap:3px 4px;text-align:left}
+ .deck-root .deck-slide[data-mobile-budget=short] .restored-dns :is(.dns-client,.dns-resolver,.dns-upstream)>small{grid-column:1/-1;width:100%}
+}
+/* A further ~12px chrome reserve for short panes, with control hit areas intact. */
+@media(max-width:780px){
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes]{padding-top:6px;padding-bottom:10px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .slide-overline{margin-bottom:4px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .slide-columns{gap:6px}
+ .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .mobile-pane-controls{margin-bottom:2px}
+}

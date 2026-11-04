@@ -1,0 +1,26 @@
+/* Static artifact metadata: quiet, noninteractive, and clear of slide content. */
+.build-timestamp {
+  position: fixed;
+  inset: auto max(14px, env(safe-area-inset-right, 0px)) calc(5px + env(safe-area-inset-bottom, 0px)) auto;
+  z-index: 5;
+  max-width: calc(100vw - 28px);
+  color: #8b9aa8;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: .025em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* The presentation fills the viewport. Reserve a real footer instead of
+   placing the watermark over diagram labels or the last mobile control. */
+body:has(> .build-timestamp) .deck-root {
+  padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+}
+@media (forced-colors: active) {
+  .build-timestamp { color: CanvasText; }
+}
+@media print {
+  .build-timestamp { position: static; display: block; text-align: right; color: #555; }
+}

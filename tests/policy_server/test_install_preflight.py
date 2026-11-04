@@ -91,6 +91,50 @@ class InstallPreflightTests(unittest.TestCase):
                 self.m.copy_source(source, output)
             self.assertFalse(output.exists())
 
+
+    def test_verify_installed_runtime_fails_closed_on_drift_or_extra_modules(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source, installed = root / 'checkout', root / 'installed'
+            for origin in (source, installed):
+                for app in ('dns-agent', 'policy-sync', 'policy-server'):
+                    part = origin / 'apps' / app / 'src' / app.replace('-', '_')
+                    part.mkdir(parents=True)
+                    (part / '__init__.py').write_text('VALUE = 1\n')
+            self.assertEqual(self.m.verify_runtime(source, installed), 3)
+            candidate = installed/'apps/policy-sync/src/policy_sync/__init__.py'
+            candidate.write_text('VALUE = 2\n')
+            with self.assertRaisesRegex(ValueError, 'differs'):
+                self.m.verify_runtime(source, installed)
+            candidate.write_text('VALUE = 1\n')
+            extra = candidate.parent/'extra.py'
+            extra.write_text('UNREVIEWED = True\n')
+            with self.assertRaisesRegex(ValueError, 'differs'):
+                self.m.verify_runtime(source, installed)
+            extra.unlink()
+            candidate.chmod(0o666)
+            with self.assertRaisesRegex(ValueError, 'protected'):
+                self.m.verify_runtime(source, installed)
+            candidate.chmod(0o644)
+            module_dir = candidate.parent
+            module_dir.chmod(0o777)
+            with self.assertRaisesRegex(ValueError, 'unsafe install directory|not owned and protected'):
+                self.m.verify_runtime(source, installed)
+            module_dir.chmod(0o755)
+            candidate.unlink()
+            candidate.symlink_to(source/'apps/policy-sync/src/policy_sync/__init__.py')
+            with self.assertRaisesRegex(ValueError, 'symlink'):
+                self.m.verify_runtime(source, installed)
+
+    def test_optional_installers_verify_runtime_before_system_mutation(self):
+        for script in ('install-operations-console.sh', 'install-dns-telemetry.sh'):
+            text = (ROOT/'scripts/deploy'/script).read_text()
+            self.assertIn('verify-runtime "$ROOT" /opt/aleph-policy-code', text)
+            self.assertLess(text.index('verify-runtime "$ROOT" /opt/aleph-policy-code'),
+                            text.index('useradd --system'))
+        upgrade=(ROOT/'scripts/deploy/upgrade-policy-runtime.sh').read_text()
+        self.assertIn('verify-runtime "$ROOT" "$STAGING"', upgrade)
+
     def test_read_only_preflight_precedes_every_installer_mutation(self):
         # Integration guard: the actual entrypoints must call the checked helper
         # before creating accounts or invoking the privileged DNS installer.

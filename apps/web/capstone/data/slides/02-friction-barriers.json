@@ -1,0 +1,55 @@
+{
+  "id": "friction-barriers",
+  "chapter": "01 · 문제",
+  "title": "브라우저 보호에\n공통 DNS 정책을 더합니다",
+  "subtitle": "URL 검사와 이름 조회 정책의 역할 분담",
+  "seconds": 75,
+  "kind": "adoption",
+  "status": "reference",
+  "points": [
+    {
+      "title": "기존 기본 보호",
+      "body": "Chrome의 Safe Browsing 표준 보호는 기본 활성화"
+    },
+    {
+      "title": "공통 정책 적용",
+      "body": "보호 DNS를 쓰는 앱·단말의 새 이름 조회에 적용"
+    },
+    {
+      "title": "확인할 추가 가치",
+      "body": "동일 브라우저 설정에서 추가 차단·오탐·복구를 비교"
+    }
+  ],
+  "notes": "[화면] 브라우저, 추가 앱, 보호 DNS의 적용 조건을 차례로 선택합니다.\n\n[발표] Chrome에는 Safe Browsing 표준 보호가 기본으로 켜져 있습니다. 그래서 저희의 출발점은 사용자가 아무 보호도 받지 못한다는 가정이 아닙니다.\n\n브라우저는 방문 URL을 검사하고, 별도 보안 앱은 각자의 기능과 권한에 따라 동작합니다. 보호 DNS는 그 서버로 들어오는 이름 조회에 공통 정책을 적용합니다. 예를 들어 login-alert.test의 /account라는 페이지를 열더라도 DNS가 받는 것은 호스트 이름이고, 페이지 경로는 포함되지 않습니다.\n\n이 차이 때문에 여러 앱에 정책을 적용할 수 있는 장점과 같은 호스트 안의 정상·악성 경로를 구분하기 어려운 제약이 함께 생깁니다. 위협정보가 갱신되기 전의 공백도 남습니다. 추가 효과는 동일한 브라우저 보호 설정에서 따로 비교해야 합니다.\n\n[전환] 이런 네트워크 보호 방식에는 이미 운영 선례가 있습니다.",
+  "sources": [
+    "browser",
+    "dns-terminology",
+    "oest-2020"
+  ],
+  "mood": "curious",
+  "headline": {
+    "focus": "1차 방어",
+    "tone": "evidence"
+  },
+  "presentation": {
+    "title": "브라우저 보호에\n공통 DNS 정책을 더합니다",
+    "subtitle": "URL 검사와 이름 조회 정책의 역할 분담",
+    "cue": "추가 앱 설치 여부를 전체 보호 여부와 동일시하지 않습니다. DNS가 보는 이름과 URL 경로를 구분합니다.",
+    "reviewNote": "Oest의 21h·9h는 2018–2019년 특정 브랜드의 과거 관측입니다. 현재 Safe Browsing 지연이나 DNS의 우위를 뜻하지 않으므로 세부 숫자는 발표자 참고로 옮겼습니다.",
+    "points": [
+      {
+        "title": "기존 기본 보호",
+        "body": "Chrome의 Safe Browsing 표준 보호는 기본 활성화"
+      },
+      {
+        "title": "공통 정책 적용",
+        "body": "보호 DNS를 쓰는 앱·단말의 새 이름 조회에 적용"
+      },
+      {
+        "title": "확인할 추가 가치",
+        "body": "동일 브라우저 설정에서 추가 차단·오탐·복구를 비교"
+      }
+    ],
+    "compactTitle": "기존 보호와 DNS의 역할"
+  }
+}

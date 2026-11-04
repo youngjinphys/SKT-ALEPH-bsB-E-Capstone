@@ -1,0 +1,67 @@
+
+/* Cohesive capstone brand system: landing, evidence layers, presentation motion. */
+.site-root{background:radial-gradient(ellipse at 76% 12%,rgba(25,115,139,.28),transparent 40%),radial-gradient(ellipse at 10% 63%,rgba(23,75,92,.12),transparent 52%),linear-gradient(150deg,#071522 2%,#0b1e2b 52%,#07141d)}
+.site-topbar{position:relative;z-index:4}
+.landing-main{padding-top:clamp(38px,5vw,78px)}
+.landing-copy>h1{font-size:clamp(43px,4.7vw,77px);line-height:1.13;letter-spacing:-.07em;max-width:800px;text-wrap:balance}
+.landing-copy em{background:linear-gradient(105deg,#c4faff,#61dbe8 55%,#7ff1cc);background-clip:text;-webkit-text-fill-color:transparent}
+.landing-actions{margin-bottom:35px}
+.landing-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;max-width:575px;margin:0 0 30px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.landing-facts>div{display:flex;flex-direction:column;gap:4px;min-width:0;padding:2px clamp(8px,1.25vw,22px);border-right:1px solid var(--line)}
+.landing-facts>div:first-child{padding-left:0}
+.landing-facts>div:last-child{border:0}
+.landing-facts strong{font-size:clamp(20px,2.3vw,31px);font-variant-numeric:tabular-nums;letter-spacing:-.06em;line-height:1.1;font-weight:800;color:#effeff}
+.landing-facts span{color:var(--muted);font-size:11px;letter-spacing:.02em}
+.trail-panel{padding-top:21px}
+.trail-tabs button{transition:background .2s ease,border-color .2s ease,color .2s ease}
+.trail-info{animation:landing-reveal .22s ease both}
+.landing-scene{isolation:isolate}
+.landing-scene::before{content:"";position:absolute;z-index:-2;top:3%;left:0;right:0;height:85%;background:radial-gradient(ellipse at center,rgba(29,137,160,.24),transparent 65%);pointer-events:none}
+.mascot-button{transition:filter .24s ease}
+.mascot-button:hover{filter:drop-shadow(0 12px 34px rgba(105,231,227,.18))}
+.mascot-message{border-color:rgba(119,212,223,.38);background:linear-gradient(135deg,rgba(19,55,72,.92),rgba(8,30,43,.92))}
+.landing-layers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:clamp(20px,4vw,58px) 0 20px}
+.landing-layer{position:relative;display:flex;flex-direction:column;min-width:0;min-height:170px;padding:22px clamp(16px,2vw,28px);border:1px solid rgba(113,174,192,.22);border-top:2px solid rgba(102,217,233,.55);background:linear-gradient(145deg,rgba(20,57,74,.82),rgba(8,30,44,.7));border-radius:12px;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.landing-layer:hover,.landing-layer:focus-visible{transform:translateY(-4px);border-color:rgba(99,225,236,.68);background:linear-gradient(145deg,rgba(28,73,90,.95),rgba(8,38,55,.86))}
+.layer-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.09em;margin-bottom:21px}
+.layer-topline span:last-child{font-size:20px;line-height:1}
+.landing-layer strong{font-size:clamp(16px,1.4vw,21px);letter-spacing:-.04em;word-break:keep-all}
+.landing-layer p{margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.7;word-break:keep-all}
+.access-section{margin-top:36px}
+.deck-slide{contain:layout paint}
+@keyframes landing-reveal{from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:990px){
+ .landing-intro{grid-template-columns:1fr;gap:18px}
+ .landing-scene{min-height:470px;justify-content:flex-start}
+ .mascot-button{width:min(58vw,310px)}
+ .orbit-a{width:min(75vw,420px)}
+ .orbit-b{width:min(60vw,330px)}
+ .landing-layers{grid-template-columns:1fr 1fr}
+ .landing-layers>a:last-child{grid-column:1/-1}
+}
+@media(max-width:640px){
+ .landing-main{padding-top:29px}
+ .landing-copy>h1{font-size:clamp(36px,9vw,53px);margin-top:6px}
+ .landing-facts{margin-bottom:24px}
+ .landing-facts>div{padding-right:8px;padding-left:8px}
+ .landing-facts strong{font-size:clamp(19px,5vw,27px)}
+ .landing-facts span{font-size:10px}
+ .landing-layers{grid-template-columns:1fr;gap:9px}
+ .landing-layers>a:last-child{grid-column:auto}
+ .landing-layer{min-height:130px;padding:18px}
+ .layer-topline{margin-bottom:12px}
+ .landing-scene{min-height:420px}
+ .mascot-button{width:min(77vw,310px)}
+}
+@media(prefers-reduced-motion:reduce){
+ .landing-layer,.trail-info,.landing-scene::before{animation:none!important;transition:none!important}
+}
+
+
+/* Maintain a true one-screen opening at projector sizes near 1366 × 768. */
+@media(min-width:781px) and (max-width:1499px) and (max-height:850px){
+ .slide-opening .slide-heading h1{font-size:clamp(28px,3vw,41px);line-height:1.21;margin-bottom:13px}
+ .slide-opening .slide-heading p{margin-bottom:14px;line-height:1.55}
+ .slide-opening .slide-points{gap:5px}
+ .slide-opening .slide-point{padding:7px 0}
+}

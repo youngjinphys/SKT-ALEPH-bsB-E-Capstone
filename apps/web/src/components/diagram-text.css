@@ -1,0 +1,11 @@
+/* The widest/tallest authored label reserves one shared cell at every width.
+   No translation, remount, delayed state or transition on first render. */
+.diagram-text-swap{display:inline-grid;grid-template-columns:minmax(0,1fr);max-width:100%;min-width:0;vertical-align:top}
+.diagram-text-swap>.diagram-text-layer{grid-area:1 / 1;min-width:0;opacity:1;transition:opacity 320ms ease-in-out}
+.diagram-text-swap>.diagram-text-layer[aria-hidden=true]{opacity:0;pointer-events:none;user-select:none}
+.diagram-text-swap[data-motion-paused=true]>.diagram-text-layer,
+html[data-motion=off] .diagram-text-swap>.diagram-text-layer{transition:none!important}
+@media(prefers-reduced-motion:reduce){.diagram-text-swap>.diagram-text-layer{transition:none!important}}
+/* Reserve route borders in every scenario; unused-route decoration must not
+   change grid-row height when labels crossfade on narrow screens. */
+.deck-root .restored-dns :is(.dns-upstream-link,.dns-web-link){border:1px solid transparent}

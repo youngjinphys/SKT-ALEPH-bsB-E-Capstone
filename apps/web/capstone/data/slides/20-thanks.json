@@ -1,0 +1,29 @@
+{
+  "id": "thanks",
+  "chapter": "05 · 결론",
+  "title": "감사합니다",
+  "subtitle": "검토한 정책을 적용하고, 되돌리고, 검증하는 DNS 보호",
+  "seconds": 30,
+  "kind": "thanks",
+  "status": "conclusion",
+  "credits": "김다영, 김태양, *염영진, 조유정",
+  "points": [],
+  "notes": "[화면] 감사 화면에서 청중을 바라봅니다. 질의응답은 20분 발표가 끝난 뒤 시작합니다.\n\n[발표] 검토한 위협정보를 승인 가능한 정책으로 만들고, DNS에서 적용하고 되돌릴 수 있게 연결했습니다. 확인한 동작과 남은 경계를 바탕으로 실제 보호 효과를 계속 검증하겠습니다. 경청해 주셔서 감사합니다. 질문 받겠습니다.",
+  "sources": [
+    "architecture",
+    "execution-current"
+  ],
+  "mood": "calm",
+  "presentation": {
+    "title": "감사합니다",
+    "subtitle": "검토한 정책을 적용하고, 되돌리고, 검증하는 DNS 보호",
+    "cue": "예상 질문과 근거는 최종 시나리오의 발표자 참고 절에 정리했습니다.",
+    "reviewNote": "감사·질의응답 화면까지 하나의 발표 경로를 사용합니다.",
+    "points": [],
+    "compactTitle": "감사합니다"
+  },
+  "headline": {
+    "focus": "THANK YOU",
+    "tone": "protect"
+  }
+}

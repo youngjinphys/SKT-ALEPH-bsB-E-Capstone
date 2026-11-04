@@ -1,0 +1,67 @@
+{
+  "hero": {
+    "intro": "검토한 위협정보를",
+    "emphasis": "DNS 보호 정책으로.",
+    "lead": [
+      "관리형 네트워크의 이름 조회에 승인된 차단 정책을 적용합니다.",
+      "집행·철회·실험 결과와 적용 경계를 표지 포함 14장에 담았습니다."
+    ]
+  },
+  "trail": [
+    {
+      "key": "problem",
+      "name": "문제",
+      "title": "DNS는 어느 접속 경로를 보호하나?",
+      "body": "피싱 사이트 관측과 기존 브라우저 보호를 바탕으로 적용 대상을 좁힙니다.",
+      "warning": "새 이름 조회가 보호 DNS를 지나는 경우가 적용 대상입니다.",
+      "hash": "friction"
+    },
+    {
+      "key": "pipeline",
+      "name": "설계",
+      "title": "차단할 범위는 누가 승인하나?",
+      "body": "URL 근거와 하위 서비스 영향을 검토하고 서명한 정책을 배포합니다.",
+      "warning": "특정 호스트의 제안과 하위 전체 집행의 범위를 함께 확인합니다.",
+      "hash": "architecture"
+    },
+    {
+      "key": "test",
+      "name": "검증",
+      "title": "어디까지 막고 무엇을 놓치나?",
+      "body": "과거 합성 질의 240건과 Pi DNS 전달 지연을 각각의 근거로 확인합니다.",
+      "warning": "기능 일치·추가 보호 효과·정책 비용은 서로 다른 평가입니다.",
+      "hash": "bypass"
+    },
+    {
+      "key": "future",
+      "name": "한계",
+      "title": "안내와 보호 경로를 어떻게 넓히나?",
+      "body": "브라우저·OS, 통신사·ISP, 공공이 각각 맡을 몫을 정리합니다.",
+      "warning": "참여 ISP·클라이언트의 지원과 운영 책임을 검토하는 제안입니다.",
+      "hash": "http"
+    }
+  ],
+  "layers": [
+    {
+      "index": "01",
+      "eyebrow": "POLICY INTEGRITY",
+      "title": "근거를 검토하고 서명",
+      "desc": "후보 판단과 DNS 정책 집행을 분리합니다.",
+      "hash": "architecture"
+    },
+    {
+      "index": "02",
+      "eyebrow": "DNS ENFORCEMENT",
+      "title": "이름 조회 단계에서 차단",
+      "desc": "일치하면 NXDOMAIN, 아니면 일반 DNS 응답입니다.",
+      "hash": "dns"
+    },
+    {
+      "index": "03",
+      "eyebrow": "LIMITS & COOPERATION",
+      "title": "한계를 공개하고 협력 조건 제시",
+      "desc": "HTTPS 안내·우회·과차단과 필요한 협력을 표시합니다.",
+      "hash": "closing"
+    }
+  ]
+}

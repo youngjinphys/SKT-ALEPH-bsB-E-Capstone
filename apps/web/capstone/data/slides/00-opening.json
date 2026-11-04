@@ -1,0 +1,57 @@
+{
+  "id": "opening",
+  "chapter": "00 · 표지",
+  "title": "검토한 위협정보를\nDNS의 기본 보호로",
+  "subtitle": "관리형 네트워크 · 정책 승인·집행·철회 프로토타입",
+  "seconds": 0,
+  "kind": "hero",
+  "status": "implemented",
+  "points": [
+    {
+      "title": "후보 검토",
+      "body": "URL 근거와 실제 차단 범위를 함께 확인"
+    },
+    {
+      "title": "서명 정책 배포",
+      "body": "승인된 정책을 보호 DNS가 수신·검증"
+    },
+    {
+      "title": "집행과 복구",
+      "body": "차단·철회 응답과 적용 경계를 확인"
+    }
+  ],
+  "notes": "[화면] 표지는 발표 시작 전에 띄웁니다. 팀원 표기를 확인하고 목차에서 소개 화면으로 이동합니다. 표지의 시간은 본 발표 20분에 포함하지 않습니다.\n\n[운영] 발표 중 화면의 패킷·정책 전환은 설명용 애니메이션입니다. 실제 실행 근거는 10월 31일 격리 실험과 11월 3일 Pi 측정 기록으로 제시합니다.",
+  "sources": [
+    "architecture",
+    "execution-current",
+    "policy-server",
+    "policy-sync"
+  ],
+  "mood": "curious",
+  "presentation": {
+    "title": "검토한 위협정보를\nDNS의 기본 보호로",
+    "subtitle": "관리형 네트워크 · 정책 승인·집행·철회 프로토타입",
+    "cue": "표지는 대기 화면입니다. 소개부터 발화를 시작합니다.",
+    "reviewNote": "적용 대상은 보호 DNS로 새 이름 조회를 보내는 관리형 네트워크입니다. 탐지 성능·피해 감소·전국 적용은 별도 평가 대상입니다.",
+    "points": [
+      {
+        "title": "후보 검토",
+        "body": "URL 근거와 실제 차단 범위를 함께 확인"
+      },
+      {
+        "title": "서명 정책 배포",
+        "body": "승인된 정책을 보호 DNS가 수신·검증"
+      },
+      {
+        "title": "집행과 복구",
+        "body": "차단·철회 응답과 적용 경계를 확인"
+      }
+    ],
+    "compactTitle": "검토한 정책으로 DNS 보호"
+  },
+  "headline": {
+    "focus": "Protective DNS",
+    "tone": "protect"
+  },
+  "credits": "김다영, 김태양, *염영진, 조유정"
+}

@@ -1,0 +1,62 @@
+.restored-scene{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;height:100%;margin:0;container-type:size;overflow:visible}
+.restored-globe{position:relative;width:min(72cqw,72cqh,670px);aspect-ratio:1;flex:none;z-index:1}
+.restored-earth-fallback{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 35px #42b8dd40);transition:opacity .15s ease}
+.restored-globe .cyber-earth-canvas{position:absolute;display:block;pointer-events:none;opacity:0;transition:opacity .15s ease}
+.restored-globe[data-earth-state="ready"] .cyber-earth-canvas{opacity:1}
+.restored-globe[data-earth-state="ready"] .restored-earth-fallback{opacity:0}
+.restored-globe-orbit{position:absolute;left:50%;top:50%;width:80cqmin;height:55cqmin;border:1px solid #61ddff20;border-radius:50%;transform:translate(-50%,-50%) rotate(-23deg);pointer-events:none}
+.restored-scene-mascot{position:absolute;left:0;bottom:37%;width:min(22cqw,25cqh,240px);z-index:3;filter:drop-shadow(0 10px 18px #001822aa)}
+.restored-mascot{position:relative;width:100%;aspect-ratio:1;isolation:isolate}
+.restored-mascot>img{display:block;width:100%;height:100%;object-fit:contain}
+.restored-mascot>.pira-surface-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+@media(min-width:1800px){.restored-globe{width:min(72cqw,72cqh,1050px)}.restored-scene-mascot{width:min(22cqw,25cqh,320px)}}
+@media(max-width:780px){.restored-scene{min-height:320px;aspect-ratio:1.12;height:auto;container-type:inline-size}.restored-globe{width:85%}.restored-globe-orbit{width:80cqw;height:55cqw}.restored-scene-mascot{width:36%;left:0;bottom:4%}}
+@media(prefers-reduced-motion:reduce){.restored-globe .cyber-earth-canvas,.restored-earth-fallback{transition:none!important}}
+/* The renderer uses a 130% overscan canvas. A 72% host keeps the globe dominant while budgeting its complete
+   93.6% painted extent inside the scene, including on GPU-enabled browsers. */
+
+@media(min-width:781px){.restored-scene{overflow:clip;contain:paint}}
+
+/* CSS slots seed readable fallback positions; GPU cards follow projected pins. */
+.restored-scene .cyber-space-infos{position:absolute;inset:0;z-index:2;pointer-events:none;container-type:size}
+.restored-scene .cyber-space-panel{position:absolute;z-index:2;width:clamp(124px,23%,160px);min-height:60px;display:flex;align-items:center;gap:5px;padding:7px;background:linear-gradient(135deg,#10344def,#091e30f6);border:1px solid #80e7ff80;border-radius:11px;box-shadow:0 5px 18px #001a3e66}
+.restored-scene .cyber-info-government{left:2%;top:2%}
+.restored-scene .cyber-info-attacker{right:2%;top:2%;border-color:#ff7898bb;background:linear-gradient(135deg,#4a2941ef,#271729f6)}
+.restored-scene .cyber-info-isp{left:2%;bottom:8%;border-color:#58ffd299}
+.restored-scene .cyber-info-users{right:2%;bottom:8%;border-color:#aeb9ff99}
+.restored-scene .cyber-info-copy{display:flex;flex-direction:column;gap:3px;min-width:0;line-height:1.35}
+.restored-scene .cyber-info-copy strong{font-size:clamp(14px,.95vw,18px);font-weight:750;white-space:nowrap}
+.restored-scene .cyber-info-copy span{font-size:clamp(12px,.8vw,15px);color:#c8e0f0;white-space:nowrap}
+.restored-scene .cyber-geo-location{display:none;font-size:clamp(11px,.7vw,15px);color:#9bbacb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.restored-scene .globe-role-icon{width:18px;height:18px;color:#9beaff;flex:none}
+.restored-scene .cyber-info-attacker .globe-role-icon{color:#ff9db4}
+.restored-scene .cyber-space-infos[data-orbit-layout=fallback] .cyber-geo-location{display:none}
+.restored-scene .cyber-surface-pin{--surface-accent:#6ae7ff;position:absolute;z-index:1;left:0;top:0;width:10px;height:10px;border:1.5px solid #edffff;border-radius:50%;background:var(--surface-accent);box-shadow:0 0 8px var(--surface-accent);transform:translate3d(0,0,0) translate(-50%,-50%)}
+.restored-scene .cyber-surface-pin--attacker{--surface-accent:#ff628c}
+.restored-scene .cyber-surface-pin--users{--surface-accent:#b1bdff}
+.restored-scene .cyber-surface-pin--isp{--surface-accent:#51ffcd}
+.restored-scene .cyber-surface-leader{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:left center;z-index:1;background:#c8d6e3b3;transition:opacity .12s linear}
+
+@media(max-width:780px){
+ .restored-scene{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;gap:12px;aspect-ratio:auto;min-height:0;height:auto;padding-bottom:8px}
+ .restored-scene .restored-globe{grid-row:1}
+ .restored-scene .restored-globe-orbit{top:30%}
+ .restored-scene .restored-scene-mascot{bottom:212px;width:32%}
+ .restored-scene .cyber-space-infos{position:relative;inset:auto;grid-row:2;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;container-type:normal}
+ .restored-scene .cyber-space-panel{position:static;width:auto;min-width:0;min-height:72px;padding:10px;transform:none!important}
+ .restored-scene .cyber-info-copy strong{font-size:15px}.restored-scene .cyber-info-copy span{font-size:13px}
+ .restored-scene .globe-role-icon{width:20px;height:20px}
+ .restored-scene .cyber-geo-location,.restored-scene .cyber-surface-pin,.restored-scene .cyber-surface-leader{display:none}
+ 
+}
+
+@media(min-width:781px){.restored-scene[data-orbit-layout=surface] .cyber-space-panel{will-change:transform}}
+@media(prefers-reduced-motion:reduce){.restored-scene .cyber-space-panel{will-change:auto!important}}
+
+.restored-scene .cyber-space-infos[data-orbit-layout=loading]{visibility:hidden}
+
+@media(prefers-reduced-motion:reduce){.restored-scene .cyber-surface-leader{transition:none}}
+
+.restored-scene[data-orbit-layout=surface] .cyber-space-panel{transition:opacity .12s linear}
+@media(prefers-reduced-motion:reduce){.restored-scene .cyber-space-panel{transition:none!important}}

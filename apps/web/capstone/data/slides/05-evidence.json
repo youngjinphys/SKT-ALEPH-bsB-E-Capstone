@@ -1,0 +1,85 @@
+{
+  "id": "evidence",
+  "chapter": "02 · 정책",
+  "title": "두 위협 소스의 URL 근거를\n공통 후보로 정리합니다",
+  "subtitle": "OpenPhish 공개 URL 목록 · Safe Browsing 지정 URL 조회",
+  "seconds": 100,
+  "kind": "intel",
+  "status": "evidence-snapshot",
+  "points": [
+    {
+      "title": "OpenPhish · 후보 269개",
+      "body": "10월 30일 팀 실행 기록의 정규화 호스트 수"
+    },
+    {
+      "title": "Safe Browsing · 호스트 1개/근거 2개",
+      "body": "공식 테스트 URL 조회에 대한 팀 실행 기록"
+    },
+    {
+      "title": "별도 검토 파일",
+      "body": "근거와 SUBTREE 영향을 검토 · 초기 승인 값은 false"
+    }
+  ],
+  "notes": "[화면] OpenPhish 후보 269개, Safe Browsing 테스트 호스트 1개·근거 2개와 수집·검증·검토 파일의 분리를 보여 줍니다.\n\nOpenPhish는 공개 URL 목록을 내려받아 호스트를 정규화합니다. 10월 30일 팀 실행 기록은 후보 269개를 보고합니다. Safe Browsing은 지정 URL을 조회하며, 공식 테스트 URL에 대한 팀 기록은 호스트 1개와 위협 근거 2개입니다. 원본 API 요청·응답과 해시는 추가 인수 대상입니다.\n\n수집 파일은 URL·도메인·출처·URL 해시를 공통 형식으로 저장합니다. 별도 검증 파일에 상태·위협 유형·검사 시각·유효기간을 기록하고, 위협 유형이 차단 검토 대상인 MATCH 항목에서 review-template이 만드는 검토 파일에는 approved:false를 초기값으로 둡니다. 검토자는 URL 근거와 공유 호스트의 SUBTREE 영향을 확인해 승인합니다.\n\n같은 호스트의 정상 서비스까지 영향을 받을 수 있으므로 URL 근거와 DNS 집행 범위를 함께 검토합니다. 운영 전에는 피드 이용 권한과 조회 정보의 신선도 조건도 확인합니다.",
+  "sources": [
+    "openphish-feed",
+    "openphish-terms",
+    "gsb-v5-method",
+    "gsb-terms",
+    "policy-server"
+  ],
+  "mood": "focused",
+  "presentation": {
+    "title": "두 위협 소스의 URL 근거를\n공통 후보로 정리합니다",
+    "subtitle": "OpenPhish 공개 URL 목록 · Safe Browsing 지정 URL 조회",
+    "cue": "두 입력 방식과 269·1·2의 단위를 설명합니다. 수집 JSON, 검증 결과, 초기 미승인 검토 파일을 구분한 뒤 URL 근거와 SUBTREE 영향 검토로 연결합니다.",
+    "reviewNote": "최종 발표 대본: docs/presentation/final-20min-scenario.md · 시연 근거는 GitHub 격리 실험 기록에서 확인",
+    "points": [
+      {
+        "title": "OpenPhish · 후보 269개",
+        "body": "10월 30일 팀 실행 기록의 정규화 호스트 수"
+      },
+      {
+        "title": "Safe Browsing · 호스트 1개/근거 2개",
+        "body": "공식 테스트 URL 조회에 대한 팀 실행 기록"
+      },
+      {
+        "title": "별도 검토 파일",
+        "body": "근거와 SUBTREE 영향을 검토 · 초기 승인 값은 false"
+      }
+    ],
+    "compactTitle": "위협 신호 정규화"
+  },
+  "reading": {
+    "title": "후보가 정책이 되기 전의 필수 검증",
+    "columns": [
+      "아티팩트",
+      "보존 내용",
+      "다음 단계"
+    ],
+    "rows": [
+      [
+        "수집 JSON",
+        "url · domain · source · url_sha256",
+        "URL 근거 조회"
+      ],
+      [
+        "별도 검증 결과",
+        "status · threat_types · checked_at · valid_until",
+        "검토 파일 생성"
+      ],
+      [
+        "검토 파일",
+        "approved:false · 검토자 · 사유 · SUBTREE 영향",
+        "관리자 승인 후 정책 생성"
+      ]
+    ],
+    "takeaway": "인수 항목: 원본 API 응답·요청 시각·해시·이용 권한.",
+    "source": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6966b0bcd6533543d4e04c32c9cf985b7ebe9a31/apps/policy-server/src/policy_server/intel.py",
+    "sourceLabel": "수집·검증·검토 파일 코드 ↗"
+  },
+  "headline": {
+    "focus": "검증 경계",
+    "tone": "evidence"
+  }
+}

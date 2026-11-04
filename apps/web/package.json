@@ -1,0 +1,29 @@
+{
+  "name": "skt-aleph-capstone",
+  "version": "2.0.0",
+  "private": true,
+  "description": "TypeScript Next.js research and presentation site for SKT ALEPH Protective DNS",
+  "scripts": {
+    "dev": "next dev",
+    "build": "npm run content:check && next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
+    "content:check": "node scripts/validate-content.mjs"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "24.9.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

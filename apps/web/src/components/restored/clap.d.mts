@@ -1,0 +1,1 @@
+export function createClapController(options:{onAdvance:()=>void;onEvent?:(event:{type:string;level?:number})=>void}):{start:()=>Promise<boolean>;stop:(reason?:string)=>void;isActive:()=>boolean;setSensitivity:(value:number)=>void;getSensitivity:()=>number};

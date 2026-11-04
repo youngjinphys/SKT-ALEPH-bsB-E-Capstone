@@ -1,0 +1,9 @@
+/* Progress changes emphasis, never removes the evidence or changes its geometry. */
+.stage-introduction [data-stage-state]{transition:border-color 260ms ease,background-color 260ms ease,box-shadow 260ms ease}
+.deck-root .stage-introduction [data-stage-state="active"]{border-color:#8de7db;box-shadow:inset 3px 0 #8de7db;background-color:#1a4252}
+.deck-root .stage-introduction [data-stage-state="done"]{border-color:#72afa9}
+.stage-introduction .stage-connector[data-stage-state="active"],
+.stage-introduction .stage-connector[data-stage-state="done"]{color:#a5f7dc;box-shadow:none;background-color:transparent}
+.stage-introduction .stage-connector[data-stage-state="pending"]{color:#71949e;box-shadow:none}
+@media(prefers-reduced-motion:reduce){.stage-introduction [data-stage-state]{transition:none!important}}
+html[data-motion=off] .stage-introduction [data-stage-state]{transition:none!important}

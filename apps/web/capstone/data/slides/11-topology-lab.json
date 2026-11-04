@@ -1,0 +1,72 @@
+{
+  "id": "topology-lab",
+  "chapter": "확장",
+  "title": "지금, 우리 실험실에서는.",
+  "subtitle": "정책 공급 영역 → 보호 DNS ↔ 시험 단말",
+  "seconds": 60,
+  "kind": "topology",
+  "status": "proposal",
+  "points": [
+    {
+      "title": "정책 공급자",
+      "body": "공공·신뢰기관: 목록 근거 검토·승인·긴급 철회"
+    },
+    {
+      "title": "정책 집행자",
+      "body": "참여 ISP·기관: 보호 DNS 운영·장애 대응"
+    },
+    {
+      "title": "이용 경로",
+      "body": "이용자: 보호 경로 선택·차단 이유 확인·이의신청"
+    }
+  ],
+  "notes": "정책 공급선·DNS 질의/응답·클라이언트의 별도 웹 연결을 구분합니다. 현행 코드의 원격 정책 서버는 후보 수집, Safe Browsing 조회, 사람이 검토한 리뷰 파일의 정책 변환, 별도 서명과 HTTPS 발행을 담당합니다. DNS 노드는 서명된 전체 정책을 받아 검증·적용하고 질의에는 로컬 정책으로 응답합니다. 원격 승인 API/DB와 이용자 신고·예외 처리 API는 후속 과제이며, 현재 수동 CLI 검토·승인 경로와 구분합니다. 실제 192.168.7.69 자동 수신과 LAN 종단 간 동작은 미검증 상태로, 실장비에서 확인할 과제입니다. 팀 제공 실장비 정보는 사설망 Raspberry Pi 1 RAM 256 MB에 보호 DNS를 설치하는 구성으로, 격리 CI 환경과 구분해 제시합니다.",
+  "sources": [
+    "architecture",
+    "policy-server",
+    "policy-sync"
+  ],
+  "mood": "focused",
+  "scope": "lab",
+  "presentation": {
+    "title": "보호 DNS의 운영을 참여 ISP로 확대하는 제안",
+    "subtitle": "확장 제안: 정책의 검증 주체와 DNS의 운영 주체를 나눕니다.",
+    "cue": "처음에는 공공·ISP 제안을 표시하고 필요하면 실험실 버튼으로 앞서 본 구현과 비교합니다. 같은 토폴로지라도 새로 필요한 것은 정책 승인 책임, 운영 가용성, 이용자 선택과 이의신청 절차입니다. 운영 주체의 역할 대응은 확장 제안이며 협약·배포는 후속 추진 항목입니다."
+  },
+  "reading": {
+    "title": "같은 구조에서 운영 주체와 책임을 바꿉니다",
+    "columns": [
+      "실험의 역할",
+      "확장 제안",
+      "새로 책임질 일"
+    ],
+    "rows": [
+      [
+        "정책 공급자",
+        "공공·신뢰기관의 검증",
+        "출처·승인·감사·긴급 철회"
+      ],
+      [
+        "보호 DNS",
+        "참여 ISP·기관의 보호 DNS",
+        "집행·가용성·질의 기록 최소화"
+      ],
+      [
+        "실습 클라이언트",
+        "서비스를 선택한 이용자",
+        "이유 확인·신고·이의신청"
+      ]
+    ],
+    "takeaway": "KISA 싱크홀·NCSC PDNS 선례를 바탕으로 정책 수명주기와 운영 책임을 제안합니다.",
+    "source": "https://www.ncsc.gov.uk/guidance/protective-dns-for-private-sector",
+    "sourceLabel": "NCSC 보호 DNS 운영 지침 ↗"
+  },
+  "headline": {
+    "focus": "참여 ISP",
+    "tone": "protect"
+  },
+  "visual": {
+    "type": "topology",
+    "mode": "proposal"
+  }
+}

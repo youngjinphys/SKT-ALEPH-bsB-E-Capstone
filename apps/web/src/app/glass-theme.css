@@ -1,0 +1,114 @@
+/* Optical-only theme. No geometry, typography, information-color or motion changes.
+   Opaque defaults work without backdrop-filter; nested diagram nodes are untouched. */
+:root{
+ --glass-dark-solid:#071827;
+ --glass-dark-tint:rgba(7,24,39,.86);
+ --glass-dark-border:rgba(158,223,243,.32);
+ --glass-dark-shadow:0 12px 32px rgba(0,8,18,.22),inset 0 1px 0 rgba(225,250,255,.09);
+ --glass-light-solid:#f4f8fa;
+ --glass-light-tint:rgba(244,248,250,.96);
+ --glass-light-border:rgba(38,79,96,.25);
+ --glass-light-shadow:0 12px 28px rgba(16,45,58,.12),inset 0 1px 0 rgba(255,255,255,.8);
+}
+/* One glass layer per panel, not per packet; globe role cards are distinct overlays. */
+.site-root :is(.access-panel,.mascot-message,.landing-layer),
+.site-root .workspace-links>a,
+.deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack),
+.deck-root :is(.slide-details,.deck-overview){
+ background:var(--glass-dark-solid);
+ border-color:var(--glass-dark-border);
+ box-shadow:var(--glass-dark-shadow);
+}
+.site-topbar,.deck-topbar{
+ background:var(--glass-dark-solid);
+ border-bottom-color:var(--glass-dark-border);
+ box-shadow:0 1px 0 rgba(209,244,255,.06),0 8px 24px rgba(0,8,18,.12);
+}
+/* The educational fixture stays light; its explicit safety banner stays opaque. */
+.fixture-page :is(.fixture-nav,.fixture-trust),
+.fixture-page .fixture-people article,
+.fixture-page .dialog-panel{
+ background:var(--glass-light-solid);
+ border-color:var(--glass-light-border);
+ box-shadow:var(--glass-light-shadow);
+}
+.fixture-page .fixture-banner{background:#11272f;color:#f6e7c2;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* Neutral secondary copy only; preserve cyan/amber/red verdict semantics. */
+.site-root{--dim:#a3bdcd}
+.fixture-page .fixture-brand small,.fixture-page .fixture-people small,.fixture-page .fixture-people p{color:#49636c}
+@supports ((backdrop-filter:blur(8px)) or (-webkit-backdrop-filter:blur(8px))){
+ .site-root :is(.access-panel,.mascot-message,.landing-layer),
+ .site-root .workspace-links>a,
+ .deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack),
+ .deck-root :is(.slide-details,.deck-overview){
+  background:linear-gradient(135deg,rgba(181,234,255,.025),transparent 65%),var(--glass-dark-tint);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+ }
+ .site-topbar,.deck-topbar{background:var(--glass-dark-tint);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+ .fixture-page :is(.fixture-nav,.fixture-trust),.fixture-page .fixture-people article,.fixture-page .dialog-panel{
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 65%),var(--glass-light-tint);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+ }
+}
+@media(prefers-reduced-transparency:reduce){
+ .site-root :is(.access-panel,.mascot-message,.landing-layer),.site-root .workspace-links>a,
+ .deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack),
+ .deck-root :is(.slide-details,.deck-overview),.site-topbar,.deck-topbar{
+  background:var(--glass-dark-solid);-webkit-backdrop-filter:none;backdrop-filter:none;
+ }
+ .fixture-page :is(.fixture-nav,.fixture-trust),.fixture-page .fixture-people article,.fixture-page .dialog-panel{
+  background:var(--glass-light-solid);-webkit-backdrop-filter:none;backdrop-filter:none;
+ }
+}
+@media(forced-colors:active){
+ .site-root :is(.access-panel,.mascot-message,.landing-layer),.site-root .workspace-links>a,
+ .deck-root .slide-visual-container>:is(.diagram-panel,.chart-card,.evidence-stack),
+ .deck-root :is(.slide-details,.deck-overview),.site-topbar,.deck-topbar,
+ .fixture-page :is(.fixture-nav,.fixture-trust,.fixture-banner),.fixture-page .fixture-people article,.fixture-page .dialog-panel{
+  background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;
+ }
+}
+
+/* Explicitly requested cover credits; never replace the project subtitle. */
+.deck-root .slide-opening .slide-heading p:has(+.slide-credits){margin-bottom:8px}
+.deck-root .slide-opening .slide-heading .slide-credits{
+ display:block;width:fit-content;max-width:100%;margin:0 0 14px;padding:7px 12px;
+ border:1px solid var(--glass-dark-border);border-radius:9px;
+ background:var(--glass-dark-solid);color:#e8f4fa;
+ font-size:clamp(16px,.84vw,20px);line-height:1.45;letter-spacing:0;word-break:keep-all;
+ box-shadow:inset 0 1px 0 rgba(225,250,255,.09);
+}
+@media(max-width:780px){.deck-root .slide-opening .slide-heading .slide-credits{font-size:14px}}
+@media(forced-colors:active){.deck-root .slide-opening .slide-heading .slide-credits{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}}
+
+/* Globe overlays: retain the existing role-specific borders, geometry and copy.
+   Dark gradient endpoints keep even secondary labels legible over a white globe. */
+.deck-root .restored-scene .cyber-space-panel{
+ background:#071827;
+ box-shadow:0 6px 20px rgba(0,8,18,.24),0 0 9px rgba(107,218,242,.14),inset 0 1px 0 rgba(225,250,255,.19);
+}
+.deck-root .restored-scene .cyber-info-attacker{background:#271729}
+@supports ((backdrop-filter:blur(4px)) or (-webkit-backdrop-filter:blur(4px))){
+ .deck-root .restored-scene .cyber-space-panel{
+  background:linear-gradient(135deg,rgba(7,24,39,.84),rgba(9,30,48,.86));
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+ }
+ .deck-root .restored-scene .cyber-info-attacker{
+  background:linear-gradient(135deg,rgba(39,23,41,.86),rgba(9,24,39,.86));
+ }
+}
+@media(prefers-reduced-transparency:reduce){
+ .deck-root .restored-scene .cyber-space-panel{background:#071827;backdrop-filter:none;-webkit-backdrop-filter:none}
+ .deck-root .restored-scene .cyber-info-attacker{background:#271729}
+}
+@media(forced-colors:active){
+ .deck-root .restored-scene .cyber-space-panel{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+ .deck-root .restored-scene .cyber-space-panel :is(strong,span,small,svg){color:CanvasText}
+}
+
+.deck-root .credits-star{display:inline-block;width:1em;height:1em;vertical-align:-.08em;margin-right:.18em;fill:#ffd45a;filter:drop-shadow(0 0 3px #ffd45a35)}
+@media(forced-colors:active){.deck-root .credits-star{fill:CanvasText;filter:none}}
+
+/* Static emphasis identifies the starred presenter without distracting motion. */
+.deck-root .slide-credits .credits-leader{color:#fff1bd;text-shadow:0 0 8px rgba(255,212,90,.28),0 0 18px rgba(255,212,90,.1)}
+@media(forced-colors:active){.deck-root .slide-credits .credits-leader{color:CanvasText;text-shadow:none}}

@@ -1,0 +1,92 @@
+{
+  "id": "dns",
+  "chapter": "02 · 설계·구현",
+  "title": "새 이름 조회에\n승인된 차단 정책을 적용합니다",
+  "subtitle": "로컬 정책 대조 → NXDOMAIN 또는 업스트림 응답",
+  "seconds": 110,
+  "kind": "dns",
+  "status": "implemented",
+  "points": [
+    {
+      "title": "질의",
+      "body": "단말이 보호 DNS에 호스트의 A·AAAA 주소를 요청"
+    },
+    {
+      "title": "정책 대조",
+      "body": "미리 수신·검증한 차단 목록을 로컬에서 확인"
+    },
+    {
+      "title": "결과 A · 차단",
+      "body": "승인된 BLOCK 범위에 일치하면 NXDOMAIN"
+    },
+    {
+      "title": "결과 B · 전달",
+      "body": "차단 대상이 아니면 업스트림 DNS로 전달"
+    }
+  ],
+  "notes": "[화면] 정상 조회와 차단 대상 조회를 직접 선택해 질의·응답 방향을 보여 줍니다. 선택한 사례는 1초간 쉰 뒤 반복하며 다른 사례로 자동 전환되지 않습니다.\n\n[발표] 단말은 웹 서버에 새로 연결할 주소를 얻기 위해 DNS에 이름을 질의합니다. 보호 DNS는 미리 내려받아 검증한 정책과 그 이름을 대조합니다.\n\n현재 설치 구성에서는 차단 대상이 아닌 이름을 업스트림 DNS로 전달합니다. 이 구현의 로컬 응답 캐시는 꺼져 있어 같은 이름의 재조회도 업스트림으로 나갑니다. 다만 차단 목록의 대조는 로컬에서 하므로, 매 질의마다 원격 위험 판정 API를 호출하지는 않습니다.\n\n승인된 BLOCK 범위에 해당하면 NXDOMAIN, 즉 해당 이름이 없다는 응답을 돌려줍니다. 이 새 조회로 목적지 주소를 얻는 경로가 중단됩니다. 이미 단말에 남은 주소나 기존 연결은 별도의 경계입니다.\n\n여기서 정책을 내려받는 통신과 사용자의 이름 조회를 분리한 것이 핵심입니다. 정책 공급 서버가 매 웹 접속의 중간에서 내용을 읽는 구조가 아닙니다.\n\n[전환] 그렇다면 DNS가 따르는 차단 목록은 누가, 어떤 근거로 만들까요?",
+  "sources": [
+    "dns-runtime-current",
+    "policy-sync",
+    "execution-current",
+    "dns-latency-method"
+  ],
+  "mood": "focused",
+  "presentation": {
+    "title": "새 이름 조회에\n승인된 차단 정책을 적용합니다",
+    "subtitle": "로컬 정책 대조 → NXDOMAIN 또는 업스트림 응답",
+    "cue": "정책 대조는 로컬, 통과 질의는 업스트림입니다. 제품의 로컬 응답 캐시와 단말 캐시를 구분합니다.",
+    "reviewNote": "현재 dns_agent.policy.render_config는 cache-size=0·local-ttl=0을 생성합니다. 화면은 설명용 재현이며 실제 DNS 실행은 고정된 실험 기록으로 확인합니다.",
+    "points": [
+      {
+        "title": "질의",
+        "body": "단말이 보호 DNS에 호스트의 A·AAAA 주소를 요청"
+      },
+      {
+        "title": "정책 대조",
+        "body": "미리 수신·검증한 차단 목록을 로컬에서 확인"
+      },
+      {
+        "title": "결과 A · 차단",
+        "body": "승인된 BLOCK 범위에 일치하면 NXDOMAIN"
+      },
+      {
+        "title": "결과 B · 전달",
+        "body": "차단 대상이 아니면 업스트림 DNS로 전달"
+      }
+    ],
+    "compactTitle": "이름 조회와 정책 집행"
+  },
+  "reading": {
+    "title": "정책 배포와 접속 처리는 분리",
+    "columns": [
+      "단계",
+      "누가 요청·응답하는가",
+      "검증 근거"
+    ],
+    "rows": [
+      [
+        "정책 사전 배포",
+        "보호 DNS가 HTTPS로 서명 정책 수신",
+        "장치·서명·순서·만료 검증"
+      ],
+      [
+        "일반 질의",
+        "보호 DNS가 업스트림으로 전달",
+        "현 구성 cache-size=0"
+      ],
+      [
+        "차단·철회",
+        "새 질의의 NXDOMAIN 또는 원래 A·AAAA 응답",
+        "서버 적용과 단말 복구는 별도 시점"
+      ]
+    ],
+    "takeaway": "화면은 동작 설명입니다. 정상 조회의 주소 응답과 차단 대상 조회의 NXDOMAIN을 구별합니다.",
+    "source": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/397df3f4749c871ed964c74f44562fb98368cc9c/docs/review/evidence-lab-run-20261031.md",
+    "sourceLabel": "DNS 240개 관측 기록 ↗"
+  },
+  "headline": {
+    "focus": "보호 DNS",
+    "tone": "protect"
+  }
+}

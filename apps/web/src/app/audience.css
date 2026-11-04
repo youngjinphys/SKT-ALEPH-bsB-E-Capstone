@@ -1,0 +1,150 @@
+/* Full-slide audience hierarchy: applied after design and diagram modules. */
+@media(min-width:1100px){
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-columns{
+  grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);
+  gap:clamp(24px,2.5vw,56px);
+ }
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-heading h1{
+  font-size:clamp(38px,2.6vw,70px);line-height:1.16;margin-bottom:clamp(12px,1.5vh,20px);
+ }
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-heading p{
+  font-size:clamp(16px,1vw,24px);line-height:1.45;margin-bottom:clamp(14px,1.8vh,24px);
+ }
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-point{
+  padding:clamp(12px,1.5vh,20px) clamp(16px,1.2vw,22px);
+  gap:clamp(12px,.85vw,22px);
+ }
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-point h2{font-size:clamp(16px,1.05vw,26px);margin-bottom:4px}
+ .deck-root .deck-slide:where(:not(.slide-opening):not(.slide-closing):not(.slide-table-layout)) .slide-point p{
+  font-size:clamp(14px,.88vw,20px);line-height:1.55;
+ }
+ :where(.deck-root .deck-slide:not(.slide-opening):not(.slide-closing):not(.slide-table-layout) .slide-visual-container) > :where(.diagram-panel,.chart-card,.evidence-stack){
+  width:100%;max-height:100%;height:auto;align-self:center;
+  padding:clamp(22px,1.8vw,40px);
+ }
+ .deck-root .diagram-panel h2,.deck-root .chart-card h2,.deck-root .evidence-header h2{
+  font-size:clamp(24px,1.35vw,40px);line-height:1.22;
+ }
+ .deck-root .visual-caveat,.deck-root .diagram-footnote{
+  font-size:clamp(13px,.82vw,21px);line-height:1.48;color:#b7d5e1;
+ }
+ .deck-root .restored-controls button{
+  min-height:clamp(39px,3.7vh,55px);padding:7px clamp(11px,.8vw,22px);
+  font-size:clamp(14px,.86vw,21px);
+ }
+ .deck-root .restored-topology .topology-lane span{font-size:clamp(16px,1.06vw,26px);font-weight:840}
+ .deck-root .restored-topology .topology-lane b{font-size:clamp(42px,2.45vw,70px)}
+ .deck-root .restored-topology .topology-step strong{font-size:clamp(19px,1.1vw,30px)}
+ .deck-root .restored-topology .topology-step small{font-size:clamp(15px,.86vw,23px)}
+ .deck-root .restored-protocol .restored-node strong{font-size:clamp(18px,1.12vw,28px)}
+ .deck-root .restored-protocol .restored-node small{font-size:clamp(14px,.85vw,23px)}
+ .deck-root .restored-protocol .restored-protocol-row h3{font-size:clamp(21px,1.32vw,34px)}
+ .deck-root .policy-timeline-stage button strong{font-size:clamp(18px,1.16vw,31px)}
+ .deck-root .policy-timeline-stage button small{font-size:clamp(13px,.8vw,23px)}
+ .deck-root .policy-timeline-result strong{font-size:clamp(25px,1.5vw,42px)}
+ .deck-root .policy-timeline-result p{font-size:clamp(16px,.98vw,26px)}
+ .deck-root .bar-info{font-size:clamp(18px,1.07vw,30px)}
+ .deck-root .bar-info strong{font-size:clamp(24px,1.4vw,40px)}
+ .deck-root .evidence-row strong{font-size:clamp(20px,1.15vw,32px)}
+ .deck-root .evidence-row p{font-size:clamp(15px,.88vw,25px)}
+ .deck-root .source-overview-grid a strong{font-size:clamp(15px,1vw,26px)}
+ .deck-root .source-overview-grid a small{font-size:clamp(12px,.79vw,21px)}
+}
+/* DNS: reserve a readable working diagram; geometry belongs to restored-diagrams.css. */
+@media(min-width:1100px){
+ .deck-root .deck-slide.slide-dns .slide-columns{
+  grid-template-columns:minmax(0,.54fr) minmax(0,1.46fr);
+  gap:clamp(18px,1.3vw,42px);
+ }
+ .deck-root .restored-dns .restored-node{padding:clamp(9px,.7vw,17px);gap:4px 7px}
+ .deck-root .restored-dns :is(.dns-client,.dns-resolver,.dns-upstream){min-height:clamp(65px,7.5vh,95px)}
+ .deck-root .restored-dns .restored-node strong{font-size:clamp(16px,.96vw,24px)}
+ .deck-root .restored-dns .restored-node small{font-size:clamp(12px,.76vw,19px)}
+ .deck-root .restored-dns .restored-verdict{font-size:clamp(18px,1.08vw,31px)}
+}
+/* Projector screens: retain every phase without inner clipping. */
+@media(min-width:781px) and (max-width:1499px) and (max-height:850px){
+ .deck-root .restored-dns{justify-content:flex-start;gap:1px;padding:10px 14px}
+ .deck-root .restored-dns .restored-node{padding:5px 8px;gap:2px 4px}
+ .deck-root .restored-dns .restored-dns-map{gap:3px 7px}
+ .deck-root .restored-dns .restored-controls{margin:2px 0 4px;gap:4px}
+ .deck-root .restored-dns .restored-controls button{min-height:32px;padding:3px 7px}
+ .deck-root .restored-dns .restored-verdict{flex-shrink:0;margin:4px 0;font-size:14px;line-height:1.35}
+ .deck-root .restored-dns .diagram-caption{display:none}
+ .deck-root .restored-dns .diagram-footnote{display:block;font-size:12px;line-height:1.35;margin:3px 0 0;flex-shrink:0}
+ .deck-root .restored-dns .visual-caveat{font-size:12px;line-height:1.35;flex-shrink:0;margin:2px 0}
+ .deck-root .restored-protocol .restored-protocol-row{padding:6px 0;margin-top:3px}
+}
+/* Evidence slides should read as a single full-width table, not a duplicate card. */
+@media(min-width:1500px) and (min-height:900px){
+ .deck-root .slide-table-layout .evidence-table{font-size:clamp(17px,1.06vw,30px)}
+ .deck-root .slide-table-layout .evidence-table th,.deck-root .slide-table-layout .evidence-table td{padding:clamp(14px,1.6vh,30px) clamp(18px,1.1vw,32px)}
+ .deck-root .slide-table-layout .evidence-table caption{font-size:clamp(22px,1.45vw,38px);padding-bottom:clamp(12px,1.6vh,24px)}
+}
+/* Keep the linear mobile presentation and browser's accessible scrolling intact. */
+@media(max-width:780px){
+ .deck-root .restored-dns .restored-node{padding:9px 10px}
+}
+
+/* Four essential limitations need balanced columns, not the diagram-heavy
+   split used by three-point slides. Preserve audience font sizes and show
+   the entire list instead of clipping it at the generic 38vh cap. */
+@media(min-width:801px) and (max-width:1599px){
+ .deck-root .deck-slide.slide-bypass .slide-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+ .deck-root .deck-slide.slide-bypass .slide-heading h1{margin-bottom:10px}
+ .deck-root .deck-slide.slide-bypass .slide-heading p{margin-bottom:12px}
+ .deck-root .deck-slide.slide-bypass .slide-points{max-height:none;overflow:visible;gap:6px}
+ .deck-root .deck-slide.slide-bypass .slide-point{padding:7px 0}
+}
+
+/* Preserve the concurrent compact-projector spacing adjustment. */
+@media(min-width:1100px) and (max-width:1280px) and (max-height:800px){
+ .deck-root .deck-slide.slide-bypass .slide-points{gap:2px}
+ .deck-root .deck-slide.slide-bypass .slide-point{padding:2px 0}
+ .deck-root .deck-slide.slide-bypass .slide-point h2{margin-bottom:2px}
+}
+
+/* HTTP conditions and governance responsibilities need their complete point
+   lists on compact projectors. Only governance rebalances the columns; HTTP
+   keeps the wider diagram lane now that its prose is concise. */
+@media(min-width:801px) and (max-width:1599px){
+ .deck-root .deck-slide.slide-governance .slide-columns{grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);gap:24px}
+ .deck-root .deck-slide:is(.slide-http,.slide-governance) .slide-heading h1{margin-bottom:10px}
+ .deck-root .deck-slide:is(.slide-http,.slide-governance) .slide-heading p{margin-bottom:12px}
+ .deck-root .deck-slide:is(.slide-http,.slide-governance) .slide-points{max-height:none;overflow:visible;gap:6px}
+ .deck-root .deck-slide:is(.slide-http,.slide-governance) .slide-point{padding:7px 0}
+}
+/* Inactive diagram endpoints are explanatory content, not disabled controls.
+   Keep their labels readable; dashed borders and explicit unused labels carry
+   the inactive state without applying opacity to the entire text subtree. */
+.deck-root .restored-dns [data-unused=true]{opacity:1;color:#b7d5e1}
+/* A stable caption surface preserves contrast over the decorative Earth scene.
+   This changes neither the mascot artwork nor its motion or composition. */
+
+/* The evidence-led opener gained a third distinct point; keep all three
+   readable without a nested 38vh scrollbar. */
+@media(min-width:801px) and (max-width:1599px){
+ .deck-root .deck-slide.slide-friction .slide-points{max-height:none;overflow:visible}
+ .deck-root .deck-slide.slide-http .slide-point p,
+ .deck-root .restored-protocol .restored-node small{word-break:keep-all;overflow-wrap:break-word}
+}
+/* Important DNS qualifications remain legible on compact projector screens. */
+@media(min-width:781px) and (max-width:1499px) and (max-height:850px){
+ .deck-root .restored-dns .visual-caveat,.deck-root .restored-dns .diagram-footnote{font-size:13px}
+}
+
+/* Four-point narratives use the available slide height instead of a fixed 38vh cap.
+   Short/narrow viewports keep their existing accessible scrolling fallback. */
+@media(min-width:1000px) and (max-width:1499px) and (min-height:740px) and (max-height:850px){
+ .deck-root .deck-slide:is(.slide-friction-barriers,.slide-architecture,.slide-dns) .slide-points{max-height:none;overflow:visible}
+}
+
+/* Use spare vertical room for all four policy points; trim only panel spacing. */
+@media(min-width:781px) and (max-width:1499px) and (min-height:740px) and (max-height:850px){
+ .deck-root .deck-slide.slide-policy-demo .slide-points{max-height:none;overflow:visible}
+ .deck-root .policy-lifecycle .policy-review-gates{margin-bottom:7px}
+ .deck-root .policy-lifecycle .policy-timeline-result{margin-top:12px}
+}
+
+/* One shared visually-hidden utility preserves descriptions in the accessibility tree. */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}

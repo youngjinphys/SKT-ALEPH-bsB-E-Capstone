@@ -43,7 +43,16 @@ jobs:
         run: |
           bash -n scripts/deploy/install-policy-server.sh
           bash -n scripts/deploy/install-dns-server.sh
+          bash -n scripts/deploy/install-dns-telemetry.sh
+          bash -n scripts/deploy/install-operations-console.sh
+          bash -n scripts/deploy/install-intel-refresh-bridge.sh
+          bash -n scripts/deploy/upgrade-policy-runtime.sh
+          python3 -m compileall -q apps/policy-sync/src/aleph_policy_sync
           python3 -m compileall -q apps/policy-server/src/policy_server
+      - name: Verify bundled console JavaScript syntax
+        run: |
+          python3 -c "from policy_server.console_script import JS; open('/tmp/aleph-ops-console.js', 'w', encoding='utf-8').write(JS)"
+          node --check /tmp/aleph-ops-console.js
       - name: Preview independent server installers without mutating DNS
         run: |
           tmp=$(mktemp -d)
@@ -61,6 +70,13 @@ jobs:
             --upstream 9.9.9.9 --bootstrap-policy "$tmp/bootstrap.json" \
             --public-key "$tmp/public.pem" --device-id edge-69 \
             --policy-url https://policy.example.org/v1/policies/edge-69/current.json
+          bash scripts/deploy/install-operations-console.sh \
+            --origin https://ops.example.org --device-id edge-69
+          bash scripts/deploy/install-intel-refresh-bridge.sh
+          bash scripts/deploy/install-dns-telemetry.sh \
+            --device-id edge-69 --listen-ip 192.168.7.69 --probe-upstream 9.9.9.9 \
+            --report-url https://ops.example.org/v1/nodes/report \
+            --private-key "$tmp/private.pem" --public-key "$tmp/public.pem"
       - name: Offline dataset and malformed-provider regression tests
         run: /usr/bin/python3 -B -m unittest discover -s tests/intel -p 'test_*.py' -v
       - name: Non-privileged proposal, refresh and signed-release tests

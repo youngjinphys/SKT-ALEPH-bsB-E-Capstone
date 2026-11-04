@@ -1,0 +1,93 @@
+{
+  "id": "precision",
+  "chapter": "한계",
+  "title": "이름 하나를 막는 일에도,\n정밀함이 필요합니다.",
+  "subtitle": "CNAME 응답 체인과 정상 서비스 영향을 별도로 검증합니다.",
+  "seconds": 65,
+  "kind": "cname",
+  "status": "known-limit",
+  "points": [
+    {
+      "title": "CNAME",
+      "body": "허용된 별칭을 통한 응답 체인 우회 재현"
+    },
+    {
+      "title": "SUBTREE",
+      "body": "정상 하위 서비스의 과차단 가능성"
+    },
+    {
+      "title": "캐시",
+      "body": "정책 철회와 단말의 응답 복구 시간 구분"
+    }
+  ],
+  "notes": "현재 검사는 요청 이름에 적용됩니다. 허용 별칭의 응답에 차단 대상 주소가 따라오는 CNAME 보호 공백이 있습니다. 이 반례는 응답 체인의 보호 공백을 재현하는 테스트입니다. 공유 호스팅·정상 하위 도메인을 포함하는 정책은 과차단을 만들 수 있으므로 승인과 철회 절차가 필요합니다.",
+  "sources": [
+    "validation"
+  ],
+  "mood": "concerned",
+  "presentation": {
+    "title": "도메인 단위 차단에는 세 가지 한계가 있습니다.",
+    "subtitle": "SUBTREE 과차단 · CNAME 응답 체인 · URL 경로의 미가시성",
+    "cue": "하위 이름 규칙은 그 이름과 하위 범위에 적용되며 상위·형제 이름은 범위 밖입니다. 반대로 부모 차단은 정상 하위 서비스에도 영향을 줍니다. URL 경로의 위험과 도메인 차단 범위를 따로 검토하고 CNAME 반례와 캐시 영향을 제시합니다. 현재 응답 체인 보호가 미지원이라는 경계를 유지합니다.",
+    "reviewNote": "정상 하위 이름의 SUBTREE 차단과 CNAME 별칭의 보호 공백은 새 실험에서도 재현됐습니다. 측정값은 합성 질의의 기대 응답 일치이며 과차단·보호 공백 재현을 포함합니다."
+  },
+  "reading": {
+    "title": "차단 범위와 예외의 비용",
+    "columns": [
+      "사례",
+      "관측·설계 조건",
+      "필요한 검토"
+    ],
+    "rows": [
+      [
+        "부모 BLOCK + 정상 하위 이름",
+        "SUBTREE가 정상 서비스까지 포함",
+        "도메인 범위 승인·예외 우선순위"
+      ],
+      [
+        "허용 별칭 → 차단 대상",
+        "QNAME 밖 응답 체인의 반례",
+        "CNAME 응답 검사 요구"
+      ],
+      [
+        "shop.example/home ↔ /fake-login",
+        "동일 FQDN의 서로 다른 URL 경로·본문",
+        "DNS로 구분 불가 · 브라우저 URL 검사와 역할 분담"
+      ]
+    ],
+    "takeaway": "목록 미등재 상태의 사이트 안전성은 미평가입니다. 신규 위협의 목록 반영 지연과 철회 후 단말 캐시를 검증하며, URL 경로는 브라우저 URL 검사로 보완합니다.",
+    "source": "https://app.notion.com/p/4025db6797f081e18de9cc1a2ca748f2",
+    "sourceLabel": "노션 설계 근거 ↗"
+  },
+  "headline": {
+    "focus": "도메인 단위",
+    "tone": "risk"
+  },
+  "visual": {
+    "type": "cname-chain",
+    "title": "CNAME 응답 체인: 질의 이름 밖의 보호 공백",
+    "sourceKey": "validation",
+    "nodes": [
+      {
+        "label": "허용된 별칭",
+        "value": "alias.test",
+        "state": "ALLOW"
+      },
+      {
+        "label": "응답에 포함된 대상",
+        "value": "blocked.test",
+        "state": "BLOCK"
+      },
+      {
+        "label": "따라온 주소",
+        "value": "203.0.113.42",
+        "state": "A"
+      }
+    ],
+    "links": [
+      "CNAME",
+      "응답 체인"
+    ],
+    "caveat": "DNS 질의 이름의 차단 상태와 응답 체인 전체의 보호는 별도로 검증합니다."
+  }
+}

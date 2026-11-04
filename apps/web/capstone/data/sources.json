@@ -1,0 +1,262 @@
+{
+  "smishing-national": {
+    "label": "과기정통부·KISA · 2022–2024 공표 집계",
+    "url": "https://www.kmcc.go.kr/download.do?fileSeq=60276",
+    "note": "정부 「문자사기(스미싱) 신고(접수)·차단 현황」 공표값: 2022년 37,122건, 2023년 503,300건, 2024년 2,196,469건. 수집 범위·중복 처리의 연도 간 일관성은 추가 확인 대상."
+  },
+  "verizon-2024-dbir": {
+    "label": "Verizon 2024 DBIR · 피싱 클릭과 입력 시간",
+    "url": "https://www.verizon.com/business/resources/reports/2024/2024-dbir-data-breach-investigations-report.pdf",
+    "note": "이메일 열람 후 링크 클릭 중앙값 21초, 클릭 후 추가 정보 입력 28초. 28초의 측정 대상은 클릭 후 추가 정보 입력까지의 시간. 신고 소요 시간·전체 피해 규모는 이 지표의 범위 밖."
+  },
+  "apwg-2025": {
+    "label": "APWG · 2025년 4분기 피싱 관측 보고서",
+    "url": "https://docs.apwg.org/reports/apwg_trends_report_q4_2025.pdf",
+    "note": "공식 보고서 3쪽: 고유 피싱 사이트의 보고 기반 관측. 2024 약376만·2025 약380만으로 높은 수준의 소폭 증가. 실제 전체 발생량·피해자 수와 다르며 AI의 인과 기여도를 추정하지 않습니다."
+  },
+  "ai-social": {
+    "label": "영국 NCSC · AI와 사회공학 위협 평가",
+    "url": "https://www.ncsc.gov.uk/report/impact-of-ai-on-cyber-threat",
+    "note": "AI가 피싱 문구와 사회공학의 설득력·효율성을 높일 수 있다는 평가. 평가 범위는 AI 악용 역량이며 전체 피싱 증가율·프로젝트 탐지 성능은 별도 측정 대상."
+  },
+  "security-fatigue": {
+    "label": "NIST · Security Fatigue (2016)",
+    "url": "https://csrc.nist.gov/pubs/journal/2016/09/security-fatigue/final",
+    "note": "40명 반구조화 인터뷰의 질적 연구. 관측 범위는 보안 피로·판단 회피. 국내 피해자의 앱 미설치율·원인은 별도 조사 대상."
+  },
+  "permission-study": {
+    "label": "Android Permissions: User Attention, Comprehension, and Behavior (2012)",
+    "url": "https://research.google/pubs/android-permissions-user-attention-comprehension-and-behavior/",
+    "note": "Android 권한 안내의 주의·이해를 조사한 과거 사용성 연구. 조사 범위는 당시 Android 권한 사용성. 웹 브라우저 권한·전 연령 보안 앱 이탈률은 별도 평가 대상."
+  },
+  "app-privacy-review": {
+    "label": "영국 정부 · 앱 보안·개인정보 사용성 문헌 검토",
+    "url": "https://www.gov.uk/government/consultations/app-security-and-privacy-interventions/literature-review-on-security-and-privacy-policies-in-apps-and-app-stores",
+    "note": "앱 권한의 이해·신뢰와 설치 결정 간의 관계를 검토한 문헌 조사. 원본 시안의 8.4%·72%·64%·보안 앱 설치율은 근거 미확인 상태."
+  },
+  "permission-decisions": {
+    "label": "USENIX Security 2021 · Android 권한 의사결정 실측",
+    "url": "https://research.google/pubs/a-large-scale-study-of-users-behaviors-expectations-and-engagement-with-android-permissions/",
+    "note": "10개 국가·지역의 1,719명 Android 권한 응답 연구. 관측 항목은 예상을 벗어난 권한 요청과 설명 유무에 따른 허용·거부 차이. 보안 앱 설치율·72% 이탈률은 별도 조사 대상."
+  },
+  "kisa-install-smishing": {
+    "label": "KISA · 보안공지를 사칭한 스미싱 문자 주의 (2020)",
+    "url": "https://www.kisa.or.kr/402/form?postSeq=1880",
+    "note": "KISA 보안공지를 사칭한 문자가 브라우저 업데이트 안내로 악성 앱 설치를 유도한 실제 사례. 자료 범위는 해당 사칭 사례이며 정상 보안 앱 안내의 64% 오인 수치는 근거 미확인 상태."
+  },
+  "architecture": {
+    "label": "현재 구현 검토 · 6bf8ccac",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/architecture.md",
+    "note": "2026-11-03 구현 HEAD를 검토했습니다. 코드의 존재와 과거 실험·현재 배포 결과를 구분합니다."
+  },
+  "policy-publish": {
+    "label": "현재 정책 검증·발행 코드",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/infra/edge/system_dns.py",
+    "note": "관리자 게시·SHA 수락 확인 경로입니다. 관제의 초안 생성과 게시를 구분합니다."
+  },
+  "validation": {
+    "label": "조건별 검증표와 완료 기준",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/validation-matrix.md",
+    "note": "실단말 캐시·연결·철회, 독립 위협 정답 평가 등 미완료 조건을 분리합니다."
+  },
+  "ci": {
+    "label": "7c01910d CI 스냅샷 · 283개 통과 · 4개 건너뜀",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/actions/runs/40986807994",
+    "note": "2026-10-30, 7c01910d 코드의 287개 테스트 중 283개 통과, 4개 환경 제한 건너뜀을 기록한 과거 실행 스냅샷. 측정 범위는 해당 커밋의 테스트 실행. 현재 HEAD·탐지 정확도·운영 장비 가용성은 각각의 실행 근거로 평가."
+  },
+  "ci-current": {
+    "label": "이전 DNS CI · 08f3880f",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/actions/runs/41028706421",
+    "note": "이전 커밋의 실행 기록. 397df3f4와 현재 HEAD는 각각의 실행 기록을 확인합니다. 2026-10-30, 08f3880f에서 실제 루프백 DNS, 서명·TLS 수신, 정책 적용·복구, 격리 nftables, HTTP 안내 검증 성공. 검토한 실행 결과는 success이며 테스트 개수는 과거 283개 스냅샷과 분리."
+  },
+  "policy-server": {
+    "label": "정책 서버 · 수집·검토·서명·발행",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/README.md",
+    "note": "현행 수집·검토·정책 생성·독립 서명·게시 경로. 운영자 GUI는 CONSOLE.md와 함께 확인합니다."
+  },
+  "demo": {
+    "label": "선택형 평문 HTTP 안내와 HTTPS 경계",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/http-notice.md",
+    "note": "통제된 HTTP 안내는 기본 NXDOMAIN과 별도 옵션입니다. 원래 HTTPS 호스트 신원 검증을 우회하지 않습니다."
+  },
+  "tls": {
+    "label": "RFC 9525 · Service Identity in TLS",
+    "url": "https://www.rfc-editor.org/rfc/rfc9525.html#section-6.6",
+    "note": "TLS 서버 신원 불일치 시 처리. IP 변경 후에도 원래 호스트의 인증서 검증이 필수."
+  },
+  "doh": {
+    "label": "RFC 8484 · DNS Queries over HTTPS",
+    "url": "https://www.rfc-editor.org/rfc/rfc8484.html#section-8.1",
+    "note": "8.1절: DoH는 HTTPS 443과 같은 연결을 공유할 수 있음. 리졸버 정책과 전송 암호화를 구분."
+  },
+  "kisa": {
+    "label": "KISA DNS 싱크홀 서비스",
+    "url": "https://www.boho.or.kr/kr/subPage.do?menuNo=205016",
+    "note": "자체 DNS 서버 운영 기관을 위한 피싱 도메인 싱크홀 서비스. 기존 선례."
+  },
+  "pdns": {
+    "label": "Protective Domain Name Service",
+    "url": "https://www.ncsc.gov.uk/information/pdns",
+    "note": "공공과 민간의 역할 분담으로 운영되는 Protective DNS의 선례."
+  },
+  "pdns-guide": {
+    "label": "Protective DNS for the private sector",
+    "url": "https://www.ncsc.gov.uk/guidance/protective-dns-for-private-sector",
+    "note": "차단 방식, 인증서 오류, 우회 통제, 개인정보와 가용성의 운영 조건."
+  },
+  "warning": {
+    "label": "해외 인터넷사이트 차단 강화 보도자료 · 2019-02-12",
+    "url": "https://www.kcc.go.kr/user.do?boardId=1113&page=A05030000&dc=K00000001&boardSeq=46820&mode=view",
+    "note": "2019-02-12 당시 보도자료. 당시 SNI 차단에서는 warning.or.kr 안내 화면 미제공으로 설명. 적용 시점은 2019년이며 현재 ISP 운영은 별도 확인 대상."
+  },
+  "browser": {
+    "label": "Chrome Safe Browsing 보호 수준",
+    "url": "https://support.google.com/chrome/answer/9890866?hl=ko",
+    "note": "Chrome Standard Safe Browsing은 기본 보호. 동일 브라우저 설정의 추가효과 비교가 필요."
+  },
+  "policy-sync": {
+    "label": "서명 정책의 수신·검증·적용",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/policy-distribution.md",
+    "note": "장치별 Ed25519·시퀀스·만료 검증, 주기 수신·적용, 독립 서명·관리자 게시를 구분합니다. 타이머 주기는 실단말 복구 SLA와 다릅니다."
+  },
+  "review-current": {
+    "label": "2026-10-31 · 397df3f4 · 한계·비교 통제 재평가",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/397df3f4749c871ed964c74f44562fb98368cc9c/docs/review/independent-evaluation-20261031.md",
+    "note": "해당 커밋에 고정된 소스 검토·자체 격리 재실행 보고서. 자료 성격은 소스 검토와 자체 격리 재실행. 제3자 인증·독립 위협 정답 평가·운영 인수·탐지 우위는 별도 검증 대상."
+  },
+  "execution-current": {
+    "label": "2026-10-31 · 397df3f4 · 3회·240개 격리 DNS 관측",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/397df3f4749c871ed964c74f44562fb98368cc9c/docs/review/evidence-lab-run-20261031.md",
+    "note": "비특권 루프백에서 서명 정책 수신·Agent/dnsmasq 응답 대조. 합성 질의 240/240 기대 응답 일치, CNAME 보호 공백·SUBTREE 과차단 재현 포함."
+  },
+  "ai-threat-2025": {
+    "label": "NCSC Annual Review 2025 · AI와 기존 공격 (p.22)",
+    "url": "https://www.ncsc.gov.uk/files/ncsc-annual-review-2025.pdf#page=22",
+    "note": "위협 행위자의 표적 조사·사회공학 등 기존 공격 지원에 AI가 사용된다는 평가. 국내 문자사기 증가에 대한 AI 기여도는 미추정."
+  },
+  "second-victim-2025": {
+    "label": "매일경제 2025.09.05 · 보이스피싱 피해구제 사칭 2차 사기",
+    "url": "https://www.mk.co.kr/news/society/11412525",
+    "note": "피해 이후 재사기 경로의 언론 취재 사례"
+  },
+  "police-loss-2025": {
+    "label": "경찰청 통계 인용 · 보이스피싱 건수·피해액 2021–2025 (아이뉴스24 2026.09.23)",
+    "url": "https://www.inews24.com/view/mp/2008688",
+    "note": "피해액 2021년 7,744억·2022년 5,438억·2023년 4,472억·2024년 8,545억·2025년 1조 2,578억 원. 건수 30,982→21,832→18,902→20,839→23,360건(2025년은 2021년보다 24.6% 적음). 전화금융사기 전체 통계이며 사이트 피싱만의 수치가 아님. 경찰청 원자료 확인 필요."
+  },
+  "openphish-feed": {
+    "label": "OpenPhish Public Feed · URL 후보",
+    "url": "https://github.com/openphish/public_feed",
+    "note": "269건은 10/30 팀 실행 기록이며 원본 파일과 해시는 별도 검증"
+  },
+  "openphish-terms": {
+    "label": "OpenPhish Terms of Use · 공개 피드 이용·재배포 조건",
+    "url": "https://www.openphish.com/terms.html",
+    "note": "상업적 보호 서비스로 확장 시 별도 이용 허가 확인"
+  },
+  "gsb-v5-method": {
+    "label": "Google Safe Browsing v5alpha1 · urls.search 공식 API",
+    "url": "https://developers.google.com/safe-browsing/reference/rest/v5alpha1/urls/search",
+    "note": "지정 URL 조회 API. 테스트 1개·근거2개는 팀 실호출 기록"
+  },
+  "gsb-terms": {
+    "label": "Google Safe Browsing API · 최신 서비스 약관",
+    "url": "https://developers.google.com/safe-browsing/terms",
+    "note": "현행 약관: 별도 계약 없는 상업 이용 제한, 출처·고지 조건, Google 정보의 최근 30분 이내 갱신 조건. 코드의 정책 유효기간과 서비스의 연속 보호를 함께 검증해야 합니다."
+  },
+  "ede-rfc-8914": {
+    "label": "IETF RFC 8914 · Extended DNS Errors",
+    "url": "https://www.rfc-editor.org/rfc/rfc8914.html",
+    "note": "EDE INFO-CODE 15 Blocked: DNS 차단 사유 메타정보. HTML 안내에는 클라이언트 지원 필요."
+  },
+  "sde-adguard": {
+    "label": "AdGuard DNS · Structured DNS Errors 제안 및 브라우저 지원 제약",
+    "url": "https://adguard-dns.io/ko/blog/adguard-dns-v2-10.html",
+    "note": "제품 구현과 I-JSON 기반 드래프트. 브라우저 기본 지원 미구현"
+  },
+  "smishing-national-2019-2021": {
+    "label": "관계부처 합동 · 2019–2021 공표 집계",
+    "url": "https://www.kmcc.go.kr/download.do?fileSeq=54541",
+    "note": "정부 「명절기간 스미싱 신고(접수)·차단 현황」의 연간 전체 행: 2019년 364,586건, 2020년 950,843건, 2021년 202,276건. 연도별 공표값을 그대로 표시."
+  },
+  "risk-scoring-current": {
+    "label": "risk-1.0 · 8기준 수동 보조 계산",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/src/policy_server/risk_scoring.py",
+    "note": "현행 8기준 계산과 근거 중복 제거·상한 구현. 실위협 근거 인증·자동 공급·가중치 보정은 별도입니다."
+  },
+  "risk-cli-current": {
+    "label": "수동 위험 점수 CLI · 11월 3일 합성 입력 재확인",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/src/policy_server/risk_cli.py",
+    "note": "6bf8ccac에서 합성 R7 입력 70점·WARN을 재실행했습니다. MANUAL_PREVIEW_ONLY·SYNTHETIC_DEMO이며 dns_applied=false·published=false·source_authenticated=false입니다."
+  },
+  "okta-v0": {
+    "label": "Okta Threat Intelligence · v0로 만든 피싱 사이트 (2025.07)",
+    "url": "https://www.okta.com/blog/threat-intelligence/okta-observes-v0-ai-tool-used-to-build-phishing-sites/",
+    "note": "공격자가 AI 웹 빌더 v0로 로그인 화면을 생성·호스팅한 사례 관측. 제작 방식의 사례 자료."
+  },
+  "oest-2020": {
+    "label": "Oest et al. · Sunrise to Sunset (USENIX Security 2020)",
+    "url": "https://www.usenix.org/conference/usenixsecurity20/presentation/oest-sunrise",
+    "note": "피싱 공격의 평균 지속 약 21시간, 탐지는 첫 피해자 방문 후 평균 약 9시간 뒤(논문 본문 확인). 2020년·특정 대규모 관측 환경의 값이며 현재 Safe Browsing 지연과 같다고 단정할 수 없음."
+  },
+  "mozilla-canary": {
+    "label": "Mozilla · DoH canary domain (use-application-dns.net)",
+    "url": "https://support.mozilla.org/en-US/kb/canary-domain-use-application-dnsnet",
+    "note": "네트워크가 DoH 사용을 원하지 않을 때 NXDOMAIN으로 알리는 신호. 기본 DoH가 켜진 환경에만 적용되고 사용자가 DoH를 직접 설정하면 무시됨."
+  },
+  "dnsperf-method": {
+    "label": "DNS-OARC · dnsperf 측정 도구",
+    "url": "https://www.dns-oarc.net/tools/dnsperf",
+    "note": "DNS 지연·처리량과 질의 부하 측정 방법 참고. Pi A/B/C 대조군은 팀의 실험 설계이며 실측값은 실행 후 기록합니다."
+  },
+  "dnsmasq-manual": {
+    "label": "dnsmasq 공식 매뉴얼 · 캐시·포워딩·질의 로그",
+    "url": "https://thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html",
+    "note": "캐시·업스트림 전달·질의 로그 설정을 확인하는 구현 참고. 실제 보드·OS와 설치 버전의 지원 옵션은 예비실험에서 확인합니다."
+  },
+  "sni-rfc": {
+    "label": "RFC 6066 §3 · Server Name Indication",
+    "url": "https://www.rfc-editor.org/rfc/rfc6066.html#section-3",
+    "note": "ClientHello의 server_name 확장으로 접속할 서버 이름을 전달합니다. 2019년 SNI 차단 사례는 별도 당시 보도자료로 확인합니다."
+  },
+  "dns-terminology": {
+    "label": "RFC 9499 §2 · FQDN과 DNS 이름",
+    "url": "https://www.rfc-editor.org/rfc/rfc9499.html#section-2",
+    "note": "전체 도메인 이름은 루트까지 지정한 DNS 이름입니다. 일반 화면 표기에서는 마지막 루트 점을 생략하기도 합니다."
+  },
+  "dns-latency-log": {
+    "label": "Pi DNS 원시 CSV · 2026.11.03",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/review/dns-latency-arms-20261103.csv",
+    "note": "446행 중 준비·자가시험 6행 제외, 440행 분석(운영 Pi 240·공용 DNS 직접 120·임시 캐시 80). 각 arm n=40. 발표 JSON의 p50/p95는 선형보간이며 원시 첨부와 저장소 CSV의 줄바꿈이 다를 수 있습니다."
+  },
+  "console-current": {
+    "label": "운영자 관제 · 검토·초안·게시 상태·노드 보고",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/CONSOLE.md",
+    "note": "GUI/API와 제한된 갱신 worker·노드 보고가 구현되어 있습니다. 초안은 미서명·미게시이고, 로컬 DNS probe는 전체 LAN 단말 보호의 증명이 아닙니다."
+  },
+  "dns-runtime-current": {
+    "label": "현행 dnsmasq 정책 계약·캐시 설정",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/dns-agent/src/dns_agent/policy.py",
+    "note": "SUBTREE만 허용하며 EXACT를 자동 확대하지 않습니다. cache-size=0·local-ttl=0으로 일반 질의를 업스트림에 전달합니다. 만료 BLOCK은 집행 대상에서 제외합니다."
+  },
+  "dns-expiry-current": {
+    "label": "현행 만료·갱신 거부·복구 처리",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/dns-agent/src/dns_agent/transaction.py",
+    "note": "잘못된 새 정책은 거부하고 이전 유효 정책을 사용합니다. 만료 BLOCK을 재평가해 제거하며 안전한 정리·복구 실패 시 중단하는 분기가 있습니다."
+  },
+  "dns-latency-method": {
+    "label": "Pi 전달 경로·임시 캐시 실험의 실행 기록",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/review/dns-latency-arms-20261103.md",
+    "note": "측정 시 제품 :53에 활성 address= 차단 줄이 없었고 로컬 캐시는 꺼져 있었습니다. :55353은 별도 임시 캐시 서버입니다. 원문은 nearest-rank, 발표 그래프는 같은 CSV의 선형보간이므로 분위수 차이를 구분합니다."
+  },
+  "sde-ietf": {
+    "label": "IETF · Structured Error Data for Filtered DNS (Internet-Draft)",
+    "url": "https://datatracker.ietf.org/doc/draft-ietf-dnsop-structured-dns-error/",
+    "note": "2026-11-03 확인: draft-ietf-dnsop-structured-dns-error-27, RFC Editor Queue. 발행된 RFC 8914 EDE와 구분하며 브라우저 표시 지원은 별도 검증합니다."
+  },
+  "cloud-console-current": {
+    "label": "통합 HEAD9e84275 · 클라우드 관제·외부 서명 정책 게시",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9e84275a91df7e16289ff342f29d5f898fbccd80/docs/unified-vercel-dashboard.md",
+    "note": "검증 결과 파일 가져오기·초안·외부 서명 envelope 검증/게시·노드 보고를 연결. 자동 수집은 NOT_CONFIGURED. 게시 성공과 실제 DNS 적용을 구분. 기존 로컬 DNS·정책 코어는6bf8ccac와 동일."
+  }
+}

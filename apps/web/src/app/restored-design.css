@@ -1,0 +1,159 @@
+/* Brand restoration layer. Import AFTER globals.css.
+   Retains the React deck's navigation, evidence drawers and responsive contracts.
+   Diagram internals deliberately belong to their component-specific styles. */
+.deck-root {
+  --bg: #020918;
+  --text: #f0faff;
+  --muted: #bad2df;
+  --dim: #95b5c8;
+  --cyan: #65e5f4;
+  --cyan2: #90f3d9;
+  --line: rgba(132, 215, 242, .25);
+  background: radial-gradient(ellipse at 79% 42%, #06467588, transparent 54%),
+    linear-gradient(135deg, #020918, #06182e 62%, #041125);
+}
+.deck-topbar {
+  background: #041122f2;
+  border-bottom-color: #4ddcf342;
+  box-shadow: 0 1px 15px #20c4ff0d;
+}
+.deck-logo { color: #f4fbff; letter-spacing: -.04em; }
+.deck-chapters button { color: #b8d0df; }
+.deck-chapters button[aria-current] {
+  color: #bffaff;
+  background: linear-gradient(0deg, #19c7ee1c, transparent);
+  box-shadow: 0 5px 12px -7px #71efff;
+}
+.deck-header-actions button, .deck-nav-buttons button {
+  background: #09253ad9;
+  border-color: #82c9e847;
+}
+.deck-slide { isolation: isolate; }
+.slide-overline { color: #b0cadb; }
+.slide-heading h1 {
+  color: #f0faff;
+  text-shadow: 0 2px 18px #0007;
+  text-wrap: balance;
+}
+.slide-heading h1 .title-accent,
+.slide-heading h1 em { color: #6ceef7; font-style: normal; }
+.slide-heading p { color: #c4dce7; }
+.slide-point { border-top-color: #8bcde52b; }
+.slide-point h2 { color: #e7faff; }
+.slide-point p { color: #bcd3e0; }
+.slide-visual-container > :is(.diagram-panel, .chart-card, .evidence-stack) {
+  background: linear-gradient(140deg, #0b3044f2, #04192def);
+  border-color: #7bcfe84a;
+  box-shadow: 0 16px 42px #0003, inset 0 1px #c9f7ff08;
+}
+/* The opener is deliberately a full-bleed scene, not another diagram card. */
+.slide-opening {
+  position: relative;
+  background:
+    linear-gradient(90deg, #020918e8 0%, #020918be 38%, #02091829 72%),
+    linear-gradient(0deg, #020918b8, transparent 30%),
+    url('/capstone/assets/neon-shore.webp') center bottom / cover no-repeat,
+    #020918;
+}
+.slide-opening .slide-columns {
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, .97fr);
+  gap: clamp(16px, 2vw, 48px);
+}
+.slide-opening .slide-narrative { position: relative; z-index: 2; }
+.slide-opening .slide-heading h1 {
+  font-size: clamp(35px, 4vw, 68px);
+  line-height: 1.12;
+  letter-spacing: -.05em;
+  margin-bottom: 20px;
+}
+.slide-opening .title-line:nth-child(2) {
+  color: #66edf7;
+  text-shadow: 0 0 24px #20bfe544, 0 2px 10px #000a;
+}
+.slide-opening .slide-heading p {
+  max-width: 48ch;
+  padding: 10px 0;
+  text-shadow: 0 1px 8px #000;
+}
+.slide-opening .slide-points {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.5vw, 26px);
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+.slide-opening .slide-point {
+  display: block;
+  border-top: 1px solid #72e2ef70;
+  border-radius: 0;
+  padding: 12px 0 6px;
+  background: linear-gradient(#031326aa, #03132600);
+}
+.slide-opening .point-index { display: block; margin-bottom: 8px; }
+.slide-opening .slide-point h2 { font-size: clamp(15px, 1.2vw, 24px); }
+.slide-opening .slide-point p { font-size: clamp(12px, 1vw, 19px); line-height: 1.6; }
+.slide-opening .slide-visual-container { height: 100%; min-width: 0; }
+@media (min-width:1500px) and (min-height:900px) {
+  .slide-opening .slide-heading h1 { font-size:clamp(60px,4vw,112px); }
+  .slide-opening .slide-heading p { font-size:clamp(20px,1.1vw,35px); }
+  .slide-opening .slide-point { padding-top:18px; }
+}
+@media (max-width:780px) {
+  .slide-opening { background-position:64% bottom; }
+  .slide-opening .slide-columns { display:flex; gap:24px; }
+  .slide-opening .slide-heading h1 { font-size:clamp(32px,8vw,52px); }
+  .slide-opening .slide-heading p { margin-bottom:12px; }
+  .slide-opening .slide-points { grid-template-columns:1fr; gap:8px; }
+  .slide-opening .slide-point { display:flex; gap:14px; padding:10px 0; }
+  .slide-opening .point-index { margin:0; }
+  .slide-opening .slide-visual-container { height:auto; min-height:260px; }
+}
+@media (min-width:781px) and (max-height:650px) {
+  .slide-opening .slide-heading h1 { font-size:clamp(30px,3.6vw,45px); margin-bottom:10px; }
+  .slide-opening .slide-heading p { font-size:13px; line-height:1.5; margin-bottom:10px; padding:0; }
+  .slide-opening .slide-point { padding-top:7px; }
+  .slide-opening .point-index { margin-bottom:4px; }
+}
+/* Real cessation, not a near-zero-duration infinite loop. Applies site-wide. */
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}
+/* Navigation now lives entirely in the header; it must not force a wide page. */
+.deck-header-actions { align-items:center; flex:0 0 auto; gap:8px; }
+.deck-header-actions .deck-nav-buttons { display:flex; gap:6px; }
+.deck-header-actions .deck-nav-buttons button { width:38px; height:36px; padding:0; }
+@media(max-width:780px) {
+  .deck-header-actions { gap:6px; }
+  .deck-header-actions > button { min-height:36px; padding:8px 10px; }
+  .deck-header-actions .deck-nav-buttons { gap:4px; }
+  .deck-header-actions .deck-nav-buttons button { width:32px; }
+}
+@media(max-width:380px) {
+  .deck-topbar { padding-inline:10px; gap:8px; }
+  .deck-logo { font-size:19px; }
+  .deck-header-actions { gap:4px; }
+  .deck-header-actions > button { padding-inline:7px; }
+  .deck-header-actions .deck-nav-buttons button { width:29px; }
+}
+
+/* A returned address in this counterexample is not a successful block. */
+.chain-step:has(b[data-state="A"]){border-left-color:var(--gold)}
+.chain-step b[data-state="A"]{color:var(--gold)}
+
+/* Sparse lifecycle steps should size to their content, not fill an 860px card. */
+.deck-root .slide-policy-demo .slide-visual-container>.policy-lifecycle,
+.deck-root .slide-governance .slide-visual-container>.evidence-stack,
+.deck-root .slide-runbook .slide-visual-container>.evidence-stack{height:auto;max-height:100%;align-self:center}
+.deck-root .slide-governance .evidence-row,.deck-root .slide-runbook .evidence-row{flex:none}
+/* Bibliography uses the presentation width rather than truncating narrow cards. */
+.deck-root .slide-table-layout.slide-sources .slide-visual-container>.source-overview{height:auto;max-height:none;padding:18px 22px}
+.slide-table-layout.slide-sources .source-overview-grid{gap:12px}
+.slide-table-layout.slide-sources .source-overview-grid a{padding:12px 15px;gap:5px}
+.slide-table-layout.slide-sources .source-overview-grid a strong{font-size:clamp(14px,.9vw,25px);line-height:1.4;word-break:keep-all}
+.slide-table-layout.slide-sources .source-overview-grid a small{font-size:clamp(12px,.75vw,20px);line-height:1.45;display:block;overflow:visible;-webkit-line-clamp:unset;word-break:keep-all}
+.source-navigation-hint{margin:14px 0 0;color:var(--muted);font-size:clamp(12px,.8vw,20px)}
+@media(max-width:780px){.deck-root .slide-table-layout.slide-sources .slide-visual-container>.source-overview{padding:16px}.slide-table-layout.slide-sources .source-overview-grid{grid-template-columns:1fr}}
+/* Keep the metric caveat close to the two bars rather than stretching empty rows. */
+.deck-root .slide-friction .slide-visual-container>.chart-card{height:auto;max-height:100%;align-self:center}
+.slide-friction .bar-chart{flex:none;margin:24px 0;gap:26px}
+.slide-friction .visual-caveat{margin:12px 0;font-size:clamp(13px,.9vw,22px);line-height:1.55}

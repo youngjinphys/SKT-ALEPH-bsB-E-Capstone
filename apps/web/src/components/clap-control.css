@@ -1,0 +1,9 @@
+.clap-settings{display:grid;grid-template-columns:auto minmax(90px,1fr);gap:7px 12px;align-items:center;margin-top:12px;max-width:520px}
+.clap-settings label{font-size:13px;color:#cce8f1;white-space:nowrap}
+.clap-settings .clap-sensitivity-value{font-variant-numeric:tabular-nums;margin-left:5px}
+.clap-settings input,.clap-settings meter{width:100%;min-width:0;accent-color:#8edff1}
+.clap-settings input{min-height:28px;margin:0;cursor:pointer}
+.clap-settings meter{height:18px}
+.clap-settings small{grid-column:2;color:#a6c4d3;font-size:12px;line-height:1.4}
+.clap-settings input:focus-visible{outline:3px solid #ffe3a6;outline-offset:3px}
+.clap-control .clap-privacy{font-size:12px;line-height:1.5;color:#a6c4d3}

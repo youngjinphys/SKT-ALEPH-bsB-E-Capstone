@@ -1,0 +1,448 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ALEPH slide source record",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "subtitle",
+    "kind",
+    "notes",
+    "sources",
+    "points"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "subtitle": {
+      "type": "string",
+      "minLength": 0
+    },
+    "kind": {
+      "type": "string",
+      "minLength": 1
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 10
+    },
+    "seconds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string"
+    },
+    "chapter": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true
+    },
+    "points": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "body"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scope": {
+      "type": "string"
+    },
+    "mood": {
+      "type": "string"
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "subtitle": {
+          "type": "string",
+          "minLength": 0
+        },
+        "cue": {
+          "type": "string"
+        },
+        "reviewNote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "title",
+              "body"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "compactTitle": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Concise diagram identifier for short mobile viewports; the full authored title remains in the points pane and accessibility label."
+        }
+      }
+    },
+    "headline": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "focus": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tone": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "reading": {
+      "type": "object",
+      "required": [
+        "title",
+        "columns",
+        "rows",
+        "takeaway",
+        "source"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "columns": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "takeaway": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "sourceLabel": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "visual": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "title",
+            "left",
+            "right",
+            "caveat"
+          ],
+          "properties": {
+            "type": {
+              "const": "independent-trends"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "left": {
+              "$ref": "#/$defs/independentSeries"
+            },
+            "right": {
+              "$ref": "#/$defs/independentSeries"
+            },
+            "caveat": {
+              "type": "string",
+              "minLength": 12
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "sourceKey",
+            "unit",
+            "measurements",
+            "caveat"
+          ],
+          "properties": {
+            "type": {
+              "const": "comparison-bars"
+            },
+            "title": {
+              "type": "string"
+            },
+            "sourceKey": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            },
+            "measurements": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "required": [
+                  "label",
+                  "value"
+                ],
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "caveat": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "sourceKey",
+            "nodes",
+            "links",
+            "caveat"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "cname-chain"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourceKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "nodes": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "required": [
+                  "label",
+                  "value",
+                  "state"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "value": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "ALLOW",
+                      "BLOCK",
+                      "A"
+                    ]
+                  }
+                }
+              }
+            },
+            "links": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "caveat": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "mode"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "topology"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "lab",
+                "proposal"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "credits": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "independentSeries": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "sourceKey",
+            "context"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "sourceKey": {
+              "type": "string"
+            },
+            "context": {
+              "type": "string",
+              "minLength": 10
+            },
+            "additionalSourceKeys": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "sourceKey",
+            "unit",
+            "max",
+            "values",
+            "periods"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "sourceKey": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            },
+            "max": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "values": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "periods": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "string"
+              }
+            },
+            "additionalSourceKeys": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,74 @@
+/* Stage state remains legible without animation. Playback is explicitly opt-in. */
+.restored-dns .restored-bidirectional line{opacity:.25;transition:opacity .15s}
+.restored-dns .restored-bidirectional[data-active-flow=query] [data-flow=query],
+.restored-dns .restored-bidirectional[data-active-flow=response] [data-flow=response]{opacity:1;stroke-width:2.5;filter:drop-shadow(0 0 2px currentColor)}
+.restored-dns .restored-bidirectional[data-active-flow=query] .lane-query-label,
+.restored-dns .restored-bidirectional[data-active-flow=response] .lane-response-label{font-weight:800;text-decoration:underline;text-underline-offset:3px}
+.restored-dns .dns-web-link[data-active-flow=request]{color:#9bffe2;font-weight:800}
+@media(prefers-reduced-motion:reduce){.restored-dns .restored-bidirectional line{transition:none}.restored-dns line,.restored-dns .dns-web-link>span{animation:none!important}}
+html[data-motion=off] .restored-dns line,html[data-motion=off] .restored-dns .dns-web-link>span{animation:none!important}
+
+.restored-bidirectional line[data-flow=query]{color:#9beaff;stroke:currentColor}.restored-bidirectional line[data-flow=response]{color:#77f0c7;stroke:currentColor}
+.direct-flow-line{display:block;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;overflow:visible}
+.restored-dns .dns-web-link[data-active-flow=none] .direct-flow-line{opacity:.3}
+.restored-dns .dns-web-link[data-unused=true] .direct-flow-line{visibility:hidden}
+
+/* One packet traverses only the selected edge; arrow tips remain solid. */
+.deck-root .restored-bidirectional .lane-packet{display:none;stroke:none;fill:currentColor}
+.restored-dns .lane-packet[data-flow=query]{color:#c4f6ff}
+.restored-dns .lane-packet[data-flow=response]{color:#adffe4}
+.restored-dns[data-playback=running] [data-active-flow=query] .lane-packet[data-flow=query],
+.restored-dns[data-playback=running] [data-active-flow=response] .lane-packet[data-flow=response]{display:block;animation:dns-packet-horizontal 1.8s linear 1 both;filter:drop-shadow(0 0 3px currentColor)}
+.restored-dns[data-playback=running] .restored-bidirectional[data-active-flow] .lane-vertical .lane-packet[data-flow]{animation-name:dns-packet-vertical}
+.restored-dns[data-playback=running] .restored-bidirectional[data-active-flow] .lane-packet[data-flow][data-direction=left],
+.restored-dns[data-playback=running] .restored-bidirectional[data-active-flow] .lane-packet[data-flow][data-direction=up]{animation-direction:reverse}
+@keyframes dns-packet-horizontal{from{cx:3%}to{cx:97%}}
+@keyframes dns-packet-vertical{from{cy:3%}to{cy:97%}}
+@media(prefers-reduced-motion:reduce){.restored-dns .lane-packet{display:none!important;animation:none!important}}
+html[data-motion=off] .restored-dns .lane-packet{display:none!important;animation:none!important}
+
+/* Direct web traffic starts only after the DNS response, never on policy supply. */
+.restored-dns .direct-flow-packet{display:none;fill:currentColor;stroke:none}
+.restored-dns[data-playback=running] .dns-web-link[data-active-flow=request] .direct-flow-packet{display:block;animation:dns-direct-packet 1.8s linear 1 both;filter:drop-shadow(0 0 3px currentColor)}
+@keyframes dns-direct-packet{from{cy:3px}to{cy:27px}}
+@media(prefers-reduced-motion:reduce){.restored-dns .direct-flow-packet{display:none!important;animation:none!important}}
+html[data-motion=off] .restored-dns .direct-flow-packet{display:none!important;animation:none!important}
+
+/* One brief policy-match cue, never a loop or a packet sent to the upstream. */
+.restored-dns[data-playback=running][data-step="1"] .dns-block-gate{animation:dns-block-gate-arrive 400ms ease-out 1}
+@keyframes dns-block-gate-arrive{from{opacity:.35;transform:scale(.75)}to{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.restored-dns .dns-block-gate{animation:none!important}}
+html[data-motion=off] .restored-dns .dns-block-gate,.restored-dns[data-playback=paused] .dns-block-gate{animation:none!important}
+
+/* Short, explicit handoffs: settle each node before revealing its next connection. */
+.restored-dns-map{position:relative}
+.restored-dns .dns-upstream{transform:translate(0,0);transition:transform 1900ms cubic-bezier(.22,.61,.36,1);z-index:2;will-change:transform}
+.restored-dns:is([data-intro-state=query],[data-intro-state=response],[data-intro-state=complete],[data-intro-state=prepare]) .dns-upstream{transform:translate(var(--dns-intro-x,0px),var(--dns-intro-y,0px));transition:none}
+.restored-dns :is(.dns-policy,.dns-policy-link,.dns-intro-upstream-lane){transition:opacity 1100ms ease;opacity:1}
+.restored-dns .dns-resolver{opacity:1;transform:translateY(0) scale(1);transition:opacity 1200ms ease,transform 1300ms cubic-bezier(.22,.61,.36,1)}
+.restored-dns .dns-resolver[aria-hidden=true]{opacity:0;transform:translateY(8px) scale(.97);pointer-events:none;transition:none}
+.restored-dns :is(.dns-policy,.dns-policy-link,.dns-intro-upstream-lane)[aria-hidden=true]{opacity:0;pointer-events:none;transition:none}
+.restored-dns:is([data-intro-state=prepare],[data-intro-state=move],[data-intro-state=upstream-settle],[data-intro-state=reveal]) .dns-query-link{opacity:.2;transition:opacity 500ms ease}
+.restored-dns .dns-query-link{transition:opacity 700ms ease}
+.dns-intro-upstream-lane{grid-area:upstream-link;display:flex;align-items:stretch}
+.dns-intro-upstream-lane>.dns-upstream-link{width:100%}
+.dns-intro-status{margin:0 0 10px;min-height:1.45em;color:#c7e9ee;font-size:clamp(12px,.85vw,15px);line-height:1.45}
+@media(prefers-reduced-motion:reduce){.restored-dns :is(.dns-upstream,.dns-policy,.dns-policy-link,.dns-resolver,.dns-intro-upstream-lane,.dns-query-link){transition:none!important}}
+html[data-motion=off] .restored-dns :is(.dns-upstream,.dns-policy,.dns-policy-link,.dns-resolver,.dns-intro-upstream-lane,.dns-query-link){transition:none!important}
+
+/* A blocked upstream is a skipped path, not another request/response exchange. */
+.deck-root .restored-dns .restored-bidirectional[data-blocked=true] :is(.lane-response-label,.lane-horizontal,.lane-vertical){visibility:hidden}
+.deck-root .restored-dns .restored-bidirectional[data-blocked=true] .lane-query-label{opacity:1;color:#ffe0b0;white-space:nowrap}
+
+/* Keep the upstream note's geometry when the path is skipped. */
+.dns-upstream-condition{opacity:1;transition:opacity 320ms ease-in-out}
+.dns-upstream-condition[aria-hidden=true]{opacity:0;user-select:none}
+@media(prefers-reduced-motion:reduce){.dns-upstream-condition{transition:none!important}}
+html[data-motion=off] .dns-upstream-condition{transition:none!important}
+
+/* The skipped-web label replaces the arrow in place, never adds a layout row. */
+.restored-dns .dns-web-link{position:relative}
+.restored-dns .dns-web-blocked-label{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity 320ms ease-in-out;pointer-events:none}
+.restored-dns .dns-web-blocked-label[data-visible=true]{opacity:1}
+@media(prefers-reduced-motion:reduce){.restored-dns .dns-web-blocked-label{transition:none!important}}
+html[data-motion=off] .restored-dns .dns-web-blocked-label{transition:none!important}

@@ -1,0 +1,71 @@
+{
+  "id": "architecture",
+  "chapter": "02 · 설계·구현",
+  "title": "후보를 검토하고\n승인된 정책만 배포합니다",
+  "subtitle": "수집 → 범위 승인 → 서명·게시 → DNS 수신·적용",
+  "seconds": 125,
+  "kind": "policy-pipeline",
+  "status": "implemented",
+  "points": [
+    {
+      "title": "후보 수집·조회",
+      "body": "OpenPhish URL 후보와 지정 URL의 Safe Browsing 응답"
+    },
+    {
+      "title": "검토·승인",
+      "body": "URL 근거·하위 서비스 영향·유효기간을 관리자 확인"
+    },
+    {
+      "title": "서명·게시",
+      "body": "외부 독립 서명 후 관리자 CLI·클라우드 관제에서 검증·게시"
+    },
+    {
+      "title": "DNS 수신·적용",
+      "body": "서명·장치·순서를 검증한 유효 BLOCK만 집행"
+    }
+  ],
+  "notes": "[화면] 현재 코드 탭에서 네 단계를 따라갑니다. 공공·ISP 탭은 확장 제안에서 다룹니다.\n\n[발표] 외부 피드에서 찾은 URL은 먼저 후보로 보관합니다. OpenPhish는 URL 후보를 제공하고, Safe Browsing API는 지정한 URL에 알려진 위협 근거가 있는지 조회합니다. 빈 결과만으로 그 사이트의 안전성을 보증할 수는 없습니다.\n\n다음은 관리자 검토입니다. 같은 호스트에 정상 서비스가 함께 있을 수 있으므로 URL의 위험을 도메인 전체로 바로 확대하지 않습니다. 점수 엔진은 호스트 단위의 EXACT 제안을 내지만, 현재 dnsmasq는 하위 이름까지 포함하는 SUBTREE를 집행합니다. EXACT 입력은 거부하며, 하위 서비스 영향까지 승인한 별도 정책이 필요합니다.\n\n로컬 관제에는 위협정보 갱신과 검토가 연결돼 있습니다. 클라우드 관제는 별도 수집기의 검증 결과를 가져와 검토·초안을 작성합니다. 서명은 외부에서 수행하고, 관리자 CLI나 인증된 클라우드 관제에서 검증해 게시합니다. DNS 노드는 게시된 정책을 주기적으로 받아 적용하므로, 게시 성공과 실제 적용은 따로 확인합니다. 여덟 기준 위험 점수는 수동 보조 제안으로 사용합니다.\n\n마지막으로 DNS가 서명, 대상 장치, 순서와 만료를 검증합니다. 서명은 발행자와 변조 여부를 확인합니다. 내용의 정확성은 근거 검토와 별도의 평가로 확보해야 합니다.\n\n[전환] 승인에도 오류가 생길 수 있으므로 차단은 되돌릴 수 있어야 합니다.",
+  "sources": [
+    "policy-server",
+    "console-current",
+    "cloud-console-current",
+    "policy-sync",
+    "dns-runtime-current",
+    "risk-scoring-current",
+    "risk-cli-current",
+    "openphish-feed",
+    "gsb-v5-method",
+    "gsb-terms"
+  ],
+  "mood": "focused",
+  "scope": "lab",
+  "presentation": {
+    "title": "후보를 검토하고\n승인된 정책만 배포합니다",
+    "subtitle": "수집 → 범위 승인 → 서명·게시 → DNS 수신·적용",
+    "cue": "로컬 수집·클라우드 검증 자료 가져오기, 독립 서명·경로별 게시를 구분합니다. 게시 성공과 DNS 적용을 별도로 확인합니다.",
+    "reviewNote": "6bf8ccac에서 로컬 관제·갱신 worker·노드 보고와 수동 risk-1.0 CLI를 확인했습니다. 합성 R7 70점·WARN을 재실행했습니다. 후속9e84275는 이 코어를 보존하고 클라우드 검증 자료 가져오기·외부 서명 정책 게시를 추가합니다. 클라우드 자동 수집은 미구성이며 실위협 평가·연속 보호는 별도 검증입니다.",
+    "points": [
+      {
+        "title": "후보 수집·조회",
+        "body": "OpenPhish URL 후보와 지정 URL의 Safe Browsing 응답"
+      },
+      {
+        "title": "검토·승인",
+        "body": "URL 근거·하위 서비스 영향·유효기간을 관리자 확인"
+      },
+      {
+        "title": "서명·게시",
+        "body": "외부 독립 서명 후 관리자 CLI·클라우드 관제에서 검증·게시"
+      },
+      {
+        "title": "DNS 수신·적용",
+        "body": "서명·장치·순서를 검증한 유효 BLOCK만 집행"
+      }
+    ],
+    "compactTitle": "후보부터 서명 정책까지"
+  },
+  "headline": {
+    "focus": "정책 배포",
+    "tone": "protect"
+  }
+}

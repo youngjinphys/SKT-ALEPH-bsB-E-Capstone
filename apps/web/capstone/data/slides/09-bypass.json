@@ -1,0 +1,119 @@
+{
+  "id": "bypass",
+  "chapter": "03 · 검증",
+  "title": "240건의 응답 검증에서\n동작과 반례를 함께 확인했습니다",
+  "subtitle": "2026.10.31 격리 기록 · 서명 수신·차단·철회",
+  "seconds": 150,
+  "kind": "limits",
+  "status": "evidence-snapshot",
+  "points": [
+    {
+      "title": "기능 검증 240/240",
+      "body": "3회 × 4상태 × 5이름 × A·AAAA × UDP·TCP"
+    },
+    {
+      "title": "CNAME 보호 공백",
+      "body": "alias.test 응답에 blocked.test의 주소가 반환"
+    },
+    {
+      "title": "SUBTREE의 범위 비용",
+      "body": "부모 차단 시 정상 child.blocked.test도 NXDOMAIN"
+    },
+    {
+      "title": "DNS 계층의 한계",
+      "body": "동일 호스트의 정상 /home과 악성 /phish는 같은 이름"
+    }
+  ],
+  "notes": "[화면] 240/240의 분모를 읽은 뒤 CNAME과 SUBTREE 탭을 각각 선택합니다.\n\n[발표] 10월 31일 격리 실험에서는 합성 DNS 질의 240건의 기대 응답이 모두 일치했습니다. 의미는 설정한 응답을 재현했다는 것입니다. 차단과 철회뿐 아니라 보호 공백과 과차단이 예상대로 나타난 경우도 포함합니다.\n\n분모는 세 번의 반복, 업스트림 기준선·기본 상태·차단·철회의 네 상태, 다섯 이름, A와 AAAA, UDP와 TCP입니다. 실제 위협 사이트 240개를 판별한 실험은 아닙니다.\n\n첫 반례는 CNAME입니다. alias.test를 조회했을 때 그 별칭이 가리키는 blocked.test의 주소가 응답에 포함됐습니다. 현재 구현이 처음 질의한 이름 중심으로 집행하기 때문에 생기는 보호 공백입니다. 화면의 192.0.2.20은 해당 실험의 시험용 주소입니다.\n\n둘째는 범위 비용입니다. blocked.test를 SUBTREE로 차단하면 정상 하위 이름인 child.blocked.test도 차단됩니다. 하위 예외가 자동으로 해결된다고 가정하지 않고, 부모 차단의 범위를 다시 검토하거나 철회해야 합니다.\n\n여기에 DNS 계층 자체의 한계도 있습니다. 같은 호스트의 /home은 정상이고 /phish만 악성이어도 DNS 질의에는 그 경로가 없습니다. 그래서 URL 수준의 보호와 사이트 운영자의 복구가 함께 필요합니다.\n\n[전환] 기능 확인 다음에는 실제 Pi DNS의 응답 지연을 살펴봤습니다.",
+  "sources": [
+    "execution-current",
+    "review-current",
+    "dns-runtime-current",
+    "validation"
+  ],
+  "mood": "concerned",
+  "presentation": {
+    "title": "240건의 응답 검증에서\n동작과 반례를 함께 확인했습니다",
+    "subtitle": "2026.10.31 격리 기록 · 서명 수신·차단·철회",
+    "cue": "큰 숫자보다 먼저 측정 대상을 말합니다. CNAME은 구현 개선, URL 경로 미관측은 계층의 한계입니다.",
+    "reviewNote": "240/240은 397df3f4에 고정된 과거 루프백 기능 실험입니다. 이번 HEAD에서 같은 240건을 재실행했다는 뜻이 아닙니다. 실험 fixture의 alias.test→blocked.test→192.0.2.20과 정상 child.blocked.test 표기를 사용합니다.",
+    "points": [
+      {
+        "title": "기능 검증 240/240",
+        "body": "3회 × 4상태 × 5이름 × A·AAAA × UDP·TCP"
+      },
+      {
+        "title": "CNAME 보호 공백",
+        "body": "alias.test 응답에 blocked.test의 주소가 반환"
+      },
+      {
+        "title": "SUBTREE의 범위 비용",
+        "body": "부모 차단 시 정상 child.blocked.test도 NXDOMAIN"
+      },
+      {
+        "title": "DNS 계층의 한계",
+        "body": "동일 호스트의 정상 /home과 악성 /phish는 같은 이름"
+      }
+    ],
+    "compactTitle": "합성 질의와 두 반례"
+  },
+  "reading": {
+    "title": "관측된 결과와 해석 범위",
+    "columns": [
+      "실험",
+      "결과",
+      "해석"
+    ],
+    "rows": [
+      [
+        "3회·4상태·5이름·2유형·2전송",
+        "240/240 기대 응답 일치",
+        "합성 기능 검증"
+      ],
+      [
+        "CNAME 별칭",
+        "alias.test가 blocked.test의 주소를 반환",
+        "응답 체인 보호 공백"
+      ],
+      [
+        "정상 하위 서비스",
+        "child.blocked.test까지 부모 정책으로 차단",
+        "SUBTREE 범위 비용"
+      ]
+    ],
+    "takeaway": "기대 응답 일치는 알려진 공백·과차단 재현을 포함합니다. 실제 탐지율·정상 서비스 오탐률은 별도 평가합니다.",
+    "source": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/397df3f4749c871ed964c74f44562fb98368cc9c/docs/review/evidence-lab-run-20261031.md",
+    "sourceLabel": "격리 실험 감사 원문 ↗"
+  },
+  "headline": {
+    "focus": "보호 DNS 경로",
+    "tone": "risk"
+  },
+  "visual": {
+    "type": "cname-chain",
+    "title": "CNAME 별칭에서의 보호 공백",
+    "sourceKey": "execution-current",
+    "nodes": [
+      {
+        "label": "요청된 별칭",
+        "value": "alias.test",
+        "state": "ALLOW"
+      },
+      {
+        "label": "체인 내 차단 대상",
+        "value": "blocked.test",
+        "state": "BLOCK"
+      },
+      {
+        "label": "반환된 주소",
+        "value": "192.0.2.20",
+        "state": "A"
+      }
+    ],
+    "links": [
+      "CNAME",
+      "주소 응답"
+    ],
+    "caveat": "10월 31일 격리 실험의 실제 fixture · AAAA 응답은 2001:db8::20."
+  }
+}

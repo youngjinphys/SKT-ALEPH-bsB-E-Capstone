@@ -1,0 +1,74 @@
+{
+  "id": "precedents",
+  "chapter": "01 · 문제",
+  "title": "운영 선례를 바탕으로\n정책 집행의 경계를 검증합니다",
+  "subtitle": "NCSC PDNS · KISA DNS 싱크홀 · 팀의 구현 기여",
+  "seconds": 40,
+  "kind": "evidence",
+  "status": "reference",
+  "points": [
+    {
+      "title": "운영 선례",
+      "body": "영국 NCSC PDNS와 국내 KISA DNS 싱크홀"
+    },
+    {
+      "title": "팀의 기여",
+      "body": "후보 검토·서명·집행·철회와 반례를 하나의 흐름으로 확인"
+    }
+  ],
+  "notes": "[화면] NCSC와 KISA를 짚고 팀의 검증 범위로 시선을 옮깁니다.\n\n[발표] 영국 NCSC는 공공부문용 Protective DNS를 운영하고, 국내 KISA는 자체 DNS를 운영하는 기관을 위한 싱크홀 서비스를 제공합니다.\n\n저희는 이 선례를 바탕으로 작은 실험 환경을 구성했습니다. 기여는 외부 위협정보를 승인 가능한 정책으로 만들고, 서명 배포와 집행·철회를 연결하며, 그 과정에서 보호 공백과 과차단을 재현한 데 있습니다.\n\n[전환] 먼저 승인된 정책이 DNS 응답에 어떻게 쓰이는지 보겠습니다.",
+  "sources": [
+    "pdns",
+    "kisa",
+    "execution-current"
+  ],
+  "mood": "happy",
+  "presentation": {
+    "title": "운영 선례를 바탕으로\n정책 집행의 경계를 검증합니다",
+    "subtitle": "NCSC PDNS · KISA DNS 싱크홀 · 팀의 구현 기여",
+    "points": [
+      {
+        "title": "운영 선례",
+        "body": "영국 NCSC PDNS와 국내 KISA DNS 싱크홀"
+      },
+      {
+        "title": "팀의 기여",
+        "body": "후보 검토·서명·집행·철회와 반례를 하나의 흐름으로 확인"
+      }
+    ],
+    "cue": "선례 설명은 짧게 끝내고 팀이 재현·검증한 대상으로 연결합니다.",
+    "reviewNote": "2019년 SNI 차단은 DNS 집행과 다른 계층의 사례이므로 본편 선례 표에서 제외했습니다. 선례의 존재가 본 프로토타입의 성능이나 운영 준비를 증명하지는 않습니다.",
+    "compactTitle": "선례와 팀의 검증 범위"
+  },
+  "reading": {
+    "title": "선례와 팀의 검증 범위",
+    "columns": [
+      "대상",
+      "확인된 내용",
+      "이 발표의 연결점"
+    ],
+    "rows": [
+      [
+        "영국 NCSC PDNS",
+        "공공부문용 Protective DNS 운영",
+        "기존 운영 모델 참고"
+      ],
+      [
+        "KISA DNS 싱크홀",
+        "자체 DNS 운영 기관 대상 서비스",
+        "국내의 네트워크 보호 선례"
+      ],
+      [
+        "E조 프로토타입",
+        "정책 승인·서명·집행·철회와 반례 재현",
+        "작동 경계와 후속 평가 조건 확인"
+      ]
+    ],
+    "source": "https://www.ncsc.gov.uk/information/pdns",
+    "sourceLabel": "NCSC 공식 소개 ↗"
+  },
+  "headline": {
+    "focus": "선례",
+    "tone": "evidence"
+  }
+}

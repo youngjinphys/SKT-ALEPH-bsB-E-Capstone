@@ -1,0 +1,139 @@
+/* Presentation slide transition: iOS/Keynote-style Parallax Cover Glide.
+   Hardware-accelerated via translate3d, with natural Apple fluid easeOut curve.
+   Opaque slide tracks eliminate double-image text ghosting completely.
+   No 3D distortion, no subpixel blur, no jarring flicker. */
+.deck-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.slide-track {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  background: radial-gradient(ellipse at 79% 42%, #06467555, transparent 54%),
+    linear-gradient(135deg, #020918, #06182e 62%, #041125);
+}
+
+.slide-track.slide-active {
+  z-index: 2;
+}
+
+.slide-track.slide-leaving {
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Forward transition: incoming glides in from right, leaving parallax-retreats left */
+.slide-track.enter-forward {
+  z-index: 2;
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.75);
+  animation: slide-cover-in-forward 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-track.leave-forward {
+  z-index: 1;
+  animation: slide-retreat-out-forward 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Backward transition: incoming glides in from left, leaving parallax-retreats right */
+.slide-track.enter-back {
+  z-index: 2;
+  box-shadow: 24px 0 60px rgba(0, 0, 0, 0.75);
+  animation: slide-cover-in-back 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-track.leave-back {
+  z-index: 1;
+  animation: slide-retreat-out-back 380ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slide-track.enter-none {
+  animation: none;
+}
+
+@keyframes slide-cover-in-forward {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slide-retreat-out-forward {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0.55;
+    transform: translate3d(-28%, 0, 0);
+  }
+}
+
+@keyframes slide-cover-in-back {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slide-retreat-out-back {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0.55;
+    transform: translate3d(28%, 0, 0);
+  }
+}
+
+/* Reduced motion and paused motion accessibility */
+html[data-motion=off] *,
+html[data-motion=off] *::before,
+html[data-motion=off] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.clap-control {
+  border: 1px solid var(--line);
+  padding: 12px;
+  margin-top: 14px;
+  border-radius: 10px;
+}
+.clap-control button, .overview-help button {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  background: #103146;
+  color: var(--text);
+  border-radius: 8px;
+}
+.clap-control p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+
+/* Full/zoom layouts need their active content in normal flow so the outer
+   viewport can scroll to every authored item. Fit layouts retain track sizing. */
+.deck-stage:has(>.slide-active .deck-slide[data-mobile-layout=full]){height:auto;min-height:100%;overflow:visible}
+.deck-stage>.slide-active:has(.deck-slide[data-mobile-layout=full]){position:relative;height:auto;min-height:100%;overflow:visible}

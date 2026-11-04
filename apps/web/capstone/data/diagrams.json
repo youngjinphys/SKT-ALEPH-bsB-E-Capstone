@@ -1,0 +1,296 @@
+{
+  "dnsCases": {
+    "ALLOW": {
+      "answer": "원래 DNS 응답",
+      "desc": "업스트림 DNS 응답을 유지합니다. 현재 정책: 비차단 · 사이트 안전성: 미평가.",
+      "kind": "allow"
+    },
+    "WARN": {
+      "answer": "원래 DNS 응답",
+      "desc": "기본 WARN: 업스트림 DNS 응답 유지 · 이용자 경고 화면은 후속 구현 항목.",
+      "kind": "warn"
+    },
+    "BLOCK": {
+      "answer": "NXDOMAIN",
+      "desc": "정책에 등록된 이름과 그 하위 이름의 조회를 차단합니다. 기존 캐시·연결은 별도 문제입니다.",
+      "kind": "block"
+    }
+  },
+  "policyTimeline": [
+    {
+      "phase": "정상",
+      "response": "A 203.0.113.42",
+      "note": "설명용 예시 · 미승인 후보는 차단하지 않으며 원래 DNS 응답을 유지합니다."
+    },
+    {
+      "phase": "차단",
+      "response": "NXDOMAIN",
+      "note": "BLOCK 정책 적용 후 같은 이름의 새 질의가 차단됩니다."
+    },
+    {
+      "phase": "철회",
+      "response": "A 203.0.113.42",
+      "note": "새 철회 정책 적용 후 서버의 새 응답이 복원됩니다. 단말 캐시·재질의는 별도 확인합니다."
+    }
+  ],
+  "topology": {
+    "proposal": [
+      {
+        "name": "공공·신뢰기관",
+        "desc": "근거·심사·정책 승인"
+      },
+      {
+        "name": "참여 ISP의 보호 DNS",
+        "desc": "서명 검증·집행·철회"
+      },
+      {
+        "name": "이용자",
+        "desc": "선택권·이의신청"
+      }
+    ],
+    "lab": [
+      {
+        "name": "정책 서버",
+        "desc": "후보·사람 검토 → 서명·HTTPS 발행"
+      },
+      {
+        "name": "보호 DNS",
+        "desc": "서명 검증 → dnsmasq 집행"
+      },
+      {
+        "name": "시험 단말",
+        "desc": "보호 DNS에 FQDN 질의"
+      }
+    ]
+  },
+  "governance": [
+    {
+      "title": "이의신청 접수",
+      "detail": "오탐 도메인·차단 시각·정책 버전과 이용자 영향을 기록"
+    },
+    {
+      "title": "근거 재검증·판정",
+      "detail": "독립 검토를 거쳐 차단 유지·정정·철회 근거를 남김"
+    },
+    {
+      "title": "철회 배포·복구 확인",
+      "detail": "서명된 새 정책의 ISP 반영과 DNS 캐시·기존 연결의 잔존을 구분 검증"
+    }
+  ],
+  "dnsFlow": {
+    "allow": {
+      "label": "정상 조회",
+      "domain": "safe.test",
+      "answer": "A 203.0.113.42",
+      "outcome": "클라이언트 → 목적지 웹 서버",
+      "detail": "유효한 승인 BLOCK 범위 밖의 이름은 업스트림으로 전달합니다. 현재 로컬 응답 캐시는 꺼져 있으며, 응답 전달이 안전성 보증을 뜻하지는 않습니다.",
+      "steps": [
+        "클라이언트 → 보호 DNS: FQDN 질의",
+        "보호 DNS: 미리 받은 로컬 정책 대조",
+        "보호 DNS → 시험용 업스트림 DNS: 일반 질의 전달",
+        "업스트림 DNS → 보호 DNS: 기대 주소 응답",
+        "보호 DNS → 클라이언트: A 응답",
+        "주소를 받은 단말이 목적지에 연결 시작"
+      ]
+    },
+    "block": {
+      "label": "차단 대상 조회",
+      "domain": "blocked.test",
+      "answer": "NXDOMAIN",
+      "outcome": "이번 새 이름 조회에 의존한 연결 중단",
+      "detail": "NXDOMAIN은 ‘해당 이름 없음’ 응답입니다. 승인된 차단 대상에 주소 대신 이 응답을 보냅니다. 기존 캐시·연결은 각 수명에 따라 남습니다.",
+      "steps": [
+        "클라이언트 → 보호 DNS: FQDN 질의",
+        "보호 DNS: 로컬 BLOCK 정책 일치",
+        "보호 DNS → 클라이언트: NXDOMAIN",
+        "클라이언트: 새 주소 획득 중단 · 웹 연결 없음"
+      ]
+    }
+  },
+  "protocolRows": [
+    {
+      "id": "http",
+      "label": "HTTP · 통제된 평문 실험",
+      "steps": [
+        {
+          "icon": "client",
+          "title": "HTTP 요청",
+          "detail": "승인된 Host · 안내 IP"
+        },
+        {
+          "icon": "server",
+          "title": "302 Found",
+          "detail": "HTTP 서버가 고정 Location 응답"
+        },
+        {
+          "icon": "document",
+          "title": "안내 페이지 200",
+          "detail": "브라우저가 새 요청"
+        }
+      ],
+      "boundary": "기본 DNS BLOCK의 NXDOMAIN과 별도인 선택형 HTTP 안내입니다."
+    },
+    {
+      "id": "https",
+      "label": "HTTPS · 원래 호스트 인증",
+      "steps": [
+        {
+          "icon": "client",
+          "title": "HTTPS 연결",
+          "detail": "원래 도메인 이름 유지"
+        },
+        {
+          "icon": "lock",
+          "title": "TLS 신원 검증",
+          "detail": "원래 호스트의 신뢰된 인증서 필요"
+        },
+        {
+          "icon": "stop",
+          "title": "HTTP 이전 중단",
+          "detail": "신원 불일치 시 302를 읽지 못함"
+        }
+      ],
+      "boundary": "HTTPS 연결에는 원래 호스트의 신뢰된 인증서가 필요합니다."
+    }
+  ],
+  "policyPipeline": {
+    "lab": [
+      {
+        "label": "후보 수집·조회",
+        "owner": "OpenPhish → GSB",
+        "detail": "OpenPhish URL 후보를 GSB로 조회",
+        "artifact": "후보 목록 · 지정 URL의 위협 응답"
+      },
+      {
+        "label": "검토·승인",
+        "owner": "관리자",
+        "detail": "URL 근거·SUBTREE 영향·유효기간 확인",
+        "artifact": "관제의 검토된 초안 · 미서명·미게시"
+      },
+      {
+        "label": "서명·배포",
+        "owner": "서명자 / 공급 서버",
+        "detail": "독립 서명·관리자 게시 → HTTPS Pull",
+        "artifact": "서명 정책 스냅샷"
+      },
+      {
+        "label": "DNS 집행",
+        "owner": "dnsmasq",
+        "detail": "승인된 유효 SUBTREE BLOCK만 집행",
+        "artifact": "NXDOMAIN"
+      }
+    ],
+    "proposal": [
+      {
+        "label": "수집·검증",
+        "owner": "공공·신뢰기관",
+        "detail": "위협 근거 검토·감사",
+        "artifact": "정책 권고"
+      },
+      {
+        "label": "승인·구제",
+        "owner": "독립 검토 체계",
+        "detail": "법적·범위 검토·긴급 철회",
+        "artifact": "검토 기록"
+      },
+      {
+        "label": "서명·배포",
+        "owner": "정책 공급자",
+        "detail": "책임 주체·수명·버전",
+        "artifact": "검증 정책"
+      },
+      {
+        "label": "DNS 운영",
+        "owner": "참여 ISP",
+        "detail": "옵트인·SLA·최소 수집",
+        "artifact": "가입자 DNS 응답"
+      }
+    ]
+  },
+  "policyVerdicts": [
+    {
+      "code": "BLOCK",
+      "condition": "승인·유효기간·집행 범위 통과",
+      "answer": "NXDOMAIN (현재 SUBTREE)",
+      "detail": "EXACT 제안은 DNS 입력에서 거부합니다. 하위 영향까지 승인한 SUBTREE 정책을 별도로 발행합니다."
+    },
+    {
+      "code": "WARN",
+      "condition": "risk-1.0 ≥70 · 수동 제안",
+      "answer": "업스트림 DNS 응답",
+      "detail": "가상 R7 → 70점 → WARN 재현. 8기준: 등록 기간, 신고·목록·사건, IP·CNAME."
+    },
+    {
+      "code": "ALLOW",
+      "condition": "공식 도메인·완전한 저위험 평가",
+      "answer": "업스트림 DNS 응답",
+      "detail": "유효한 전체 입력의 점수가 기준 미만이면 ALLOW 제안. 근거 부족은 UNKNOWN."
+    },
+    {
+      "code": "UNKNOWN",
+      "condition": "미등재·점수 입력 근거 부족",
+      "answer": "업스트림 DNS 응답",
+      "detail": "정책 제안의 미확인 상태입니다. 잘못된 서명 갱신은 거부하고 이전 정책의 유효기간 종료 시 만료 BLOCK을 정리합니다."
+    }
+  ],
+  "feedSnapshot": [
+    {
+      "label": "OpenPhish 후보 호스트",
+      "value": "269",
+      "note": "2026-10-30 팀 실행 기록 · 원시 로그 독립 확인 전"
+    },
+    {
+      "label": "Safe Browsing 테스트 호스트",
+      "value": "1",
+      "note": "v5alpha1 지정 테스트 URL 조회 · 팀 기록"
+    },
+    {
+      "label": "Safe Browsing 위협 근거",
+      "value": "2",
+      "note": "테스트 호스트 관련 응답 항목 · 팀 기록"
+    }
+  ],
+  "introductionStages": [
+    {
+      "title": "후보 수집·조회·검토",
+      "system": "OpenPhish 후보 → Safe Browsing 조회",
+      "detail": "조회 근거와 도메인 범위를 사람이 검토·승인"
+    },
+    {
+      "title": "정책 서버",
+      "system": "승인된 정책에 서명",
+      "detail": "보호 DNS가 미리 내려받아 보관"
+    },
+    {
+      "title": "보호 DNS",
+      "system": "승인 정책을 적용하는 리졸버",
+      "detail": "차단 → NXDOMAIN · 그 외 → 일반 DNS 응답"
+    }
+  ],
+  "protectionRoles": [
+    {
+      "id": "browser",
+      "kicker": "기존 기본 보호",
+      "title": "브라우저 Safe Browsing",
+      "target": "방문 URL 검사",
+      "condition": "브라우저 기본 설정을 쓰는 경우",
+      "detail": "Chrome 표준 보호는 기본값입니다. URL 검사와 DNS 이름 정책의 적용 단위를 구분하고, 같은 시점·설정에서 실제 추가 효과를 비교합니다."
+    },
+    {
+      "id": "app",
+      "kicker": "이용자가 추가 선택",
+      "title": "보안 앱·스미싱 차단 앱",
+      "target": "앱별 지원 기능",
+      "condition": "설치·권한·업데이트를 직접 관리",
+      "detail": "추가 앱은 설치, 필요한 권한과 기능 활성화가 적용 조건입니다. 피해자의 실제 사용률과 설치 장애 요인은 후속 조사합니다."
+    },
+    {
+      "id": "dns",
+      "kicker": "네트워크 기본 경로",
+      "title": "보호 DNS",
+      "target": "FQDN 질의에 정책 적용",
+      "condition": "보호 DNS를 쓰는 조회 경로",
+      "detail": "보호 DNS를 사용해 새 이름 조회를 보내는 앱·단말에 정책을 적용합니다. 캐시·별도 리졸버·직접 IP 연결은 경로가 달라질 수 있어 따로 확인합니다."
+    }
+  ]
+}

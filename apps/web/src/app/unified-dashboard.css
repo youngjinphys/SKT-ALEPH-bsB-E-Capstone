@@ -1,0 +1,20 @@
+/* Keep the operations entrance visible without altering the presentation UI. */
+@media (max-width: 780px) {
+  .site-root .site-topbar {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+  .site-root .top-links {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    padding-bottom: 12px;
+  }
+  .site-root .top-links .nav-emphasis[href="/dashboard"] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 9px 14px;
+    white-space: nowrap;
+  }
+}

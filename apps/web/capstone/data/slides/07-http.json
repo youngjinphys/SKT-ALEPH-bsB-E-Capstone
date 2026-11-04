@@ -1,0 +1,92 @@
+{
+  "id": "http",
+  "chapter": "04 · 적용 경계",
+  "title": "HTTPS에서는 차단과\n사유 안내가 분리됩니다",
+  "subtitle": "DNS 응답 · TLS 신원 검증 · 클라이언트 표시",
+  "seconds": 125,
+  "kind": "http-demo",
+  "status": "known-limit",
+  "points": [
+    {
+      "title": "이름 조회 차단",
+      "body": "HTTPS 목적지도 새 DNS 조회에서 BLOCK 가능"
+    },
+    {
+      "title": "평문 HTTP 안내",
+      "body": "선택형 모드: 안내 IP → HTTP 302 → 안내 페이지"
+    },
+    {
+      "title": "HTTPS 신원 검증",
+      "body": "원래 호스트 인증서 없이 안내 서버로 바꾸면 검증 실패"
+    },
+    {
+      "title": "사유 전달의 다음 단계",
+      "body": "EDE 15와 클라이언트 표시 연동은 후속 구현·검증"
+    }
+  ],
+  "notes": "[화면] HTTP 흐름을 보여 준 뒤 HTTPS 흐름으로 전환합니다.\n\n[발표] HTTPS에서도 목적지의 새 이름 조회를 차단할 수 있습니다. 어려운 부분은 차단된 사용자를 제3자의 HTTPS 안내 페이지로 자연스럽게 전환하는 것입니다.\n\n통제된 평문 HTTP 실험에서는 DNS가 안내 서버 주소를 주고, HTTP 서버가 302 응답으로 안내 페이지에 보냈습니다. DNS 응답과 HTTP 리다이렉트는 서로 다른 단계입니다.\n\nHTTPS는 그 전에 원래 접속하려던 호스트의 TLS 신원을 검증합니다. 안내 서버가 원래 호스트의 신뢰된 인증서를 갖고 있지 않으면 HTTP 응답을 읽기 전에 검증에서 막힙니다. DNS 주소만 바꿔 이 절차를 해결할 수는 없습니다.\n\n차단 이유를 전달하는 경로로 RFC 8914의 EDE 15, Blocked를 검토했습니다. 이는 DNS에 사유 정보를 담는 표준입니다. 사용자가 볼 안내를 만들려면 리졸버와 브라우저·OS의 지원을 연결해야 하며, 현재 프로토타입의 후속 항목입니다.\n\n[전환] 사유 안내와 별개로, 보호 정책을 거치지 않는 접속 경로도 남습니다.",
+  "sources": [
+    "tls",
+    "ede-rfc-8914",
+    "sde-ietf",
+    "demo"
+  ],
+  "mood": "focused",
+  "presentation": {
+    "title": "HTTPS에서는 차단과\n사유 안내가 분리됩니다",
+    "subtitle": "DNS 응답 · TLS 신원 검증 · 클라이언트 표시",
+    "cue": "HTTPS 차단 가능성과 제3자 안내 전환의 인증서 제약을 구분합니다. 화면은 통제된 HTTP 실험을 설명합니다.",
+    "reviewNote": "EDE INFO-CODE 15는 RFC 8914의 사유 메타데이터입니다. SDE는 2026-11-03 확인 시 RFC Editor Queue의 Internet-Draft로, 발행된 RFC와 구분합니다. 브라우저 기본 안내 지원을 주장하지 않습니다.",
+    "points": [
+      {
+        "title": "이름 조회 차단",
+        "body": "HTTPS 목적지도 새 DNS 조회에서 BLOCK 가능"
+      },
+      {
+        "title": "평문 HTTP 안내",
+        "body": "선택형 모드: 안내 IP → HTTP 302 → 안내 페이지"
+      },
+      {
+        "title": "HTTPS 신원 검증",
+        "body": "원래 호스트 인증서 없이 안내 서버로 바꾸면 검증 실패"
+      },
+      {
+        "title": "사유 전달의 다음 단계",
+        "body": "EDE 15와 클라이언트 표시 연동은 후속 구현·검증"
+      }
+    ],
+    "compactTitle": "HTTPS 차단과 사유 안내"
+  },
+  "reading": {
+    "title": "HTTP·HTTPS·사유 전달의 차이",
+    "columns": [
+      "구분",
+      "가능한 것",
+      "조건"
+    ],
+    "rows": [
+      [
+        "HTTP(평문)",
+        "DNS → 안내 IP, 서버가 302로 안내 페이지 이동",
+        "선택형 통제 실험의 기록"
+      ],
+      [
+        "HTTPS",
+        "DNS 차단 가능 · 제3자 HTTPS를 안내 서버로 임의 전환하면 인증서 제약",
+        "원래 호스트의 신뢰된 인증서 필요(RFC 9525)"
+      ],
+      [
+        "사유 전달",
+        "EDE 15(Blocked)로 DNS 응답에 사유 포함",
+        "현재 프로토타입 후속 항목 · 지원 클라이언트와 함께 검증"
+      ]
+    ],
+    "takeaway": "사유 안내는 DNS 운영 주체만으로 풀 수 없고 클라이언트 지원이 필요합니다.",
+    "source": "https://www.rfc-editor.org/rfc/rfc8914.html",
+    "sourceLabel": "RFC 8914 확장 DNS 오류 ↗"
+  },
+  "headline": {
+    "focus": "HTTPS 한계",
+    "tone": "risk"
+  }
+}
