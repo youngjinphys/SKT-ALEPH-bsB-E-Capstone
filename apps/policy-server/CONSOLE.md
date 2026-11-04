@@ -140,3 +140,18 @@ python3 -B -m unittest discover -s tests/policy_server -p 'test_console.py' -v
 게시 정책과 노드 상태 조회는 독립적으로 실패할 수 있습니다. 실패한 구역은 이전 정상 값을 남겨 두지 않고 **미확인**으로 바꾸며, 성공한 다른 구역은 유지합니다. 느린 이전 대상의 응답은 현재 선택을 덮어쓸 수 없습니다. 노드 등록 양식은 **새 DNS 노드 등록**을 펼쳐 사용합니다.
 
 로컬 수집 자료를 가져올 때는 `/api/intel`의 `context_revision`과 `review_revision`을 모두 확인 요청에 보냅니다. 근거 파일만 바뀌어도 이전 확인은 거부됩니다. 장치 등록 해제는 표시된 장치의 `expected_key_id`가 필요합니다. 대화상자가 열린 동안 장치 키가 교체되면 409로 거부되고 새 장치는 보존됩니다. 기존 직접 API 호출 스크립트도 이 전제조건을 추가해야 합니다. 화면과 서버를 같은 커밋으로 갱신하고 이전 탭은 새로고침하세요.
+
+### FQDN 수동 블랙리스트와 OpenPhish·GSB
+
+DNS 정책 초안 메뉴에서 FQDN, 검토자, 근거, 만료시간 및 SUBTREE
+범위를 명시적으로 검토·등록·해제할 수 있습니다. 기존 EXACT 제안
+엔진과 별개이며, 등록만으로 DNS에 적용되지 않습니다.
+승인된 GSB 증거와 수동 FQDN은 새 **미서명 전체 교체 정책 초안**에
+함께 반영됩니다. 실제 적용은 외부 서명과 게시, 노드 서명 상태 확인을
+별도로 거쳐야 합니다.
+
+로컬 서버의 비특권 위협정보 수집 브리지는 유지합니다.
+Vercel에서는 합법적으로 허가된 사용을 전제로 Production 환경에
+`SAFE_BROWSING_API_KEY`, `ALEPH_OPENPHISH_SOURCE_ALLOWED=true`
+둘 다 있을 때만 직접 갱신을 활성화합니다. 자세한 절차는
+`docs/manual-fqdn-and-feed-workflow.md`에 있습니다.

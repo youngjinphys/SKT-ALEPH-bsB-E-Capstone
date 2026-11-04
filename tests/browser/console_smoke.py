@@ -90,7 +90,9 @@ def main():
 
                 page.locator('[data-view=reviews]').click();page.wait_for_timeout(200)
                 if mode=='cloud':
-                    assert page.locator('.intel-refresh-panel').is_hidden()
+                    assert page.locator('.intel-refresh-panel').is_visible()
+                    page.wait_for_function('document.getElementById("intel-state").textContent.includes("연동 미설정")')
+                    assert page.locator('#intel-refresh').is_disabled()
                     assert page.locator('#cloud-evidence-form').is_visible()
                     # Real preview endpoint, native modal, cancellation and confirmation.
                     now=datetime.now(timezone.utc);url='https://new-fixture-threat.example.org/login'
@@ -115,6 +117,33 @@ def main():
                     assertions.append('local: reset modal cancel')
                 page.evaluate('document.activeElement?.blur();window.scrollTo({top:0,left:0,behavior:"instant"})')
                 page.screenshot(path=str(OUT/f'{mode}-reviews-desktop.png'),full_page=True)
+                page.locator('[data-view=drafts]').click()
+                page.wait_for_selector('#manual-form:visible')
+                page.wait_for_function('document.querySelector("#manual-total").textContent.includes("전체")')
+                page.locator('#manual-domain').fill('manual-incident.example.net')
+                page.locator('#manual-reviewer').fill('Synthetic reviewer')
+                page.locator('#manual-reason').fill('Synthetic browser case with reviewed subtree and collateral risk')
+                page.locator('#manual-ack').check()
+                page.locator('#manual-save').click()
+                page.wait_for_selector('#ops-confirm[open]')
+                assert 'manual-incident.example.net' in page.locator('#ops-confirm-facts').inner_text()
+                page.locator('#ops-confirm-input').fill('UPSERT_MANUAL_SUBTREE')
+                page.locator('#ops-confirm-submit').click()
+                page.wait_for_function('document.querySelectorAll("#manual-list .manual-item").length===1')
+                page.locator('#manual-console').screenshot(path=str(OUT/f'{mode}-manual-blacklist.png'))
+                assert page.locator('#build-form button[type=submit]').is_enabled()
+                page.locator('#confirm-replacement').check()
+                page.locator('#confirm-notice').check()
+                page.locator('#build-form button[type=submit]').click()
+                page.wait_for_function('document.querySelectorAll(".draft-item").length>=2')
+                existing=page.locator('.draft-item').count()
+                page.locator('#manual-list button').click()
+                page.wait_for_selector('#ops-confirm[open]')
+                page.locator('#ops-confirm-input').fill('REMOVE_MANUAL_BLOCK')
+                page.locator('#ops-confirm-submit').click()
+                page.wait_for_function('document.querySelectorAll("#manual-list .manual-item").length===0')
+                assert page.locator('.draft-item').count()==existing
+                assertions.append(mode+': FQDN add/approval/unsigned draft/remove')
                 page.locator('[data-view=deployment]').click();page.wait_for_timeout(150)
                 assert page.locator('[data-panel=deployment] #nodes-list').count()==1
                 assert page.locator('[data-panel=deployment] #published-list').count()==1

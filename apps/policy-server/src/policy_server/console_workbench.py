@@ -182,8 +182,8 @@ async function loadCapabilities() {
     opsCapabilities=caps;
     document.body.dataset.mode=caps.mode;
     document.getElementById('runtime-label').textContent=caps.mode==='cloud'?'클라우드 관제 · /dashboard':'로컬 정책 서버';
-    document.getElementById('runtime-note').textContent=caps.direct_refresh?'OpenPhish · GSB 직접 갱신 연결':caps.evidence_upload?'외부 수집 자료 가져오기 · 서명 정책 게시':'수집 브리지 연결 필요';
-    document.querySelector('.intel-refresh-panel').hidden=!!caps.evidence_upload;
+    document.getElementById('runtime-note').textContent=caps.direct_refresh?'OpenPhish·GSB 직접 검증 연결':caps.evidence_upload?'OpenPhish·GSB 설정 필요 · 수동 FQDN 가능':'수집 브리지 연결 필요';
+    document.querySelector('.intel-refresh-panel').hidden=false;
     const env=document.querySelector('.environment-label');if(env)env.textContent=caps.mode==='cloud'?'CLOUD REVIEW & PUBLICATION':'LOCAL REVIEW & COLLECTION';
   } catch(error) {
     if(epoch!==sessionEpoch||!token||error.stale)return;

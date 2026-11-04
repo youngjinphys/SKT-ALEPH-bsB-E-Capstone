@@ -10,6 +10,7 @@ from .operations import trust_key,preview_trust,import_evidence,preview_evidence
 from .assets import assets
 from .enrollment import preview_enrollment,enroll
 from policy_server import intel
+from . import intel_refresh
 from policy_server.console import ConsoleConflict,_audit
 from policy_server.nodes import NodeConflict
 from aleph_policy_sync.snapshot import device_id,verify_envelope,strict_load
@@ -85,8 +86,8 @@ def inspect_storage():
         # An outage must never look like an empty, healthy snapshot.
         raise HTTPException(503,'Cannot verify durable storage capacity') from None
 
-READS={'analytics':'analytics','overview':'overview','reviews':'reviews','reviews/reset-context':'reset_context','drafts':'drafts','engine':'engine_config','nodes':'node_states','audit':'audit'}
-WRITES={'reviews/save':'update_review','reviews/reset':'reset_reviews','build':'build','engine':'configure_engine','evaluate':'evaluate','nodes/register':'register_node','nodes/remove':'unregister_node','nodes/unregister':'unregister_node'}
+READS={'manual':'manual_blacklist','analytics':'analytics','overview':'overview','reviews':'reviews','reviews/reset-context':'reset_context','drafts':'drafts','engine':'engine_config','nodes':'node_states','audit':'audit'}
+WRITES={'manual/save':'save_manual_block','manual/remove':'remove_manual_block','reviews/save':'update_review','reviews/reset':'reset_reviews','build':'build','engine':'configure_engine','evaluate':'evaluate','nodes/register':'register_node','nodes/remove':'unregister_node','nodes/unregister':'unregister_node'}
 
 @app.api_route('/api/ops/test-auth', methods=['GET','POST'])
 async def test_auth(request:Request):
@@ -120,9 +121,9 @@ async def control(path:str,request:Request):
         return JSONResponse({'authorized':True,'email':email})
     if request.method=='GET' and path=='capabilities':
         # Static capabilities are independent of DB health, but not operator auth.
-        return JSONResponse({'mode':'cloud','direct_refresh':False,'evidence_upload':True,
+        return JSONResponse({'mode':'cloud','direct_refresh':intel_refresh.configured(),'evidence_upload':True,
                              'signed_publication':True,'independent_signer':True,
-                             'storage_diagnostics':True})
+                             'storage_diagnostics':True,'manual_blacklist':True})
     if request.method=='GET' and path=='cloud/storage':
         return await run_in_threadpool(inspect_storage)
     if not re.fullmatch(r'[a-zA-Z0-9_./-]{1,180}',path) or '..' in path:raise HTTPException(404,'Unknown operation')
@@ -132,7 +133,7 @@ async def control(path:str,request:Request):
             if path=='deployment':return work.service.deployment(include_rules=True)
             selected=re.fullmatch(r'deployment/([A-Za-z0-9][A-Za-z0-9_.-]{0,63})',path)
             if selected:return work.service.deployment(include_rules=True,device=selected[1])
-            if path=='intel':return {'state':'EXTERNAL_COLLECTOR','latest':None,'review_revision':None,'message':'별도 수집기에서 검증한 파일을 미리보기 후 가져옵니다.'}
+            if path=='intel':return intel_refresh.status(work)
             if path=='cloud/trust':return {name:[x.stem for x in sorted((work.root/name).glob('*.pem'))] for name in ('policy-trust','node-trust')}
             match=re.fullmatch(r'drafts/(policy-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{12}\.json)/(download|impact)',path)
             if match:
@@ -142,9 +143,26 @@ async def control(path:str,request:Request):
             raise HTTPException(404,'Unknown operation')
         return await run_in_threadpool(transact,read)
     body,_=await read_json(request,4*1024*1024 if path.startswith('cloud/') else 65536)
+    if path=='intel/refresh':
+        reserved=await run_in_threadpool(transact,lambda work:intel_refresh.begin(work,body),
+                                        True,actor=email,action='intel/refresh/reserve')
+        reserved=json.loads(reserved.body)
+        try:
+            verified=await run_in_threadpool(intel_refresh.query)
+        except Exception:
+            await run_in_threadpool(transact,
+                lambda work:intel_refresh.finish(work,reserved['run'],None),
+                True,actor=email,action='intel/refresh/error')
+            raise HTTPException(503,'External feed verification failed; existing reviews and DNS unchanged') from None
+        return await run_in_threadpool(transact,
+            lambda work:intel_refresh.finish(work,reserved['run'],verified),
+            True,actor=email,action='intel/refresh/success')
+
     def write(work):
         if path=='build' and 'review_set_revision' not in body:raise ConsoleConflict('Reload the draft review summary before building')
         if path in WRITES:return getattr(work.service,WRITES[path])(body)
+        if path=='manual/preview':return work.service.preview_manual_block(body)
+        if path=='intel/import':return intel_refresh.import_latest(work,body)
         if path=='cloud/enroll/preview':return preview_enrollment(work,body)
         if path=='cloud/enroll':return enroll(work,body)
         if path=='cloud/trust/preview':return preview_trust(work,body)
@@ -155,9 +173,9 @@ async def control(path:str,request:Request):
         if path=='cloud/evidence':return import_evidence(work,body)
         if path=='cloud/publish/preview':return publish(work,body,preview=True)
         if path=='cloud/publish':return publish(work,body)
-        if path in ('intel/refresh','intel/adopt','intel/import'):raise HTTPException(503,'이 클라우드 관제는 외부 수집기를 사용합니다. 검증 파일을 미리보기한 뒤 가져오세요.')
+        if path=='intel/adopt':raise HTTPException(404,'Unknown operation')
         raise HTTPException(404,'Unknown operation')
-    return await run_in_threadpool(transact,write,path not in ('evaluate','cloud/evidence/preview','cloud/publish/preview','cloud/trust/preview','cloud/enroll/preview'),actor=email,action=path)
+    return await run_in_threadpool(transact,write,path not in ('evaluate','cloud/evidence/preview','cloud/publish/preview','cloud/trust/preview','cloud/enroll/preview','manual/preview'),actor=email,action=path)
 
 @app.get('/v1/nodes/report')
 def receiver_health():

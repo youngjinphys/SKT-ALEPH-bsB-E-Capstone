@@ -6,7 +6,7 @@ const panelTitles = {
   overview:["운영 개요","정책 근거, 승인, 서명 게시 상태를 하나의 화면에서 확인합니다.","Operations"],
   reviews:["위협 검토","위협정보 검증 결과에 대한 수동 승인과 근거를 기록합니다.","Threat review"],
   engine:["위험도 제안","EXACT 범위의 비집행 정책 제안과 관리 목록을 확인합니다.","Risk proposals"],
-  drafts:["DNS 정책 초안","검토된 위협 증거로 서명 전 DNS 정책 파일을 생성합니다.","DNS drafts"],
+  drafts:["DNS 정책 초안","수동 FQDN과 승인된 외부 위협정보를 결합해 미서명 DNS 정책을 만듭니다.","DNS drafts"],
   deployment:["배포 현황","서명된 게시물의 상태를 검증하고 DNS 적용 경계를 확인합니다.","Distribution"],
   audit:["작업 기록","검토·설정·초안 변경 기록을 살펴봅니다.","Audit trail"]
 };
@@ -328,7 +328,7 @@ async function loadOverview() {
 const intelStates={
   IDLE:"대기 중",RUNNING:"OpenPhish·GSB 검증 실행 중",
   SUCCESS:"최근 수동 갱신 성공",ERROR:"최근 수동 갱신 실패",
-  INTERRUPTED:"갱신 작업 중단",NOT_CONFIGURED:"수집기 연동 미설정",
+  INTERRUPTED:"갱신 작업 중단",NOT_CONFIGURED:"OpenPhish·GSB 연동 미설정",EXPIRED:"검증 결과 만료",
   UNAVAILABLE:"수집 서비스 연결 불가"
 };
 async function loadIntelStatus() {
@@ -346,8 +346,8 @@ async function loadIntelStatus() {
   }
   if(epoch!==intelStatusEpoch || session!==sessionEpoch || currentView!=="reviews") return;
   const refreshPanel=document.querySelector(".intel-refresh-panel");
-  if(status.state==="EXTERNAL_COLLECTOR"){if(refreshPanel)refreshPanel.hidden=true;intelLatest=null;intelReviewRevision=null;return;}
-  if(refreshPanel) refreshPanel.dataset.status=status.state||"UNAVAILABLE";
+
+  if(refreshPanel){refreshPanel.hidden=false;refreshPanel.dataset.status=status.state||"UNAVAILABLE";}
   intelLatest=status.latest||null;
   intelReviewRevision=status.review_revision||null;
   intelContextRevision=status.context_revision||null;
@@ -362,7 +362,7 @@ async function loadIntelStatus() {
   $("intel-refresh").disabled=status.state==="UNAVAILABLE"||status.state==="NOT_CONFIGURED"||
                               status.state==="RUNNING"||status.cooldown_seconds>0;
   let note="";
-  if(status.state==="NOT_CONFIGURED")note="원격 정책 서버에 비특권 수집 브리지 설치가 필요합니다.";
+  if(status.state==="NOT_CONFIGURED")note="클라우드에서 수집하려면 GSB API 키·허가된 OpenPhish 이용 권한이 필요합니다. 수동 FQDN은 정책 초안 메뉴에서 등록할 수 있습니다." ;
   else if(status.state==="UNAVAILABLE")note="수집 서비스 소켓·systemd 상태를 확인하세요.";
   else if(status.state==="RUNNING")note="위협정보 다운로드와 Google 검증을 진행 중입니다. 완료될 때까지 기존 증거와 승인을 유지합니다.";
   else if(status.state==="ERROR")note="최근 갱신 실패. 기존 검증·승인 데이터는 유지됐습니다. 수집기 journal에서 원인을 확인하세요.";
@@ -484,15 +484,21 @@ const lines = (id) => $(id).value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean
 async function loadDrafts() {
   const stillCurrent=currentRequest("drafts");
   buildReviewContext=null;
-  const [drafts,reviewResult]=await Promise.allSettled([api("/api/drafts"),api("/api/reviews")]);
+  $("build-form").querySelector('button[type="submit"]').disabled=true;
+  const [drafts,reviewResult,manualResult]=await Promise.allSettled([api("/api/drafts"),api("/api/reviews"),api("/api/manual")]);
   if(!stillCurrent()) return;
   if(drafts.status!=="fulfilled")throw drafts.reason;
-  const items=drafts.value;
-  const reviewed=reviewResult.status==="fulfilled"?reviewResult.value:null;
-  buildReviewContext=reviewed?.fingerprint?reviewed:null;
-  const ready=reviewed?.items.filter(item=>item.approved&&item.eligible).length||0;
-  showText("build-review-summary",buildReviewContext?"현재 유효 승인 "+ready+"건 · 이 검토 버전에 결합하여 생성합니다.":"검토 근거를 확인할 수 없습니다. 위협 검토에서 상태를 확인하세요.");
-  $("build-form").querySelector('button[type="submit"]').disabled=!ready;
+  if(manualResult.status!=="fulfilled")throw manualResult.reason;
+  if(reviewResult.status!=="fulfilled")throw reviewResult.reason;
+  const items=drafts.value,reviewed=reviewResult.value;
+  manualData=manualResult.value;manualDefaultDate();renderManual();
+  const ready=reviewed?.items.filter(x=>x.approved&&x.eligible).length||0;
+  const local=manualData.entries.filter(x=>!x.expired).length;
+  buildReviewContext={fingerprint:reviewed?.fingerprint||null,
+    review_set_revision:reviewed?.review_set_revision||"NOT_PRESENT",
+    manual_revision:manualData.revision};
+  showText("build-review-summary","외부 검증 승인 "+ready+"건 + 수동 FQDN "+local+"건 · 전체 교체 스냅샷");
+  $("build-form").querySelector('button[type="submit"]').disabled=!(ready+local);
   showText("verification-status",items.length+"개 미서명 초안 · 독립 서명 필요");
   showText("draft-count",items.length);
   const list=$("draft-list");
@@ -836,7 +842,7 @@ bindAsyncForm("intel-refresh-form",async(event)=>{
       ack_noncommercial:$("intel-noncommercial").checked
     });
     $("intel-refresh-form").reset();
-    if(result.accepted)toast("위협정보 검증을 요청했습니다. 검증이 끝나도 정책은 자동으로 변경되지 않습니다.");
+    if(result.accepted)toast(result.state==="SUCCESS"?"OpenPhish·GSB 검증 완료. 확인 후 가져오세요.":"위협정보 검증 요청됨. 정책은 자동 변경되지 않습니다.");
     else if(result.state==="RUNNING")toast("수집기가 이미 검증을 진행하고 있습니다.");
     else toast("요청 간격 제한 중입니다. "+Math.ceil((result.retry_after_seconds||0)/60)+"분 뒤 다시 요청하세요.",true);
     await loadIntelStatus();
@@ -940,10 +946,11 @@ bindAsyncForm("build-form",async(e)=>{
   e.preventDefault();
   try{
     const state=buildReviewContext;
-    if(!state?.fingerprint) throw Error("검토 요약을 새로 조회한 뒤 생성하세요.");
+    if(!state?.manual_revision) throw Error("정책 수집/수동 목록을 새로 조회한 뒤 생성하세요.");
     const result=await api("/api/build",{
       fingerprint:state.fingerprint,
       review_set_revision:state.review_set_revision,
+      manual_revision:state.manual_revision,
       confirm_replacement:$("confirm-replacement").checked,
       acknowledge_user_notice:$("confirm-notice").checked
     });
@@ -1013,3 +1020,6 @@ JS += "\n" + OBS_JS
 
 from .console_live import JS as LIVE_JS
 JS += "\n" + LIVE_JS
+
+from .console_manual import JS as MANUAL_JS
+JS += "\n" + MANUAL_JS

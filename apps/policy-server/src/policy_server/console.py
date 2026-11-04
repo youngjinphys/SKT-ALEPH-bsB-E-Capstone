@@ -237,7 +237,7 @@ class ConsoleService:
     def capabilities(self):
         return {"mode": "local", "direct_refresh": self.refresh_client is not None,
                 "evidence_upload": False, "signed_publication": False,
-                "independent_signer": True}
+                "independent_signer": True,"manual_blacklist": True}
 
     def _verified_reviews(self):
         try:
@@ -364,28 +364,81 @@ class ConsoleService:
                    fingerprint=template["verification_sha256"][:16])
         return {"reset": True}
 
+    def manual_blacklist(self):
+        from .manual_blacklist import list_rules
+        return list_rules(self)
+
+    def preview_manual_block(self, data):
+        from .manual_blacklist import preview
+        return preview(self, data)
+
+    def save_manual_block(self, data):
+        from .manual_blacklist import upsert
+        return upsert(self, data)
+
+    def remove_manual_block(self, data):
+        from .manual_blacklist import remove
+        return remove(self, data)
+
     def build(self, data: dict):
-        required = {"fingerprint", "confirm_replacement", "acknowledge_user_notice"}
-        if (set(data) not in (required, required | {"review_set_revision"})
-                or data["confirm_replacement"] is not True
-                or data["acknowledge_user_notice"] is not True):
-            raise ConsoleError("full replacement and user-notice acknowledgement required")
+        required={'fingerprint','confirm_replacement','acknowledge_user_notice'}
+        optional={'review_set_revision','manual_revision'}
+        if (type(data) is not dict or set(data)-required-optional
+                or not required.issubset(data) or
+                data['confirm_replacement'] is not True or
+                data['acknowledge_user_notice'] is not True):
+            raise ConsoleError('Explicit full replacement and user notice required')
+        from .manual_blacklist import records,revision,draft_rules
+        instant=datetime.now(timezone.utc)
         with self.locked():
-            verified, reviews, template = self._verified_reviews()
-            if verified is None or data["fingerprint"] != template["verification_sha256"]:
-                raise ConsoleError("stale or missing verification evidence")
-            if "review_set_revision" in data and data["review_set_revision"] != _revision(reviews):
-                raise ConsoleConflict("Review approvals changed; reload before building")
-            policy = intel.build_policy(
-                verified, reviews, acknowledge_replacement=True, acknowledge_notice=True)
-            parsed = parse_policy(json.dumps(policy, ensure_ascii=True).encode())
-            name = datetime.now(timezone.utc).strftime("policy-%Y%m%dT%H%M%SZ-")
-            name += secrets.token_hex(6) + ".json"
-            intel.write_json(self.drafts_dir / name, policy)
-            _audit(self.workspace / "audit.jsonl", "unsigned_policy_built",
-                   draft=name, sha256=parsed.digest, rules=len(parsed.rules))
-        return {"draft": name, "sha256": parsed.digest, "rules": len(parsed.rules),
-                "expires_at": parsed.expires_at.isoformat(), "published": False, "signed": False}
+            manual=records(self);manual_revision=revision(manual)
+            if manual['entries'] and data.get('manual_revision')!=manual_revision:
+                raise ConsoleConflict('Manual blacklist changed; reload first')
+            if 'manual_revision' in data and data['manual_revision']!=manual_revision:
+                raise ConsoleConflict('Manual blacklist changed; reload first')
+            verified,reviews,template=self._verified_reviews()
+            if verified is None:
+                if data['fingerprint'] is not None or data.get('review_set_revision') not in (None,'NOT_PRESENT'):
+                    raise ConsoleConflict('Verification evidence changed; reload first')
+                intel_rules=[]
+            else:
+                if data['fingerprint']!=template['verification_sha256']:
+                    raise ConsoleConflict('Verification evidence changed; reload first')
+                if ('review_set_revision' in data and
+                        data['review_set_revision']!=_revision(reviews)):
+                    raise ConsoleConflict('Review approvals changed; reload first')
+                if any(row['approved'] for row in reviews['reviews']):
+                    verified_policy=intel.build_policy(verified,reviews,at=instant,
+                        acknowledge_replacement=True,acknowledge_notice=True)
+                    intel_rules=verified_policy['rules']
+                else:intel_rules=[]
+            manual_rules,expired=draft_rules(self,instant)
+            combined={}
+            for rule in intel_rules+manual_rules:
+                prior=combined.get(rule['domain'])
+                if prior is None:combined[rule['domain']]=dict(rule)
+                else:
+                    prior['expires_at']=intel.iso(min(intel.parse_time(prior['expires_at']),
+                                                     intel.parse_time(rule['expires_at'])))
+                    prior['evidence']='source-combined-v1:sha256:'+_revision({
+                        'sources':sorted([prior['evidence'],rule['evidence']])})
+            if not combined:
+                raise ConsoleError('no approved, current, verified or manual FQDN rules; no policy created')
+            rules=sorted(combined.values(),key=lambda x:x['domain'])
+            expires=min(intel.parse_time(x['expires_at']) for x in rules)
+            for row in rules:
+                row['expires_at']=intel.iso(min(expires,intel.parse_time(row['expires_at'])))
+            policy={'issued_at':intel.iso(instant),'expires_at':intel.iso(expires),'rules':rules}
+            parsed=parse_policy(json.dumps(policy,ensure_ascii=True).encode())
+            name=instant.strftime('policy-%Y%m%dT%H%M%SZ-')+secrets.token_hex(6)+'.json'
+            intel.write_json(self.drafts_dir/name,policy)
+            _audit(self.workspace/'audit.jsonl','unsigned_policy_built',
+                  draft=name,sha256=parsed.digest,rules=len(parsed.rules),
+                  manual_rules=len(manual_rules),verified_rules=len(intel_rules),expired_manual_excluded=expired)
+        return {'draft':name,'sha256':parsed.digest,'rules':len(parsed.rules),
+                'expires_at':parsed.expires_at.isoformat(),'published':False,
+                'signed':False,'manual_rules':len(manual_rules),'verified_rules':len(intel_rules),
+                'expired_manual_excluded':expired}
 
     def drafts(self):
         result = []
@@ -741,6 +794,8 @@ def handler_for(service: ConsoleService, origin: str):
                         return self._json(200, service.intel_status())
                     if path == "/api/reviews":
                         return self._json(200, service.reviews())
+                    if path == "/api/manual":
+                        return self._json(200, service.manual_blacklist())
                     if path == "/api/reviews/reset-context":
                         return self._json(200, service.reset_context())
                     if path == "/api/drafts":
@@ -767,6 +822,12 @@ def handler_for(service: ConsoleService, origin: str):
                     body = self._body()
                     if path == "/api/intel/refresh":
                         return self._json(202, service.start_intel_refresh(body))
+                    if path == "/api/manual/preview":
+                        return self._json(200, service.preview_manual_block(body))
+                    if path == "/api/manual/save":
+                        return self._json(200, service.save_manual_block(body))
+                    if path == "/api/manual/remove":
+                        return self._json(200, service.remove_manual_block(body))
                     if path == "/api/intel/import":
                         return self._json(200, service.adopt_intel(body))
                     if path == "/api/reviews/save":
