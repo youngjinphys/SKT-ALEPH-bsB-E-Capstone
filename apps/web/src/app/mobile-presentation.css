@@ -46,7 +46,7 @@
  .deck-root .policy-flow-stage strong{font-size:15px;line-height:1.3}
  .deck-root .policy-flow-stage span{font-size:13px;line-height:1.4}
  .deck-root :is(.policy-flow-detail,.intel-detail,.verdict-detail){padding:10px;min-height:0;gap:6px}
- .deck-root :is(.policy-flow-detail,.intel-detail,.verdict-detail) p{font-size:14px;line-height:1.4;margin-top:6px}
+ .deck-root :is(.intel-detail,.verdict-detail) p{font-size:14px;line-height:1.4;margin-top:6px}
  .deck-root .intel-metrics{margin:4px 0 8px;gap:6px}
  .deck-root .intel-metric{min-height:0;padding:10px 6px;gap:5px}
  .deck-root .intel-metric span{font-size:12px;line-height:1.4}
@@ -154,8 +154,6 @@
  .deck-root .policy-lifecycle .policy-timeline-arrow svg{width:16px;height:16px}
 }
 @media (max-width:780px){
- .deck-root .policy-lifecycle .policy-review-gates{margin-bottom:8px;gap:5px}
- .deck-root .policy-lifecycle .policy-review-gates>span{padding:5px;font-size:12px;line-height:1.3}
  .deck-root .policy-lifecycle .policy-timeline-result{margin-top:10px;padding:10px 12px}
  .deck-root .policy-lifecycle .policy-timeline-result>span{font-size:13px;line-height:1.35;margin-bottom:5px}
  .deck-root .policy-lifecycle .policy-timeline-result strong{font-size:18px;line-height:1.35}

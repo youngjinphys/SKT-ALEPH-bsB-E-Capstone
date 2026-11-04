@@ -85,10 +85,6 @@
 .deck-root .verdict-matrix .verdict-detail{padding:9px 13px;margin-top:7px}
 .deck-root .verdict-matrix .verdict-detail h2{font-size:clamp(13px,1.05vw,18px);margin:3px 0}
 .deck-root .verdict-matrix>.visual-caveat{margin:7px 0 0}
-.policy-review-gates{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:11px}
-.policy-review-gates>span{display:flex;align-items:center;gap:5px;min-width:0;color:#d3ebe9;border:1px solid #538779;border-radius:7px;padding:6px 9px;font-size:clamp(10px,.74vw,12px);font-weight:700}
-.policy-review-gates b{color:#86dfc5}
-@media(max-width:780px){.policy-review-gates{display:grid;grid-template-columns:1fr 1fr}.policy-review-gates>span{justify-content:center}.policy-review-gates b{display:none}}
 
 /* A compact introduction keeps connectors in their own lanes at every width. */
 .deck-root .intro-architecture{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:clamp(20px,2vw,36px);min-width:0}

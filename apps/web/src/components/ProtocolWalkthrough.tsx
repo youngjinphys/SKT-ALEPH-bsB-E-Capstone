@@ -5,7 +5,6 @@ import diagrams from '../../capstone/data/diagrams.json';
 import {useDiagramPlayback} from './useDiagramPlayback';
 import './protocol-walkthrough.css';
 
-// These are presentation display choices, not arrow-owning tab widgets.
 const stages=['접속 시작','302 응답 / TLS 검증','새 요청 / 인증 실패 중단'];
 export function ProtocolWalkthrough({paused=false,renderIcon}:{paused?:boolean;renderIcon:(name:string)=>ReactNode}){
  const playback=useDiagramPlayback({steps:stages.length,paused});

@@ -5,7 +5,6 @@
 .dns-route-stages button{border:1px solid #527887;background:#102c3f;color:#cae0e8;padding:7px 10px;border-radius:8px;font:inherit;font-size:12px;cursor:pointer;min-height:36px}
 .dns-route-stages button[aria-pressed=true]{border-color:#9ee8dd;background:#214f59;color:#ecfffa}
 .dns-route-stages button:focus-visible{outline:3px solid #e0f8ff;outline-offset:3px}
-/* The source and the single selected DNS keep the same two positions in every case. */
 .dns-route-map{display:grid;grid-template-columns:minmax(0,1fr) minmax(66px,.6fr) minmax(0,1.4fr);gap:14px;align-items:center}
 .dns-route-source{grid-column:1;grid-row:1}.dns-route-transfer{grid-column:2;grid-row:1;min-width:0}.dns-route-resolver{grid-column:3;grid-row:1;animation:dns-resolver-select .22s ease-out}
 .dns-route-node{border:1px solid #547b90;border-radius:13px;padding:15px 12px;display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:168px;background:linear-gradient(145deg,#1c3b50d9,#0b2135eb);box-shadow:inset 0 1px 0 #bcecff16;transition:border-color .35s,box-shadow .35s}
@@ -17,7 +16,6 @@
 .dns-route-arrows{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.dns-route-arrows>span{font-size:11px;color:#b2ebfa;white-space:nowrap}.dns-route-arrows>.dns-route-answer-label{color:#a1e6cf}.dns-route-lines{position:relative;width:100%;height:38px}.dns-route-rails{width:100%;height:100%;overflow:visible}.dns-route-head{position:absolute;width:12px;height:12px;overflow:visible}.dns-route-head-query{left:94%;top:26.316%;transform:translate(-100%,-50%);stroke:#9beaff}.dns-route-head-answer{left:6%;top:73.684%;transform:translateY(-50%);stroke:#77f0c7}.dns-route-arrows path{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.dns-route-query{stroke:#9beaff}.dns-route-answer{stroke:#77f0c7}.dns-route-vertical{display:none}
 .dns-route-policy-line>.dns-route-query-label{white-space:normal;text-align:center;color:#d2cdfa;line-height:1.45}.dns-route-policy-line>.dns-route-query-label>span{display:inline-block;white-space:nowrap}.dns-route-policy-line .dns-route-query,.dns-route-policy-line .dns-route-head-query{stroke:#d2cdfa}.dns-route-policy-line .dns-route-head-query.dns-route-horizontal{top:50%}
 @keyframes dns-resolver-select{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-/* A narrow panel, including desktop zoom, uses the same single route vertically. */
 @container dns-route (max-width:440px){
  .dns-route-map{grid-template-columns:minmax(0,1fr);gap:8px}
  .dns-route-source{grid-column:1;grid-row:1}.dns-route-transfer{grid-column:1;grid-row:2}.dns-route-resolver{grid-column:1;grid-row:3}
@@ -30,7 +28,6 @@
 }
 @media(max-width:780px){.deck-root .dns-route-topology{max-height:none;padding:16px;gap:12px}.dns-route-stages button{min-height:44px;font-size:11px;padding:7px 9px}}
 @media(min-width:781px) and (max-height:850px){.deck-root .dns-route-topology{gap:8px;padding:16px}}
-/* Only the selected case animates. Queries and responses take turns; policy is one-way. */
 .dns-route-topology[data-playing=true][data-stage="0"] .dns-route-policy-line .dns-route-query{stroke-dasharray:5 5;animation:dns-route-distribute 1.8s linear 1}
 .dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="0"] .dns-route-query,
 .dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="1"] .dns-route-answer{stroke-dasharray:7 5;animation:dns-route-distribute 1.8s linear 1;stroke-width:2}

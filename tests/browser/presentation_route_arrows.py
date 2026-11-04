@@ -41,7 +41,7 @@ def check_route_arrows(browser, origin):
                 expect(routes.locator('.dns-route-answer')).to_have_count(0 if index == 0 else 2)
                 if index == 2:
                     expect(resolver).to_contain_text('다른 DNS로 변경')
-                    expect(resolver).to_contain_text('이 보호 DNS를 거치지 않음')
+                    expect(resolver).to_contain_text('ISP 보호 정책 적용 범위 밖')
                 panel_width = routes.evaluate('el => el.clientWidth - parseFloat(getComputedStyle(el).paddingLeft) - parseFloat(getComputedStyle(el).paddingRight)')
                 vertical = panel_width <= 440
                 heads = routes.locator('.dns-route-head:visible')

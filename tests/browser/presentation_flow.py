@@ -126,6 +126,12 @@ def check_flow(browser, origin):
 
         open_slide('policy-demo', '.policy-timeline')
         lifecycle = page.locator('.policy-lifecycle')
+        expect(lifecycle).to_have_attribute('data-evidence-state', 'illustration')
+        expect(lifecycle.locator('.policy-review-gates')).to_have_count(0)
+        for choice in lifecycle.locator('.policy-timeline button').all():
+            choice.click()
+            expect(lifecycle.locator('.diagram-caption')).to_contain_text('설명용 예시')
+            expect(choice).to_have_attribute('aria-pressed', 'true')
         selected = page.locator('.policy-timeline button').last
         selected.click()
         page.wait_for_timeout(4000)

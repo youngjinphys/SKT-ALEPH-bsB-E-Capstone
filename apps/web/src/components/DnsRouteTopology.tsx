@@ -17,7 +17,6 @@ function RouteArrows({label,epoch,policy=false}:{label:string;epoch:string;polic
   {!policy&&<span className="dns-route-answer-label">응답</span>}
  </div>;
 }
-/** Each case has one resolver. Policy distribution is not a client query hop. */
 export function DnsRouteTopology({paused=false}:{paused?:boolean}){
  const [selected,setSelected]=useState(0);
  const playback=useDiagramPlayback({steps:selected===0?1:2,paused});
@@ -30,11 +29,11 @@ export function DnsRouteTopology({paused=false}:{paused?:boolean}){
   </div>
   <div className="dns-route-map">
    {selected===0?<article className="dns-route-source dns-route-policy dns-route-node"><small>공공 주체 · 제안</small><strong>정책 검토 · 서명</strong><span>사용자 질의 전에 배포</span></article>:<article className="dns-route-source dns-route-client dns-route-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 4h18v12H3zM8 20h8M12 16v4"/></svg><strong>사용자</strong><small>기기 · 브라우저가<br/>선택한 경로</small></article>}
-   <div className="dns-route-transfer"><RouteArrows epoch={playback.epoch} policy={selected===0} label={selected===0?'공공 주체에서 ISP 보호 DNS로 서명 정책 사전 배포':external?'사용자에서 대체 리졸버 또는 VPN DNS로 질의, 해당 DNS에서 사용자로 응답. ISP 보호 DNS를 거치지 않음':'사용자에서 ISP 보호 DNS로 질의, 보호 DNS에서 사용자로 응답'}/></div>
+   <div className="dns-route-transfer"><RouteArrows epoch={playback.epoch} policy={selected===0} label={selected===0?'공공 주체에서 ISP 보호 DNS로 서명 정책 사전 배포':external?'사용자에서 대체 리졸버 또는 VPN DNS로 질의, 해당 DNS에서 사용자로 응답. ISP 보호 정책 적용 범위 밖':'사용자에서 ISP 보호 DNS로 질의, 보호 DNS에서 사용자로 응답'}/></div>
    <article key={resolver} className={`dns-route-resolver dns-route-node ${external?'dns-route-bypass':'dns-route-protected'}`} data-resolver={resolver}>
     <small>{selected===0?'정책 수신 DNS · 제안':external?'다른 DNS로 변경':'선택한 DNS · 제안'}</small>
     <strong>{external?<>대체 리졸버<br/>또는 VPN DNS</>:'ISP 보호 DNS'}</strong>
-    <span>{selected===0?'서명 정책을 미리 받음':external?'이 보호 DNS를 거치지 않음':'받아 둔 정책을 로컬 대조'}</span>
+    <span>{selected===0?'서명 정책을 미리 받음':external?'ISP 보호 정책 적용 범위 밖':'받아 둔 정책을 로컬 대조'}</span>
    </article>
   </div>
  </section>;

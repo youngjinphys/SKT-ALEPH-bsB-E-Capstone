@@ -2,7 +2,6 @@ import {useId} from "react";
 import type {Point} from "@/lib/deck";
 import styles from "./dns-decision-points.module.css";
 
-/** A condition and its mutually exclusive outcomes, not two successive steps. */
 export function DnsDecisionPoints({points}:{points:Point[]}){
  const id=useId();
  const [query,condition,blocked,forwarded]=points;

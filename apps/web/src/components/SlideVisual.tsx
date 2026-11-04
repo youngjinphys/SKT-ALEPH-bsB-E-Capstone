@@ -28,7 +28,6 @@ function ComparisonBars({visual,sources}:{visual:Extract<NonNullable<DeckSlide["
   {sources[visual.sourceKey]&&<a href={sources[visual.sourceKey].url} target="_blank" rel="noreferrer noopener">집계 출처 ↗</a>}
  </figure>;
 }
-/** The policy server prepares a signed snapshot; DNS answers are local to the resolver. */
 function PolicyPipeline({paused=false}:{paused?:boolean}){
  const [mode,setMode]=useState<"lab"|"proposal">("lab");
  const stages=diagrams.policyPipeline[mode];
@@ -54,7 +53,6 @@ function PolicyPipeline({paused=false}:{paused?:boolean}){
   <div className="policy-flow-detail" aria-live={playback.playing||playback.resting?"off":"polite"}>
    <span>{mode==="lab"?"검토된 로컬 실행 경계":"운영 모델 · 도입 전 검토"}</span>
    <strong><DiagramText value={selected.artifact} values={stages.map(stage=>stage.artifact)} paused={paused}/></strong>
-   <p><DiagramText value={selected.detail} values={stages.map(stage=>stage.detail)} paused={paused}/></p>
   </div>
  </section>;
 }
@@ -186,8 +184,7 @@ function PolicyLifecycle({paused=false}:{paused?:boolean}){
  const [active,setActive]=useState(0);
  const playback=useDiagramPlayback({steps:1,paused});
  const current=policyTimeline[active];
- return <TermExplanation term="ttl" paused={paused}><div tabIndex={0} role="region" aria-label="정책 적용과 철회 설명용 시뮬레이션" className="diagram-panel policy-lifecycle" data-step={active} data-playback={playback.playing?'running':'paused'}><p className="diagram-caption">정책 응답 변화 · <TermTarget term="ttl">TTL</TermTarget></p><h2>정상 → 차단 → 철회: 같은 이름의 응답 변화</h2>
-  <div className="policy-review-gates" role="list" aria-label="후보 검토·승인·만료의 생애주기">{["URL 발견","approved: false","검토·서명 승인","만료 또는 철회"].map((x,i)=><span role="listitem" key={x}>{x}{i<3&&<b aria-hidden="true">→</b>}</span>)}</div>
+ return <TermExplanation term="ttl" paused={paused}><div tabIndex={0} role="region" aria-label="정책 적용과 철회 설명용 시뮬레이션" className="diagram-panel policy-lifecycle" data-evidence-state="illustration" data-step={active} data-playback={playback.playing?'running':'paused'}><p className="diagram-caption">설명용 예시 · <TermTarget term="ttl">TTL</TermTarget></p><h2>정상 → 차단 → 철회: 같은 이름의 응답 변화</h2>
   <div ref={playback.diagramRef} className="policy-timeline" data-flow-cue={playback.hint} role="group" aria-label="정상 차단 철회 상태 선택">
    {policyTimeline.map((state,i)=><div className="policy-timeline-stage" key={state.phase}>
     <button type="button" data-scenario-step="true" aria-pressed={active===i} onClick={()=>{setActive(i);playback.restart()}}><span>0{i+1} / {state.phase}</span><strong>{state.response}</strong><small>blocked.test · A</small></button>

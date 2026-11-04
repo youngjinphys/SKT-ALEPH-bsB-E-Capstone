@@ -35,7 +35,7 @@
   margin-bottom: 3px;
   letter-spacing: .02em;
  }
- .deck-root .deck-slide[data-mobile-layout=desktop] :is(.policy-flow-detail,.intel-detail,.verdict-detail) p {
+ .deck-root .deck-slide[data-mobile-layout=desktop] :is(.intel-detail,.verdict-detail) p {
   font-size: var(--desktop-copy);
   line-height: 1.4;
   margin: 4px 0 0;
@@ -61,11 +61,6 @@
  }
  .deck-root .deck-slide[data-mobile-layout=desktop] :is(.policy-flow-detail,.intel-detail) {
   padding: 9px 11px;
- }
- .deck-root .deck-slide[data-mobile-layout=desktop] .policy-review-gates>span {
-  font-size: var(--desktop-meta);
-  padding: 5px 7px;
-  line-height: 1.35;
  }
  .deck-root .deck-slide[data-mobile-layout=desktop] .intel-metric span,
  .deck-root .deck-slide[data-mobile-layout=desktop] .intel-review-boundary :is(span,strong) {
