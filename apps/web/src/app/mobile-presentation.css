@@ -77,9 +77,9 @@
  .deck-root .intro-stage-connector{height:20px}
  .deck-root .intro-stage-connector svg{width:18px;height:18px}
  .deck-root .editorial-roadmap ol{gap:6px}
- .deck-root .editorial-roadmap li{padding:7px 9px;gap:8px}
- .deck-root .editorial-roadmap li h3{font-size:15px;line-height:1.3}
- .deck-root .editorial-roadmap li p{font-size:14px;line-height:1.4}
+ .deck-root .editorial-roadmap .roadmap-choice{padding:7px 9px;gap:8px}
+ .deck-root .editorial-roadmap .roadmap-copy>strong{font-size:15px;line-height:1.3}
+ .deck-root .editorial-roadmap .roadmap-copy>span{font-size:14px;line-height:1.4}
  /* Dialogs use the same dynamic safe area as the actual presentation frame. */
  .deck-root .slide-details{top:calc(48px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);max-height:none}
 }

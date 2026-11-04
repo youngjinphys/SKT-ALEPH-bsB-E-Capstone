@@ -31,6 +31,23 @@ class DiagramClarityTests(unittest.TestCase):
                 with self.subTest(path=path.name):
                     self.assertNotIn('policy-review-gates', path.read_text())
 
+    def test_roadmap_has_exclusive_native_selection_and_visible_focus(self):
+        source = (WEB / 'src/components/EditorialVisual.tsx').read_text()
+        roadmap = source.split('export function RoadmapVisual()', 1)[1].split('export function ThanksVisual()', 1)[0]
+        self.assertIn('useState("01")', roadmap)
+        self.assertIn('<button type="button" className="roadmap-choice"', roadmap)
+        self.assertIn('aria-pressed={active===m[0]}', roadmap)
+        self.assertIn('onClick={()=>setActive(m[0])}', roadmap)
+        self.assertNotIn('onKeyDown', roadmap)
+        css = (WEB / 'src/components/editorial-visual.css').read_text()
+        self.assertIn('.roadmap-choice[aria-pressed=true]', css)
+        self.assertIn('.roadmap-choice:focus-visible', css)
+        self.assertNotIn('.editorial-roadmap li:first-child', css)
+        for name in ('desktop-presentation.css', 'mobile-presentation.css'):
+            responsive = (WEB / 'src/app' / name).read_text()
+            self.assertIn('.editorial-roadmap .roadmap-choice', responsive)
+            self.assertIn('.editorial-roadmap .roadmap-copy>span', responsive)
+
 
 if __name__ == '__main__':
     unittest.main()

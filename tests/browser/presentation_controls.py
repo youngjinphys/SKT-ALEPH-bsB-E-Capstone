@@ -118,7 +118,7 @@ def _assert_focus_indicator(control, context):
 
 def _assert_selected_style(control, context):
     result = control.evaluate("""el => {
-        const group = el.closest('[role="group"],fieldset');
+        const group = el.closest('[role="group"],fieldset,.editorial-roadmap');
         const peer = group?.querySelector('button[aria-pressed="false"]');
         if (!peer || el.getAttribute('aria-pressed') !== 'true') return null;
         const signature = node => {
@@ -310,6 +310,20 @@ def check_controls(page, origin, slides):
                     for key in ("ArrowLeft", "ArrowRight"):
                         button_case(index, descriptor, key, setup=setup)
 
+            # The four conclusion milestones are selectable controls, not a
+            # static first-row highlight. Verify exclusive state for every row.
+            index = indexes["closing"]
+            open_slide(index, bypass_visual)
+            choices = page.locator(ACTIVE).locator(".roadmap-choice")
+            expect(choices).to_have_count(4)
+            expect(choices.first).to_have_attribute("aria-pressed", "true")
+            for ordinal in range(4):
+                for activation in ("click", "Enter", "Space"):
+                    button = choices.nth(ordinal)
+                    activate(button, activation, (viewport, "closing", ordinal, activation))
+                    expect(page.locator(ACTIVE).locator('.roadmap-choice[aria-pressed="true"]')).to_have_count(1)
+                    at(index)
+
             index = indexes["bypass"]
             open_slide(index, bypass_visual)
             expect(page.locator(ACTIVE).locator(".server-dns-observation")).to_be_visible()
@@ -369,8 +383,11 @@ def check_controls(page, origin, slides):
         viewport = (390, 844)
         page.set_viewport_size({"width": viewport[0], "height": viewport[1]})
         for slide_id, selector in (("dns", ".mobile-pane-tabs"),
-                                   ("http", ".protocol-path-tabs")):
+                                   ("http", ".protocol-path-tabs"),
+                                   ("closing", ".editorial-roadmap")):
             open_slide(indexes[slide_id])
+            if slide_id == "closing":
+                bypass_visual()
             group = page.locator(ACTIVE).locator(selector)
             buttons = group.get_by_role("button")
             page.keyboard.press("Tab")

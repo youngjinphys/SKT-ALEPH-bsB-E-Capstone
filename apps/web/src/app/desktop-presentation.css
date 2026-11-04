@@ -100,7 +100,7 @@
 
  /* The conclusion is excluded from audience.css's global type uplift. */
  .deck-root .deck-slide[data-mobile-layout=desktop].slide-closing .slide-point p,
- .deck-root .deck-slide[data-mobile-layout=desktop] .editorial-roadmap li p {
+ .deck-root .deck-slide[data-mobile-layout=desktop] .editorial-roadmap .roadmap-copy>span {
   font-size: var(--desktop-copy);
   line-height: 1.45;
  }
@@ -108,7 +108,7 @@
   font-size: var(--desktop-meta);
   line-height: 1.35;
  }
- .deck-root .deck-slide[data-mobile-layout=desktop] .editorial-roadmap li {
+ .deck-root .deck-slide[data-mobile-layout=desktop] .editorial-roadmap .roadmap-choice {
   padding: 8px 10px;
  }
 }

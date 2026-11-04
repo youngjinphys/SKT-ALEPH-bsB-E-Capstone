@@ -68,9 +68,11 @@ const milestones=[
  ["04","확대에 필요한 책임","DNS 운영·사유 표시·위협정보 갱신·이의신청 주체 합의","운영 제안"]
 ];
 export function RoadmapVisual(){
+ const [active,setActive]=useState("01");
  return <section className="diagram-panel editorial-roadmap" aria-label="추가 보호 효과와 운영 품질의 다음 검증">
-
-  <ol>{milestones.map(m=><li key={m[0]}><span>{m[0]}</span><div><small>{m[3]}</small><h3>{m[1]}</h3><p>{m[2]}</p></div></li>)}</ol>
+  <ol>{milestones.map(m=><li key={m[0]}><button type="button" className="roadmap-choice" aria-pressed={active===m[0]} onClick={()=>setActive(m[0])}>
+   <span className="roadmap-number">{m[0]}</span><span className="roadmap-copy"><small>{m[3]}</small><strong>{m[1]}</strong><span>{m[2]}</span></span>
+  </button></li>)}</ol>
  </section>;
 }
 export function ThanksVisual(){
