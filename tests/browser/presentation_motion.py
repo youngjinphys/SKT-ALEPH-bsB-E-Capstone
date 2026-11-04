@@ -2,7 +2,6 @@
 
 Imported by presentation_keyboard.py so this uses the existing built-app runner.
 """
-import time
 from playwright.sync_api import expect
 
 
@@ -11,8 +10,11 @@ def check_motion(page, origin):
     page.emulate_media(reduced_motion="no-preference")
 
     def open_slide(fragment):
+        # Other suites open independent pages; motion is a foreground behavior.
+        page.bring_to_front()
         page.goto(f"{origin}/capstone#{fragment}")
         expect(page.locator('.deck-root')).to_have_attribute('data-hydrated', 'true')
+        assert page.evaluate('document.visibilityState') == 'visible'
 
     def assert_fade(selector):
         layers = page.locator(selector + ' .diagram-text-layer')
@@ -30,20 +32,25 @@ def check_motion(page, origin):
     expect(dns).to_have_attribute('data-playback', 'running')
     assert_fade('.dns-upstream strong')
     initial = title.bounding_box()
-    # Catch the real timed handoff; inspect opacity while both labels coexist.
-    expect(dns).to_have_attribute('data-intro-step', '5', timeout=10000)
+    # Observe before the real handoff. Assertion polling can be a second apart
+    # and return only after a 320ms fade has finished; sample rendered frames in
+    # the page instead, without unsafe-eval or changing the application clock.
+    handoff = title.evaluate("""el => new Promise(resolve => {
+        const deadline=performance.now()+10000;
+        const sample=()=>{
+            const layers=[...el.querySelectorAll('.diagram-text-layer')];
+            const active=layers.find(layer=>layer.getAttribute('aria-hidden')==='false');
+            const opacity=layers.map(layer=>Number(getComputedStyle(layer).opacity));
+            const intermediate=active?.textContent==='업스트림 DNS' && opacity.some(value=>value>0&&value<1);
+            if(intermediate || performance.now()>=deadline){resolve({intermediate,opacity,active:active?.textContent,visibility:document.visibilityState,phase:el.closest('.restored-dns')?.dataset.introStep});return;}
+            requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+    })""")
+    assert handoff['intermediate'], handoff
     expect(title.locator('[aria-hidden="false"]')).to_have_text('업스트림 DNS')
-    # page.wait_for_function evaluates a string in-page and can violate the
-    # production nonce CSP. Poll DOM observations without unsafe-eval instead.
-    layers = title.locator('.diagram-text-layer')
-    deadline = time.monotonic() + 1
-    while not layers.evaluate_all("""els => els.some(el => {
-        const opacity = Number(getComputedStyle(el).opacity);
-        return opacity > 0 && opacity < 1;
-    })"""):
-        if time.monotonic() >= deadline:
-            raise AssertionError('Expected an intermediate text opacity during handoff')
-        page.wait_for_timeout(16)
+    expect(title.locator('[aria-hidden="false"]')).to_have_css('opacity', '1')
+    expect(title.locator('[aria-hidden="true"]')).to_have_css('opacity', '0')
     settled = title.bounding_box()
     assert abs(initial['width'] - settled['width']) < 1
     assert abs(initial['height'] - settled['height']) < 1
