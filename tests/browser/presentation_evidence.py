@@ -63,6 +63,7 @@ def check_references(page, width, height):
     expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
     page.get_by_role('link',name='전체 참조 페이지 보기').click()
     expect(page.locator('.reference-page')).to_be_visible()
+    expect(page.locator('.build-timestamp')).to_have_css('position','static')
     expect(page.locator('#slide-friction')).to_be_visible()
     expect(page.locator('.reference-slide-list>li')).to_have_count(14)
     expect(page.locator('.reference-questions details')).to_have_count(17)
@@ -108,6 +109,17 @@ def main():
                     page.on('pageerror',lambda e:errors.append(str(e)))
                     results=[check(page,w,h,m) for w,h in ((1440,900),(1280,720),(390,844),(320,568),(844,390)) for m in ('reduce','no-preference')]
                     results += [check_references(page,w,h) for w,h in ((1440,900),(390,844),(320,568))]
+                    for width,height in ((1440,900),(390,844)):
+                        page.set_viewport_size({'width':width,'height':height})
+                        page.goto(ORIGIN+'/capstone#pi-network-plan')
+                        expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
+                        full=page.get_by_role('button',name='전체 보기',exact=True)
+                        if full.count() and full.is_visible():full.click()
+                        chart=page.locator('.slide-active #latency-chart')
+                        expect(chart).to_have_attribute('data-metric','combined')
+                        chart.scroll_into_view_if_needed()
+                        chart.screenshot(path=str(OUT/f'latency-chart-{width}x{height}.png'))
+                        page.screenshot(path=str(OUT/f'latency-page-{width}x{height}.png'))
                     assert not errors,errors
                     (OUT/'results.json').write_text(json.dumps(results,indent=2))
                 finally:browser.close()

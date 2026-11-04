@@ -35,3 +35,8 @@ Apply the references-only patch with three-way/hunk review of `SlideDeck.tsx`, `
 - The exact Discord attachment was identified as `SKT-ALEPH-reference-index.md` (2026-11-03 07:53 UTC, message 1567084166531522690), but its 32-reference contents remain unavailable. The page is based on the separately verified current repository manuscript and source registry, not claimed to reproduce that attachment.
 - Inspected the user image and changed only the architecture pipeline step 02 owner label from 관리자 to 정책기반 위험도 판정. Manual approval/signing and scope caveats remain intact.
 - The final combined tree passes build, TypeScript, content validation, three reference-index unit tests and the local HTTP contract. Added these page checks and the evidence browser check to existing CI so launch-capable runners verify them before deployment.
+
+## CI and visual follow-up
+
+- Commit a7ae516 passed all CI, including 10 slide-3 layout states, three references/navigation/pipeline-label states and the full existing keyboard suite. The first ead6f54 run exposed a return-link client-navigation issue; native fragment links fixed it without weakening the test.
+- Reviewed desktop and mobile CI screenshots. The global fixed build timestamp could overlay scrolling citations, so the reference route alone now places that metadata in normal footer flow. The presentation retains its existing reserved fixed footer.
