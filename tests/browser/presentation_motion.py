@@ -78,6 +78,7 @@ def check_motion(page, origin):
     open_slide('http')
     assert_fade('.protocol-stage strong')
     open_slide('bypass')
+    page.get_by_role('radio', name='격리 fixture', exact=True).click()
     assert_fade('.cname-progress-current')
 
     # OS reduced motion and deck pause show current text immediately, never
@@ -110,8 +111,11 @@ def check_motion(page, origin):
         for slide in ('dns', 'architecture', 'policy-demo', 'http', 'topology-public', 'bypass'):
             open_slide(slide)
             visual_tab = page.get_by_role('button', name='도식', exact=True)
-            if visual_tab.count():
+            if visual_tab.count() and visual_tab.is_visible():
                 visual_tab.click()
+            if slide == 'bypass':
+                page.get_by_role('radio', name='격리 fixture', exact=True).click()
+                expect(page.locator('.slide-active .cname-progress-current')).to_be_visible()
             for text in page.locator('.slide-active .diagram-text-swap').all():
                 if not text.is_visible():
                     continue

@@ -199,6 +199,11 @@ def check_controls(page, origin, slides):
         page.locator(ACTIVE).locator(".mobile-full-view").click()
         expect(page.locator(ACTIVE)).to_have_attribute("data-mobile-layout", "full")
 
+    def bypass_visual():
+        visual = page.locator(ACTIVE).get_by_role("button", name="도식", exact=True)
+        if visual.count() and visual.is_visible():
+            visual.click()
+
     try:
         # Reduced motion makes selection assertions deterministic; the existing
         # motion suite separately exercises live transitions and interrupted runs.
@@ -259,9 +264,37 @@ def check_controls(page, origin, slides):
                         button_case(index, descriptor, key, setup=setup)
 
             index = indexes["bypass"]
+            # These two choices form a radio group: arrow keys select the other
+            # mode and stay on slide 9; ordinary scenario buttons still navigate.
+            for starting_mode, other_mode in (("실제 server 질의", "격리 fixture"),
+                                               ("격리 fixture", "실제 server 질의")):
+                for key in ("ArrowLeft", "ArrowRight"):
+                    open_slide(index, bypass_visual)
+                    group = page.locator(ACTIVE).get_by_role("radiogroup", name="검증 자료 선택", exact=True)
+                    expect(group.get_by_role("radio")).to_have_count(2)
+                    start = group.get_by_role("radio", name=starting_mode, exact=True)
+                    other = group.get_by_role("radio", name=other_mode, exact=True)
+                    start.click()
+                    at(index)
+                    expect(start).to_be_focused()
+                    expect(start).to_have_attribute("aria-checked", "true")
+                    expect(start).to_have_attribute("tabindex", "0")
+                    expect(other).to_have_attribute("tabindex", "-1")
+                    page.keyboard.press(key)
+                    at(index)
+                    expect(other).to_be_focused()
+                    expect(other).to_have_attribute("aria-checked", "true")
+                    expect(start).to_have_attribute("aria-checked", "false")
+                    expect(other).to_have_attribute("tabindex", "0")
+                    expect(start).to_have_attribute("tabindex", "-1")
+                    expect(page.locator(ACTIVE).locator(
+                        ".cname-walkthrough" if other_mode == "격리 fixture" else ".server-dns-observation"
+                    )).to_be_visible()
+                    cases += 1
             for selected, diagram in (("CNAME 보호 공백", ".cname-walkthrough"),
                                       ("SUBTREE 과차단", ".subtree-case")):
-                open_slide(index)
+                open_slide(index, bypass_visual)
+                page.locator(ACTIVE).get_by_role("radio", name="격리 fixture", exact=True).click()
                 click_named(selected)
                 expect(page.locator(ACTIVE).locator(diagram)).to_be_visible()
                 # Repeated activation cannot transfer focus to the replacement

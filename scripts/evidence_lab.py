@@ -18,6 +18,7 @@ import math
 import os
 from pathlib import Path
 import platform
+import random
 import re
 import shutil
 import socket
@@ -27,6 +28,7 @@ import sys
 import tempfile
 import threading
 import time
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 for source in ('apps/dns-agent/src', 'apps/policy-sync/src'):
@@ -94,6 +96,7 @@ def query(dig: str, port: int, name: str, kind: str, tcp: bool) -> dict:
            '+time=1', '+tries=1', '+noall', '+comments', '+answer']
     if tcp:
         cmd.append('+tcp')
+    started_at = datetime.now(timezone.utc).isoformat()
     start = time.perf_counter_ns()
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=4)
@@ -101,7 +104,23 @@ def query(dig: str, port: int, name: str, kind: str, tcp: bool) -> dict:
     except subprocess.TimeoutExpired:
         reply = parse_reply('dig subprocess deadline exceeded', 124, kind)
     reply['elapsed_ms'] = (time.perf_counter_ns() - start) / 1e6
+    reply['started_at'] = started_at
     return reply
+
+
+def case_order(names: dict, seed: int, trial: int, phase: str) -> list:
+    """Shuffle within a policy phase, preserving the required transition order."""
+    cases = [(name, suffix, kind, tcp) for name, suffix in names.items()
+             for kind in ('A', 'AAAA') for tcp in (False, True)]
+    random.Random(f'{seed}:{trial}:{phase}').shuffle(cases)
+    return cases
+
+
+def write_trust_key(path: Path, content: bytes) -> None:
+    # The policy reader rejects group-writable keys even under a permissive umask.
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, 'wb') as stream:
+        stream.write(content)
 
 
 @contextmanager
@@ -178,7 +197,7 @@ def provenance() -> dict:
                               for p in files}}
 
 
-def run_lab(rounds: int, report: dict) -> None:
+def run_lab(rounds: int, report: dict, seed: int = 20261104, interval: float = 0.1) -> None:
     if os.geteuid() == 0:
         raise RuntimeError('run as a non-root user; this lab never changes system DNS')
     binary, dig = shutil.which('dnsmasq'), shutil.which('dig')
@@ -230,11 +249,15 @@ def run_lab(rounds: int, report: dict) -> None:
         trust = folder / 'trust'
         trust.mkdir(mode=0o700)
         key = Ed25519PrivateKey.generate()
-        (trust / (public_key_id(key.public_key()) + '.pem')).write_bytes(
+        write_trust_key(trust / (public_key_id(key.public_key()) + '.pem'),
             key.public_key().public_bytes(serialization.Encoding.PEM,
                                           serialization.PublicFormat.SubjectPublicKeyInfo))
         inbox = folder / 'inbox'
         feed, url, ca = stack.enter_context(tls_feed(folder))
+        report['fixture_resources'] = {'temporary_directory': str(folder),
+            'upstream_pid': upstream.pid, 'runtime_pids': [],
+            'ports': {'upstream_dns': upstream_port, 'agent_dns': port,
+                      'tls': urlsplit(url).port}, 'address': '127.0.0.1'}
         sequence = 0
         for trial in range(rounds):
             for phase in ('upstream-control', 'baseline', 'blocked', 'withdrawn'):
@@ -256,25 +279,26 @@ def run_lab(rounds: int, report: dict) -> None:
                     payload, parsed = verify_envelope((inbox / 'current.json').read_bytes(),
                                                        expected_device='evidence-lab', trust_dir=trust)
                     agent.cycle(canonical(payload['policy']))
+                    if runtime.process is not None:
+                        report['fixture_resources']['runtime_pids'].append(runtime.process.pid)
                     policy_hash = parsed.digest
                 transition = {'trial': trial, 'phase': phase, 'policy_sha256': policy_hash,
                               'sequence': sequence, 'server_ready_ms': (time.perf_counter_ns() - boundary_start) / 1e6,
                               'timing_boundary': 'before signing to Agent return; no timer scheduling or root publish'}
                 report['transitions'].append(transition)
-                for name, suffix in names.items():
+                for name, suffix, kind, tcp in case_order(names, seed, trial, phase):
                     blocked = phase == 'blocked' and name in ('blocked.test', 'child.blocked.test')
-                    for kind in ('A', 'AAAA'):
-                        for tcp in (False, True):
-                            expected = [] if blocked else [f'192.0.2.{suffix}' if kind == 'A' else f'2001:db8::{suffix}']
-                            code = 'NXDOMAIN' if blocked else 'NOERROR'
-                            reply = query(dig, upstream_port if phase == 'upstream-control' else port, name, kind, tcp)
-                            report['observations'].append({**reply, 'trial': trial, 'phase': phase,
-                                'name': name, 'qtype': kind, 'transport': 'TCP' if tcp else 'UDP',
-                                'expected_rcode': code, 'expected_addresses': expected,
-                                'ok': matches(reply, code, expected, name),
-                                'interpretation': 'known CNAME gap' if name == 'alias.test' and phase == 'blocked'
-                                    else 'normal child affected by SUBTREE' if name == 'child.blocked.test' and blocked
-                                    else 'fixture conformance; not threat truth'})
+                    expected = [] if blocked else [f'192.0.2.{suffix}' if kind == 'A' else f'2001:db8::{suffix}']
+                    code = 'NXDOMAIN' if blocked else 'NOERROR'
+                    time.sleep(interval)
+                    reply = query(dig, upstream_port if phase == 'upstream-control' else port, name, kind, tcp)
+                    report['observations'].append({**reply, 'trial': trial, 'phase': phase,
+                        'name': name, 'qtype': kind, 'transport': 'TCP' if tcp else 'UDP',
+                        'expected_rcode': code, 'expected_addresses': expected,
+                        'ok': matches(reply, code, expected, name),
+                        'interpretation': 'known CNAME gap' if name == 'alias.test' and phase == 'blocked'
+                            else 'normal child affected by SUBTREE' if name == 'child.blocked.test' and blocked
+                            else 'fixture conformance; not threat truth'})
         # Corrupt a signed body after the final withdrawal: it must not reach the adapter.
         previous = (inbox / 'current.json').read_bytes()
         corrupted = json.loads(feed['body'])
@@ -293,11 +317,16 @@ def run_lab(rounds: int, report: dict) -> None:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--rounds', type=int, default=3)
+    parser.add_argument('--seed', type=int, default=20261104)
+    parser.add_argument('--interval', type=float, default=0.1, help='seconds before each measured query (at least 0.1)')
     parser.add_argument('--output', type=Path, help='new JSON file; existing files are never overwritten')
     args = parser.parse_args(argv)
     if not 1 <= args.rounds <= 100:
         parser.error('--rounds must be between 1 and 100')
+    if not math.isfinite(args.interval) or not 0.1 <= args.interval <= 10:
+        parser.error('--interval must be between 0.1 and 10 seconds')
     report = {'schema': 1, 'started_at': datetime.now(timezone.utc).isoformat(),
+              'query_order_seed': args.seed, 'minimum_query_interval_seconds': args.interval,
               'scope': 'synthetic non-root loopback TLS -> verified snapshot -> Agent -> dnsmasq',
               'not_measured': ['root publish/attest', 'systemd/nftables/reboot', 'real LAN/IPv6 transport',
                                'client cache recovery', 'continuous availability', 'browser incremental protection',
@@ -306,7 +335,7 @@ def main(argv=None) -> int:
     stream = args.output.open('x', encoding='utf-8') if args.output else sys.stdout
     try:
         try:
-            run_lab(args.rounds, report)
+            run_lab(args.rounds, report, args.seed, args.interval)
         except Exception as exc:
             report['error'] = f'{type(exc).__name__}: {exc}'
         report['summary'] = summarize(report['observations'])

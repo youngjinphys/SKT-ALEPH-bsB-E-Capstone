@@ -1,0 +1,41 @@
+2026-11-04 실제 DNS 질의 · 공개 발췌본
+
+실험 호스트에서 기본 리졸버와 명시한 사설 DNS로 전송한 결과입니다. 보안상 실제 호스트·네트워크 식별자, 주소 값, 설정된 내부 리졸버 값, 응답 주소는 공개본에서 제외했습니다. [SYSTEM_STUB]와 ${PRIVATE_DNS}는 실제 IP가 아닌 자리표시자입니다. 각 명령의 ${PRIVATE_DNS}는 검증 권한이 있는 사설 DNS 주소로 치환해야 합니다. 이 문서는 재현 가능한 원문 전체가 아닌 발췌본입니다.
+
+2초 제한, 시도 1회, 각 TCP는 별도 연결. 기본 경로는 시스템 스텁이며 실제 후단 서버·캐시 사용은 확인하지 않았습니다. 8건은 주소가 반환된 관측이지 보호 성공률이 아닙니다. 사설 google.com 질의에서 이 시점에 차단 응답은 보이지 않았습니다.
+
+UTC: 2026-11-04T02:42:20.439826+00:00
+$ dig google.com A +time=2 +tries=1
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=1; SERVER=[SYSTEM_STUB]; transport=UDP
+
+UTC: 2026-11-04T02:42:20.959744+00:00
+$ dig @${PRIVATE_DNS} google.com A +time=2 +tries=1
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=6; SERVER=${PRIVATE_DNS}; transport=UDP
+
+UTC: 2026-11-04T02:42:21.544265+00:00
+$ dig google.com A +time=2 +tries=1 +tcp
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=1; SERVER=[SYSTEM_STUB]; transport=TCP
+
+UTC: 2026-11-04T02:42:22.054700+00:00
+$ dig @${PRIVATE_DNS} google.com A +time=2 +tries=1 +tcp
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=6; SERVER=${PRIVATE_DNS}; transport=TCP
+
+UTC: 2026-11-04T02:42:22.635454+00:00
+$ dig example.com A +time=2 +tries=1
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=2; SERVER=[SYSTEM_STUB]; transport=UDP
+
+UTC: 2026-11-04T02:42:23.157933+00:00
+$ dig @${PRIVATE_DNS} example.com A +time=2 +tries=1
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=2; SERVER=${PRIVATE_DNS}; transport=UDP
+
+UTC: 2026-11-04T02:42:23.711291+00:00
+$ dig example.com A +time=2 +tries=1 +tcp
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=2; SERVER=[SYSTEM_STUB]; transport=TCP
+
+UTC: 2026-11-04T02:42:24.221725+00:00
+$ dig @${PRIVATE_DNS} example.com A +time=2 +tries=1 +tcp
+exit=0; status=NOERROR; flags=qr rd ra; ANSWER=2; SERVER=${PRIVATE_DNS}; transport=TCP
+
+원본 전체 로그 SHA-256: a3157ec2f8e70c55dda4223073be38b937850ed8bed4d6d0e89e58e96462e87b
+원본 보고서 SHA-256: b88a924a545271b865e8100a4b699bd12b0957d7e79fd7d94e31251c68caaa3a
+원본 및 SHA 대조용 내부 기록은 비공개로 보관됩니다. 공개본만으로 원본 전체를 재구성할 수 없습니다.

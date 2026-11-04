@@ -108,6 +108,8 @@ def check_term_callouts(browser, origin):
                 visual = page.get_by_role('button', name='도식', exact=True)
                 if visual.count() and visual.first.is_visible():
                     visual.first.click()
+                if term == 'cname':
+                    page.get_by_role('radio', name='격리 fixture', exact=True).click()
                 scene = page.locator(f'.slide-active .term-scene[data-term="{term}"]').first
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 if term == 'cname':

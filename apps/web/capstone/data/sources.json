@@ -258,5 +258,15 @@
     "label": "통합 HEAD9e84275 · 클라우드 관제·외부 서명 정책 게시",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9e84275a91df7e16289ff342f29d5f898fbccd80/docs/unified-vercel-dashboard.md",
     "note": "검증 결과 파일 가져오기·초안·외부 서명 envelope 검증/게시·노드 보고를 연결. 자동 수집은 NOT_CONFIGURED. 게시 성공과 실제 DNS 적용을 구분. 기존 로컬 DNS·정책 코어는6bf8ccac와 동일."
+  },
+  "dns-query-20261104": {
+    "label": "2026.11.04 · 실제 DNS 질의 공개 발췌",
+    "url": "https://skt-aleph-capstone.vercel.app/capstone/evidence/dns-query-20261104.txt",
+    "note": "민감한 네트워크 식별자와 응답 주소는 제외한 공개 발췌. 원본 SHA-256, 시각과 응답 상태를 보존합니다. 8/8은 주소 응답 관측입니다."
+  },
+  "dns-fixture-20261104": {
+    "label": "2026.11.04 · 합성 DNS fixture 공개 발췌",
+    "url": "https://skt-aleph-capstone.vercel.app/capstone/evidence/fixture-summary-20261104.json",
+    "note": "합성 질의 240건과 원본 SHA-256. 임시 포트·경로·네트워크 식별자는 제외했습니다. 실제 운영 DNS 재현이 아닙니다."
   }
 }

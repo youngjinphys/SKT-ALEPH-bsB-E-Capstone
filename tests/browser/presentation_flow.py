@@ -81,7 +81,9 @@ def check_flow(browser, origin):
         page.emulate_media(reduced_motion='no-preference')
 
         # Internal causal stages loop, but paired demonstrations remain chosen.
-        open_slide('bypass', '.chain-step')
+        open_slide('bypass', '.dns-evidence-dashboard')
+        page.get_by_role('radio', name='격리 fixture', exact=True).click()
+        page.locator('.chain-step').first.scroll_into_view_if_needed()
         chain = page.locator('.cname-walkthrough')
         loop(chain, 1)
         old_packet = page.locator('.cname-packet').first.element_handle()
@@ -105,6 +107,7 @@ def check_flow(browser, origin):
         page.keyboard.press('r')
         old_route.wait_for_element_state('hidden', timeout=5000)
         assert old_route.evaluate('el => !el.isConnected')
+        expect(routes).to_have_attribute('data-flow-cycle', '0')
         page.get_by_role('button', name='다른 DNS 경로', exact=True).click()
         loop(routes, 1)
         expect(routes).to_have_attribute('data-stage', '2')

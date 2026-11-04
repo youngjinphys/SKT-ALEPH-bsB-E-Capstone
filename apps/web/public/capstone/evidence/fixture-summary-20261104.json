@@ -1,0 +1,6270 @@
+{
+  "disclosure": "공개 발췌본: 합성 .test 도메인과 문서용 주소만 포함. 실제 네트워크 주소, 임시 경로·포트·프로세스·호스트 식별자, 키를 제외했습니다. 원본은 비공개 보관.",
+  "source_sha256": "24258c534581ab1c6ff526c57e55c896b04d399751390fdbde157be3123fd56d",
+  "initial_failed_run_sha256": "b475c5fc3a6de505a33aede041119b79db8ac225c1bb3ff124b767fc719e00d7",
+  "initial_failed_run": "20개 부분 관측 후 신뢰키 권한 검사에서 중단. fixture 임시 파일 생성 권한만 수정 후 별도 재실행.",
+  "code_base": "f1977cce2f342e84e963c8ca16b0761ee910481b plus local fixture changes",
+  "started_at": "2026-11-04T02:45:21.145313+00:00",
+  "query_order_seed": 20261104,
+  "minimum_query_interval_seconds": 0.1,
+  "summary": {
+    "attempted": 240,
+    "matched": 240,
+    "failed": 0,
+    "match_rate": 1.0,
+    "successful_query_ms_p50": 14.947888,
+    "successful_query_ms_p95": 16.90288,
+    "successful_query_ms_max": 19.585849,
+    "latency_population": "successful fixture queries only; failures remain in denominator"
+  },
+  "fault_checks": [
+    {
+      "case": "tampered signed release",
+      "ok": true,
+      "scope": "download rejected; last verified inbox retained; no root publisher invoked"
+    }
+  ],
+  "passed": true,
+  "observations": [
+    {
+      "started_at": "2026-11-04T02:45:21.326401+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.168873
+    },
+    {
+      "started_at": "2026-11-04T02:45:21.441781+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.288842
+    },
+    {
+      "started_at": "2026-11-04T02:45:21.557280+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.58387
+    },
+    {
+      "started_at": "2026-11-04T02:45:21.672028+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.105771
+    },
+    {
+      "started_at": "2026-11-04T02:45:21.787326+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.756851
+    },
+    {
+      "started_at": "2026-11-04T02:45:21.903271+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.554944
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.017942+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.093148
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.132156+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.268073
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.247583+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.275708
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.362013+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.48034
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.476680+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.705673
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.591590+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.779776
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.706619+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.394385
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.821193+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.075934
+    },
+    {
+      "started_at": "2026-11-04T02:45:22.936445+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.734006
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.053412+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.713558
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.169312+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.887472
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.284328+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.9334
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.399383+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.229018
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.514734+00:00",
+      "trial": 0,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.935865
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.693561+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.238405
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.809915+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.25584
+    },
+    {
+      "started_at": "2026-11-04T02:45:23.924335+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.563869
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.041027+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.911469
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.156074+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.480951
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.272689+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.904465
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.386713+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.684964
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.501571+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.181557
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.615936+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.664925
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.730743+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.90288
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.847817+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.500167
+    },
+    {
+      "started_at": "2026-11-04T02:45:24.964497+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.485781
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.080116+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.693831
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.194974+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.981763
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.311087+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.041357
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.426283+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.698238
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.542153+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.790968
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.656084+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.546689
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.769755+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.445493
+    },
+    {
+      "started_at": "2026-11-04T02:45:25.885440+00:00",
+      "trial": 0,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.554031
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.069247+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 16.545765
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.185919+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.096994
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.301186+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.994609
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.415303+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.344299
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.529817+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.104198
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.645086+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.347444
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.761580+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.046448
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.876757+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 16.18357
+    },
+    {
+      "started_at": "2026-11-04T02:45:26.993105+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 14.049394
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.107307+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.137052
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.221606+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 14.103418
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.335823+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.903643
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.450862+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 15.406829
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.566430+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.694482
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.681255+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 13.816647
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.795202+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.948911
+    },
+    {
+      "started_at": "2026-11-04T02:45:27.909270+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 11.351606
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.020725+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 12.136332
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.132967+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.898444
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.247017+00:00",
+      "trial": 0,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.365099
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.428365+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.971501
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.546485+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.738345
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.662354+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.409774
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.777887+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.905026
+    },
+    {
+      "started_at": "2026-11-04T02:45:28.892934+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.793441
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.008965+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.404575
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.123554+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.376229
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.240098+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.554193
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.354832+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.525998
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.470489+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.297448
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.586951+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.824682
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.701901+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.978798
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.817124+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.789925
+    },
+    {
+      "started_at": "2026-11-04T02:45:29.932052+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.799223
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.046976+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.522881
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.163753+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.183501
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.279080+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.078579
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.394301+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.435515
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.508921+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.612254
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.623723+00:00",
+      "trial": 0,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.207535
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.740106+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.927158
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.855192+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.158512
+    },
+    {
+      "started_at": "2026-11-04T02:45:30.971483+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.346964
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.086949+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.918871
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.204037+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.387592
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.319688+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.109959
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.434940+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.940294
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.550119+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.947888
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.665307+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.415155
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.780900+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.35497
+    },
+    {
+      "started_at": "2026-11-04T02:45:31.895434+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.600752
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.010175+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.467575
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.125843+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.331013
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.242363+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.538733
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.357033+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.611863
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.471777+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.38136
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.587283+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.566415
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.703009+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.397562
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.817547+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.0528
+    },
+    {
+      "started_at": "2026-11-04T02:45:32.932761+00:00",
+      "trial": 1,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.270968
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.058625+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.269463
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.176081+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.462557
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.290688+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.809341
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.407695+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.267202
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.522143+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.965441
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.637274+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.942638
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.752395+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.001149
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.868518+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.568079
+    },
+    {
+      "started_at": "2026-11-04T02:45:33.983214+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.727073
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.099177+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.987564
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.215406+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.809341
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.332342+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.645056
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.449215+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.953148
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.564345+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.268032
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.680801+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.117824
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.797059+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.398263
+    },
+    {
+      "started_at": "2026-11-04T02:45:34.911663+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.399735
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.027217+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.811776
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.142221+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.472784
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.259897+00:00",
+      "trial": 1,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.425174
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.441567+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.41804
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.557162+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 14.120069
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.671412+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.377774
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.785950+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.154706
+    },
+    {
+      "started_at": "2026-11-04T02:45:35.900278+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 19.585849
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.020043+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.737525
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.134952+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.111543
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.249218+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.937778
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.364340+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.551897
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.481016+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.796869
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.594930+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.844861
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.708903+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 15.974589
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.825011+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 15.192788
+    },
+    {
+      "started_at": "2026-11-04T02:45:36.940364+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.447458
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.055053+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.414342
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.171606+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.759766
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.287521+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 16.22521
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.403931+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.800174
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.519902+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 15.281849
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.635342+00:00",
+      "trial": 1,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.174894
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.816175+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.884919
+    },
+    {
+      "started_at": "2026-11-04T02:45:37.929181+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.860009
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.044163+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.660425
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.159972+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.075223
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.274189+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.207097
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.387584+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.46376
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.500230+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.316908
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.613700+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.305357
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.726138+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 10.23852
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.836569+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.185246
+    },
+    {
+      "started_at": "2026-11-04T02:45:38.949053+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 11.055388
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.060233+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.135399
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.174551+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.69438
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.290449+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.354468
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.405940+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.25077
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.520328+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.618045
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.635193+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.677207
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.753047+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.38205
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.870600+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.198429
+    },
+    {
+      "started_at": "2026-11-04T02:45:39.985972+00:00",
+      "trial": 1,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.211724
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.102420+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.794824
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.217394+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.327446
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.332850+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.085023
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.447080+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.266411
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.561483+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.458189
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.676060+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.709371
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.790917+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.547269
+    },
+    {
+      "started_at": "2026-11-04T02:45:40.906625+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.625982
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.020380+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.922219
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.135494+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.045946
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.250691+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.11588
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.366974+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.427908
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.483540+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.422159
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.598196+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.091494
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.713429+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.305957
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.827912+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.948339
+    },
+    {
+      "started_at": "2026-11-04T02:45:41.942985+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.029716
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.057159+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.308561
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.171640+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.729319
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.285500+00:00",
+      "trial": 2,
+      "phase": "upstream-control",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.203789
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.411275+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.975469
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.528401+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.999808
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.643572+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.735208
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.760630+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.880577
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.878753+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.433901
+    },
+    {
+      "started_at": "2026-11-04T02:45:42.994312+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.122554
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.109565+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.753135
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.223432+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.04217
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.337648+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.616412
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.452444+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.71455
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.567343+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.87091
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.683362+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.460624
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.797962+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.434782
+    },
+    {
+      "started_at": "2026-11-04T02:45:43.914525+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.787971
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.029445+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.615481
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.144204+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.26675
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.260561+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.111142
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.374798+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.80747
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.488730+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.234226
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.606123+00:00",
+      "trial": 2,
+      "phase": "baseline",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.284915
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.787499+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.905926
+    },
+    {
+      "started_at": "2026-11-04T02:45:44.904555+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.868917
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.019654+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.118736
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.134891+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.335221
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.251349+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 15.458488
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.366970+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 16.558289
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.483646+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 15.992463
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.599759+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.804452
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.715693+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.425616
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.830248+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.565784
+    },
+    {
+      "started_at": "2026-11-04T02:45:45.945940+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "known CNAME gap",
+      "elapsed_ms": 14.591233
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.060673+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.550384
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.176347+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.82468
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.292291+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.910727
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.407365+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.860361
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.521380+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 14.55273
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.636043+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.437548
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.752556+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.376121
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.867036+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.935746
+    },
+    {
+      "started_at": "2026-11-04T02:45:46.981076+00:00",
+      "trial": 2,
+      "phase": "blocked",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NXDOMAIN",
+      "expected_rcode": "NXDOMAIN",
+      "answers": [],
+      "addresses": [],
+      "expected_addresses": [],
+      "ok": true,
+      "interpretation": "normal child affected by SUBTREE",
+      "elapsed_ms": 15.863786
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.162635+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.388934
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.278179+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.696515
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.394012+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.188611
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.508317+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "A",
+          "data": "192.0.2.22"
+        }
+      ],
+      "addresses": [
+        "192.0.2.22"
+      ],
+      "expected_addresses": [
+        "192.0.2.22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.634286
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.623089+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.021158
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.739262+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.614899
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.854020+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 16.094489
+    },
+    {
+      "started_at": "2026-11-04T02:45:47.970239+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 17.127882
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.087497+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.336054
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.201963+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::21"
+        }
+      ],
+      "addresses": [
+        "2001:db8::21"
+      ],
+      "expected_addresses": [
+        "2001:db8::21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.701855
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.317799+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.60494
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.431551+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.027131
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.545709+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "blocked.test",
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::20"
+        }
+      ],
+      "addresses": [
+        "2001:db8::20"
+      ],
+      "expected_addresses": [
+        "2001:db8::20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.922149
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.660781+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.500521
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.773420+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "alias.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "alias.test",
+          "type": "CNAME",
+          "data": "blocked.test"
+        },
+        {
+          "owner": "blocked.test",
+          "type": "A",
+          "data": "192.0.2.20"
+        }
+      ],
+      "addresses": [
+        "192.0.2.20"
+      ],
+      "expected_addresses": [
+        "192.0.2.20"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 12.581426
+    },
+    {
+      "started_at": "2026-11-04T02:45:48.886127+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 15.575983
+    },
+    {
+      "started_at": "2026-11-04T02:45:49.001818+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "child.blocked.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "child.blocked.test",
+          "type": "A",
+          "data": "192.0.2.21"
+        }
+      ],
+      "addresses": [
+        "192.0.2.21"
+      ],
+      "expected_addresses": [
+        "192.0.2.21"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.752353
+    },
+    {
+      "started_at": "2026-11-04T02:45:49.116687+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "other-blocked.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "other-blocked.test",
+          "type": "AAAA",
+          "data": "2001:db8::22"
+        }
+      ],
+      "addresses": [
+        "2001:db8::22"
+      ],
+      "expected_addresses": [
+        "2001:db8::22"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 13.414565
+    },
+    {
+      "started_at": "2026-11-04T02:45:49.230222+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "A",
+          "data": "192.0.2.30"
+        }
+      ],
+      "addresses": [
+        "192.0.2.30"
+      ],
+      "expected_addresses": [
+        "192.0.2.30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.37611
+    },
+    {
+      "started_at": "2026-11-04T02:45:49.344720+00:00",
+      "trial": 2,
+      "phase": "withdrawn",
+      "name": "good.test",
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "rcode": "NOERROR",
+      "expected_rcode": "NOERROR",
+      "answers": [
+        {
+          "owner": "good.test",
+          "type": "AAAA",
+          "data": "2001:db8::30"
+        }
+      ],
+      "addresses": [
+        "2001:db8::30"
+      ],
+      "expected_addresses": [
+        "2001:db8::30"
+      ],
+      "ok": true,
+      "interpretation": "fixture conformance; not threat truth",
+      "elapsed_ms": 14.549694
+    }
+  ]
+}

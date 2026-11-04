@@ -6,6 +6,8 @@ import {useDiagramVisibility} from "./useDiagramVisibility";
 import type {DeckSlide,SourceRegistry} from "@/lib/deck";
 import {TermExplanation} from "./TermExplanation";
 import {CnameWalkthrough} from "./CnameWalkthrough";
+import {ServerDnsObservation} from "./ServerDnsObservation";
+import "./server-dns-observation.css";
 import "./editorial-visual.css";
 import diagrams from "../../capstone/data/diagrams.json";
 
@@ -53,16 +55,30 @@ export function AdoptionCompare({paused=false}:{paused?:boolean}){
  </section></TermExplanation>;
 }
 export function DnsEvidenceDashboard({visual,paused=false}:{visual:Chain;paused?:boolean}){
+ const [mode,setMode]=useState<"server"|"fixture">("server");
  const [caseName,setCaseName]=useState<"cname"|"subtree">("cname");
- return <TermExplanation term={caseName==="cname"?"cname":undefined} paused={paused}><section className="diagram-panel dns-evidence-dashboard" aria-label="합성 DNS 240개 기대 응답과 두 가지 반례">
-  <div className="dns-evidence-top"><strong>240<span>/240</span></strong><div><b>10월 31일 · 합성 DNS 기대 응답 일치</b><small>3회 × 4조건 × 5이름 × A/AAAA × UDP/TCP</small><small>비특권 루프백 · 과차단·CNAME 반례 포함</small></div></div>
-  <div className="dns-evidence-tabs" role="group" data-flow-alternatives="true" aria-label="반례 전환">
-   <button type="button" data-scenario-step="true" aria-pressed={caseName==="cname"} onClick={()=>setCaseName("cname")}>CNAME 보호 공백</button>
-   <button type="button" data-scenario-step="true" aria-pressed={caseName==="subtree"} onClick={()=>setCaseName("subtree")}>SUBTREE 과차단</button>
+ return <TermExplanation term={mode==="fixture"&&caseName==="cname"?"cname":undefined} paused={paused}><section className="diagram-panel dns-evidence-dashboard" aria-label="실제 DNS 관측과 격리 실험">
+  <div className="dns-observation-modes" role="radiogroup" aria-label="검증 자료 선택" onKeyDown={event=>{
+   if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
+   event.preventDefault();
+   const next=mode==="server"?"fixture":"server";
+   setMode(next);
+   event.currentTarget.querySelector<HTMLButtonElement>(`[data-evidence-mode="${next}"]`)?.focus();
+  }}>
+   <button type="button" role="radio" data-evidence-mode="server" aria-checked={mode==="server"} tabIndex={mode==="server"?0:-1} onClick={()=>setMode("server")}>실제 server 질의</button>
+   <button type="button" role="radio" data-evidence-mode="fixture" aria-checked={mode==="fixture"} tabIndex={mode==="fixture"?0:-1} onClick={()=>setMode("fixture")}>격리 fixture</button>
   </div>
-  {caseName==="cname"?<CnameWalkthrough visual={visual} paused={paused}/>:<SubtreeIntroduction paused={paused}/>}
+  {mode==="server"?<ServerDnsObservation/>:<>
+   <div className="dns-evidence-top"><strong>240<span>/240</span></strong><div><b>11월 4일 · 합성 DNS 기대 응답 일치</b><small>3회 × 4상태 × 5이름 × A/AAAA × UDP/TCP</small><small>루프백 fixture · 실제 탐지율 아님 · 두 반례 포함</small></div></div>
+   <div className="dns-evidence-tabs" role="group" aria-label="반례 전환" data-flow-alternatives="true">
+    <button type="button" data-scenario-step="true" aria-pressed={caseName==="cname"} onClick={()=>setCaseName("cname")}>CNAME 보호 공백</button>
+    <button type="button" data-scenario-step="true" aria-pressed={caseName==="subtree"} onClick={()=>setCaseName("subtree")}>SUBTREE 과차단</button>
+   </div>
+   {caseName==="cname"?<CnameWalkthrough visual={visual} paused={paused}/>:<SubtreeIntroduction paused={paused}/>}
+  </>}
  </section></TermExplanation>;
 }
+
 const milestones=[
  ["01","추가 보호·정상 영향","독립 정답셋 · 동일 브라우저 설정에서 추가 차단과 오탐을 함께 비교","효과 평가"],
  ["02","실단말 적용·복구","게시→수신→적용 시간과 양성·음성 캐시, 재질의까지 확인","운영 평가"],

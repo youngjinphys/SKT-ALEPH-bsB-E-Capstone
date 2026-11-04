@@ -39,6 +39,26 @@ class EvidenceAccountingTests(unittest.TestCase):
         self.assertIsNone(result['match_rate'])
         self.assertIsNone(result['successful_query_ms_p95'])
 
+    def test_seeded_order_preserves_all_cases_and_phase_boundary(self):
+        names = {'one.test': '20', 'two.test': '21'}
+        cases = self.lab.case_order(names, 20261104, 0, 'blocked')
+        self.assertEqual(cases, self.lab.case_order(names, 20261104, 0, 'blocked'))
+        self.assertEqual(set(cases), {(n, suffix, kind, tcp)
+                                     for n, suffix in names.items()
+                                     for kind in ('A', 'AAAA') for tcp in (False, True)})
+        self.assertEqual(len(cases), 8)
+
+    def test_trust_key_not_group_writable_with_permissive_umask(self):
+        with tempfile.TemporaryDirectory() as directory:
+            key = Path(directory) / 'key.pem'
+            old = os.umask(0o002)
+            try:
+                self.lab.write_trust_key(key, b'test public key')
+            finally:
+                os.umask(old)
+            self.assertEqual(key.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(key.read_bytes(), b'test public key')
+
     def test_timeout_remains_in_denominator(self):
         result = self.lab.summarize([
             {'ok': True, 'elapsed_ms': 2.0},
