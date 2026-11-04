@@ -1,5 +1,6 @@
 /* All six cards remain visible; focus advances, not the topology. */
 .protocol-walkthrough .restored-node{transition:box-shadow .18s ease,background-color .18s ease}
+.protocol-walkthrough{container:protocol / inline-size}
 .protocol-walkthrough .restored-node[data-active=true]{box-shadow:0 0 0 2px #9beaff;background:#173e53}
 .protocol-walkthrough [data-protocol=https] .restored-node[data-active=true]{box-shadow:0 0 0 2px #ffd7a4;background:#352d24}
 .protocol-walkthrough .restored-protocol-arrow{position:relative;min-width:0;overflow:visible}
@@ -72,4 +73,20 @@ html[data-motion=off] .protocol-walkthrough .protocol-packet{display:none!import
 @media(max-width:780px){
  .protocol-walkthrough .restored-protocol-arrow .protocol-edge-horizontal{display:none;}
  .protocol-walkthrough .restored-protocol-arrow .protocol-edge-vertical{display:block;width:18px;height:24px;}
+}
+
+/* CSS/text zoom can narrow the panel without changing viewport media queries.
+   Preserve whole words and both protocol paths using the available panel width. */
+@media(min-width:781px){
+ @container protocol (max-width:560px){
+  .deck-root .protocol-walkthrough .restored-protocol-row{flex:none}
+  .deck-root .protocol-walkthrough .restored-protocol-path{grid-template-columns:minmax(0,1fr);gap:0}
+  .deck-root .protocol-walkthrough .restored-node{grid-template-columns:26px minmax(0,1fr);gap:6px 10px;padding:10px;text-align:left;justify-items:start}
+  .deck-root .protocol-walkthrough .restored-node small{grid-column:1/-1}
+  .deck-root .protocol-walkthrough .restored-protocol-arrow{height:28px;min-height:28px}
+  .deck-root .protocol-walkthrough .restored-protocol-arrow .protocol-edge-horizontal{display:none}
+  .deck-root .protocol-walkthrough .restored-protocol-arrow .protocol-edge-vertical{display:block;width:18px;height:24px}
+  .deck-root .protocol-walkthrough .protocol-packet{left:calc(50% - 3px);top:5%}
+  .deck-root .protocol-walkthrough[data-playback=running] [data-active=true] .protocol-packet{animation-name:protocol-request-vertical}
+ }
 }

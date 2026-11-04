@@ -32,10 +32,12 @@ def check_protocol_edges(browser, origin):
             expect(row.locator('.restored-node')).to_have_count(3)
             edges = row.locator('.restored-protocol-arrow')
             expect(edges).to_have_count(2)
+            panel_width = root.evaluate('el => el.clientWidth - parseFloat(getComputedStyle(el).paddingLeft) - parseFloat(getComputedStyle(el).paddingRight)')
+            direction = 'down' if width <= 780 or panel_width <= 560 else 'right'
             for edge in edges.all():
                 visible = edge.locator('svg:visible')
                 expect(visible).to_have_count(1)
-                expect(visible).to_have_attribute('data-direction', 'down' if width <= 780 else 'right')
+                expect(visible).to_have_attribute('data-direction', direction)
                 geometry = visible.evaluate('''svg => {
                     const box=svg.getBoundingClientRect(), lane=svg.parentElement.getBoundingClientRect();
                     const before=svg.parentElement.previousElementSibling.getBoundingClientRect();
@@ -48,6 +50,20 @@ def check_protocol_edges(browser, origin):
                 }''')
                 assert geometry['sized'] and geometry['contained'] and geometry['forward'], (width, height, zoom, protocol, geometry)
                 assert geometry['clipping'] == 'visible', geometry
+            for card in row.locator('.restored-node').all():
+                readable = card.evaluate('''card => {
+                    const box=card.getBoundingClientRect(), title=card.querySelector('strong');
+                    const failures=[];
+                    if(title.clientWidth < parseFloat(getComputedStyle(title).fontSize)*3.5) failures.push('title too narrow for a word');
+                    for(const el of card.querySelectorAll('strong,small')) {
+                        const range=document.createRange(); range.selectNodeContents(el);
+                        for(const rect of range.getClientRects()) {
+                            if(rect.left<box.left-1 || rect.right>box.right+1 || rect.top<box.top-1 || rect.bottom>box.bottom+1) failures.push('text outside card');
+                        }
+                    }
+                    return failures;
+                }''')
+                assert not readable, (width, height, zoom, protocol, readable)
             # An arrow enters a failure state, not an HTTP request on the HTTPS lane.
             if protocol == 'https':
                 expect(row.locator('.restored-node').last).to_contain_text('HTTP 이전 중단')
