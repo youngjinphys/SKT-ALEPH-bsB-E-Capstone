@@ -33,12 +33,12 @@ async def secure_headers(request,call_next):
 async def http_error(request,exc):return JSONResponse({'error':str(exc.detail)},status_code=exc.status_code)
 
 @app.get('/dashboard',response_class=HTMLResponse)
-def dashboard():return assets()[0]
+def dashboard(surface:str=''):return assets(surface)[0]
 
 @app.get('/dashboard/assets/{name}')
-def static_asset(name:str):
-    if name=='console.css':return Response(assets()[1],media_type='text/css')
-    if name=='console.js':return Response(assets()[2],media_type='application/javascript')
+def static_asset(name:str,surface:str=''):
+    if name=='console.css':return Response(assets(surface)[1],media_type='text/css')
+    if name=='console.js':return Response(assets(surface)[2],media_type='application/javascript')
     raise HTTPException(404,'Unknown asset')
 
 async def read_json(request,limit=65536):
@@ -91,7 +91,8 @@ WRITES={'manual/save':'save_manual_block','manual/remove':'remove_manual_block',
 
 @app.api_route('/api/ops/test-auth', methods=['GET','POST'])
 async def test_auth(request:Request):
-    from . import pin_auth
+    from . import pin_auth, sites_bridge
+    if sites_bridge.present(request):raise HTTPException(401,'Sites assertions cannot access test authentication')
     if request.method == 'GET':
         cfg = pin_auth.config()
         return JSONResponse({'enabled': cfg is not None, 'additionalCodeRequired': bool(cfg and cfg.extra_hash),
@@ -114,8 +115,18 @@ async def test_auth(request:Request):
 
 @app.api_route('/api/ops/{path:path}',methods=['GET','POST'])
 async def control(path:str,request:Request):
-    if request.method=='POST':same_origin(request)
-    email=await run_in_threadpool(require_operator,request)
+    from . import sites_bridge
+    if sites_bridge.present(request):
+        raw=bytearray()
+        async for chunk in request.stream():
+            raw.extend(chunk)
+            if len(raw)>3*1024*1024:raise HTTPException(413,'Request too large')
+        # Cache only bounded, signed bytes for the ordinary JSON parser below.
+        request._body=bytes(raw)
+        email=await run_in_threadpool(sites_bridge.verify,request,bytes(raw))
+    else:
+        if request.method=='POST':same_origin(request)
+        email=await run_in_threadpool(require_operator,request)
     if request.method=='GET' and path=='session':
         # Authentication must not depend on the policy database or evidence files.
         return JSONResponse({'authorized':True,'email':email})

@@ -11,8 +11,9 @@ def replace_once(text,old,new):
     if text.count(old)!=1:raise RuntimeError('Console integration anchor changed')
     return text.replace(old,new,1)
 
-@lru_cache(maxsize=1)
-def assets():
+@lru_cache(maxsize=2)
+def assets(surface=""):
+    if surface not in ("", "sites"): surface=""
     html=HTML.replace('/console.css','/dashboard/assets/console.css').replace('/console.js','/dashboard/assets/console.js')
     brand='<div class="brand"><div><strong>ALEPH<span class="brand-asterisk">✳</span></strong><small>PROTECTIVE DNS</small></div></div>'
     html=replace_once(html,brand,brand.replace('<div class="brand">','<a class="brand" href="/" aria-label="ALEPH PROTECTIVE DNS 홈">',1)[:-6]+'</a>')
@@ -42,6 +43,21 @@ def assets():
     script=replace_once(script,'node("strong","",item.event),','node("strong","",auditEventLabel(item.event)),')
     script=replace_once(script,'node("span","mono",item.draft||item.reference||item.version||item.fingerprint||"–"));',
                         'node("span","mono",auditReference(item)));')
-    script+='\n'+STORAGE_JS+'\n'+Path(__file__).with_name('pin_actions.js').read_text()+'\n'+Path(__file__).with_name('actions.js').read_text()
+    actions=Path(__file__).with_name('actions.js').read_text()
+    if surface=='sites':
+        start=actions.index('// Cloud adaptation:')
+        end=actions.index('async function cloudFile(',start)
+        actions=actions[:start]+Path(__file__).with_name('sites_actions.js').read_text()+'\n'+actions[end:]
+        html=re.sub(r'<a href="/api/oauth[^>]+>.*?</a>', '<a href="/signin-with-chatgpt?return_to=%2Fdashboard" target="_top" class="button outline wide cloud-sites-signin">ChatGPT로 로그인 →</a>',html,count=1)
+        html=replace_once(html,pin_form,'')
+        html=re.sub(r'<details class="cloud-login-help">.*?</details>','<details class="cloud-login-help"><summary>처음 접속하시나요? 로그인 방법</summary><p>ChatGPT로 로그인한 뒤 현재 로그인으로 관제센터 연결을 누르세요. 기존 운영자 허용목록에 등록된 이메일만 접근할 수 있습니다.</p></details>',html,count=1)
+        html=replace_once(html,'<button id="cloud-logout" class="quiet-button" type="button">계정 로그아웃</button>','<a id="cloud-logout" class="quiet-button" href="/signout-with-chatgpt?return_to=%2F" target="_top">계정 로그아웃</a>')
+        html=html.replace('Google 세션을 확인한 후 별도의 DNS 운영자 권한을 검사합니다.','ChatGPT 로그인과 DNS 운영자 권한을 확인합니다.').replace('동일한 사이트의 Google 인증을 사용합니다.','동일한 Sites의 ChatGPT 인증을 사용합니다.').replace('VERCEL CONTROL PLANE','SITES CONTROL PLANE').replace('HttpOnly 세션','ChatGPT 인증')
+        html=html.replace('/dashboard/assets/console.css','/dashboard/assets/console.css?surface=sites').replace('/dashboard/assets/console.js','/dashboard/assets/console.js?surface=sites')
+        script=script.replace('인증에 실패했습니다. 액세스 토큰을 확인하세요.','ChatGPT로 로그인한 뒤 관제센터에 다시 연결하세요.')
+        pin_script=''
+    else:
+        pin_script=Path(__file__).with_name('pin_actions.js').read_text()
+    script+='\n'+STORAGE_JS+'\n'+pin_script+'\n'+actions
     css=CSS+'\n'+STORAGE_CSS+'\n.dashboard-home{gap:7px;min-width:64px}.dashboard-home-icon{flex:0 0 18px;width:18px;height:18px}.cloud-tools{margin-bottom:22px}.cloud-tools input[type=file]{padding:10px;color:inherit;max-width:100%}.cloud-tools form>.button{margin-top:15px}.cloud-google{margin-top:12px}.cloud-home{display:block;margin-top:20px;text-align:center}.cloud-tools p[role=status]{overflow-wrap:anywhere}.cloud-tools form{min-width:0}\n'
     return html,css+'\n'+ENROLL_CSS+'\n'+GUIDE_CSS,script+'\n'+ENROLL_JS+'\n'+GUIDE_JS
