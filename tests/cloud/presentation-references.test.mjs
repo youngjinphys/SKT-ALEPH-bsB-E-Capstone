@@ -40,6 +40,7 @@ test('current deck includes every active-slide citation and all manuscript Q&A, 
  const deckSource=fs.readFileSync(new URL('src/components/SlideDeck.tsx',root),'utf8');
  assert.ok(!deckSource.includes('/capstone/references'));
  assert.ok(deckSource.includes('href="/dashboard"'));
+ assert.ok(deckSource.includes('at<mainSlideCount&&deck[at].id!=="opening"'));
  const expectedQuestions=text.split('# 발표자 참고 · 예상 질문과 답변')[1].match(/^## /gm).length;
  assert.equal(result.questions.length,expectedQuestions);
  for(const [i,slide] of active.entries())for(const key of slide.sources){
