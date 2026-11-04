@@ -1,4 +1,4 @@
-"""The terminal shows a stored capture and labelled simulation, never an executable shell or live DNS test."""
+"""The terminal shows recorded, separate public DNS and isolated loopback observations."""
 from pathlib import Path
 import json
 import re
@@ -7,6 +7,7 @@ from presentation_controls import _assert_readable
 
 ROOT = Path(__file__).resolve().parents[2]
 CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/google-dns-observation.json').read_text())
+FIXTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/block-test-loopback-20261104.json').read_text())
 OUT = Path('/tmp/aleph-build-artifacts/dns-terminal')
 
 
@@ -46,9 +47,9 @@ def _wheel_reach(page,target,direction,context):
         raise AssertionError((context,'unreachable with wheel',geometry))
 
 
-def _check_natural_reachability(page,context):
+def _check_natural_reachability(page,context,last_selector='.dns-terminal-status a'):
     first=page.get_by_role('group',name='질의 이름 선택',exact=True).get_by_role('button').first
-    last=page.locator('.dns-terminal-status a')
+    last=page.locator(last_selector)
     _wheel_reach(page,last,1,context)
     page.screenshot(path=str(OUT/f'terminal-scroll-end-{context}.png'),full_page=True)
     _wheel_reach(page,first,-1,context)
@@ -117,11 +118,13 @@ def check_dns_terminal(browser, origin):
             for domain in ('google.com','block.test'):
                 choices.get_by_role('button',name=domain,exact=True).click()
                 text=root.inner_text()
-                for removed in ('example.com','기본 DNS','TCP','UDP','SERVER:','+time','+tries','+tcp'):
+                for removed in ('example.com','기본 DNS'):
                     assert removed not in text,(width,height,domain,removed)
+                if domain=='google.com':
+                    for removed in ('SERVER:','+time','+tries','+tcp'):
+                        assert removed not in text,(width,height,domain,removed)
                 assert '\ufffd' not in text
                 if domain=='google.com': assert '1.1.1.1' in text and all(line.split()[-1] in text for line in google['answers'])
-                else: assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',text)
                 if domain=='google.com':
                     expect(root).to_have_attribute('data-evidence-state','captured')
                     expect(root).to_have_attribute('data-query-id',google['id'])
@@ -136,19 +139,34 @@ def check_dns_terminal(browser, origin):
                     for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 else:
-                    expect(root).to_have_attribute('data-evidence-state','simulated')
-                    assert root.get_attribute('data-query-id') is None
-                    expect(root.locator('.dns-terminal-pending')).to_contain_text('정책: BLOCK · 차단: REJECT · DNS 응답: NXDOMAIN')
-                    expect(root.locator('.dns-terminal-pending')).to_contain_text('모의 · 실제 질의 미실행')
-                    expect(root.locator('.dns-terminal-command,.dns-terminal-output,.dns-terminal-status,time')).to_have_count(0)
-                    for false_evidence in ('NOERROR','exit ','Query time:','[REDACTED]','02:42'):
-                        assert false_evidence not in text,(domain,false_evidence)
-                    _wheel_reach(page,root.locator('.dns-terminal-pending p').last,1,f'{width}x{height}-pending')
-                    _assert_readable(root.locator('.dns-terminal-pending'),(width,height,domain))
+                    expect(root).to_have_attribute('data-evidence-state','fixture')
+                    expect(root).to_have_attribute('data-query-id','block-test-loopback')
+                    expect(root.locator('.server-dns-heading time')).to_have_attribute('datetime',FIXTURE['started_at'])
+                    blocked=next(phase for phase in FIXTURE['phases'] if phase['name']=='blocked')
+                    recorded=next(query for query in blocked['queries'] if query['qtype']=='A' and query['transport']=='UDP')
+                    for phase in FIXTURE['phases']:
+                        expected_rcode='NXDOMAIN' if phase['name']=='blocked' else 'NOERROR'
+                        assert len(phase['queries'])==4
+                        assert {(q['qtype'],q['transport']) for q in phase['queries']}=={('A','UDP'),('A','TCP'),('AAAA','UDP'),('AAAA','TCP')}
+                        assert all(q['exit_code']==0 and q['rcode']==expected_rcode for q in phase['queries'])
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','recorded')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text(' '.join(recorded['command']))
+                    assert root.locator('.dns-terminal-output code').text_content()==recorded['stdout']
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('ISOLATED LOOPBACK · BLOCK 적용 · A / UDP')
+                    expect(root.locator('.dns-fixture-summary')).to_contain_text('적용 전 NOERROR · BLOCK 적용 NXDOMAIN · 철회 후 NOERROR')
+                    expect(root.locator('.dns-fixture-summary')).to_contain_text('A·AAAA / UDP·TCP, 12/12 기대 응답 일치')
+                    expect(root.locator('.dns-fixture-boundary')).to_have_text('통제된 로컬 DNS 실험 · 운영 DNS 적용 증거 아님')
+                    expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',recorded['started_at'])
+                    link=root.get_by_role('link',name='실험 기록 ↗',exact=True)
+                    expect(link).to_have_attribute('href','/capstone/evidence/block-test-loopback-20261104.json')
+                    _assert_terminal_visibility(page)
+                    _check_natural_reachability(page,f'{width}x{height}-fixture')
+                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-fixture-summary','.dns-fixture-boundary','.dns-terminal-status'):
+                        _assert_readable(root.locator(selector),(width,height,domain,selector))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
                 total+=1
-            # A return to the captured case must not retain the pending state.
+            # A return to the public captured case must not retain the fixture state.
             choices.get_by_role('button',name='google.com',exact=True).click()
             expect(root).to_have_attribute('data-evidence-state','captured')
             assert root.locator('.dns-terminal-output').inner_text()==expected
@@ -192,4 +210,4 @@ def check_dns_terminal(browser, origin):
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors,errors
         finally:context.close()
-    print(f'DNS terminal: {total} captured/simulated states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')
+    print(f'DNS terminal: {total} captured/fixture states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')

@@ -22,7 +22,7 @@ jobs:
           git archive --format=tar.gz HEAD > /tmp/aleph-browser-artifacts/source.tar.gz
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '24'
+          node-version: '26'
       - name: Isolate Python test dependencies from runner system packages
         run: |
           python3 -m venv "$RUNNER_TEMP/aleph-ci-venv"
@@ -49,6 +49,8 @@ jobs:
           retention-days: 7
       - run: npm ci --no-audit --no-fund && npm run check
         working-directory: apps/web
+      - name: Verify isolated block.test evidence
+        run: node --test tests/browser/block_test_evidence.test.mjs
       - name: Verify presentation evidence and references slide
         run: |
           python3 -B tests/browser/presentation_references_http.py

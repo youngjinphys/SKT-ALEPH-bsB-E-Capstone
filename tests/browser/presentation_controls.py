@@ -19,6 +19,35 @@ VIEWPORTS = ((1440, 900), (1366, 768), (390, 844), (390, 720), (390, 667))
 ACTIVE = ".slide-active .deck-slide"
 
 
+def check_mobile_slide_scroll(browser, origin):
+    """Long default panes and full views must be reachable with real wheel input."""
+    for width, height in ((390, 844), (320, 667)):
+        page = browser.new_page(viewport={"width": width, "height": height}, reduced_motion="reduce")
+        try:
+            for index in (4, 9):
+                for full in (False, True):
+                    page.goto(f"{origin}/capstone#{index}")
+                    expect(page.locator(".deck-root")).to_have_attribute("data-hydrated", "true")
+                    slide = page.locator(ACTIVE)
+                    expect(slide).not_to_have_attribute("data-mobile-layout", "desktop")
+                    if full:
+                        button = slide.get_by_role("button", name="전체 보기", exact=True)
+                        if button.count() and button.is_visible():
+                            button.click()
+                    viewport = page.locator("#slide-area")
+                    page.mouse.move(5, height // 2)
+                    for _ in range(24):
+                        if slide.evaluate("el => el.getBoundingClientRect().bottom <= document.querySelector('#slide-area').getBoundingClientRect().bottom + 1"):
+                            break
+                        page.mouse.wheel(0, 500)
+                        page.wait_for_timeout(50)
+                    else:
+                        raise AssertionError((width, height, index, full, "slide bottom unreachable by wheel"))
+                    assert viewport.evaluate("el => el.scrollTop") > 0, (width, height, index, full)
+        finally:
+            page.close()
+
+
 def _name(control):
     return control.get_attribute("aria-label") or re.sub(r"\s+", " ", control.inner_text()).strip()
 

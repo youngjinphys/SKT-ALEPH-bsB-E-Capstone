@@ -16,7 +16,7 @@ from playwright.sync_api import expect, sync_playwright
 from presentation_motion import check_motion
 from presentation_flow import check_flow
 from presentation_term_callouts import check_term_callouts
-from presentation_controls import check_controls
+from presentation_controls import check_controls, check_mobile_slide_scroll
 from presentation_layout_objects import check_layout_objects
 from presentation_build_timestamp import check_build_timestamp
 from presentation_dns_terminal import check_dns_terminal
@@ -262,6 +262,7 @@ def main():
                     # unrelated terminal stress can obscure layout diagnostics.
                     check_term_callouts(browser, ORIGIN)
                     check_layout_objects(browser, ORIGIN, SLIDES)
+                    check_mobile_slide_scroll(browser, ORIGIN)
                     check_dns_terminal(browser, ORIGIN)
                     check_motion(page, ORIGIN)
                     check_flow(browser, ORIGIN)

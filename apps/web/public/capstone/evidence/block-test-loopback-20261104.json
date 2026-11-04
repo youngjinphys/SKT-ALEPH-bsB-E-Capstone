@@ -1,0 +1,489 @@
+{
+  "schema_version": 1,
+  "scope": "isolated loopback fixture; not production DNS",
+  "source_baseline_commit": "bf7d1d613b2bd5824454fe9d3695711e7b13eb11",
+  "source_execution_mode": "read-only-permission snapshot",
+  "source_hashes_before": {
+    "apps/dns-agent/src/dns_agent/__init__.py": "f74222e09e410d49a2fcd46ac0233182c03497320d38f2de0f221d4e31760504",
+    "apps/dns-agent/src/dns_agent/__main__.py": "2ed3ea0479eebcbf74f01380c482889c1dfb2eb99e54260c0a3a239aaa846582",
+    "apps/dns-agent/src/dns_agent/_child.py": "f43119103916f76fba247b67a3a394ce7b94934e156ca620011ef3335a881cac",
+    "apps/dns-agent/src/dns_agent/cgroup_guard.py": "bcb052630c0f0dec67a9356d7b37ba9cc86dea2f74b16c893831dc3d8ccf3812",
+    "apps/dns-agent/src/dns_agent/http_notice.py": "918753d0247b28b2757fd169bfdd0ca64b5c041e5d4c3f113dfbd7f7199ef411",
+    "apps/dns-agent/src/dns_agent/policy.py": "0a4011a7f01d9c6ea965bb23b17cbd71c9f11dd5586c2fd6f6468557a47e712a",
+    "apps/dns-agent/src/dns_agent/runtime.py": "0d50507d9621b4bc8c09c9ebe1f6f3844f146a8b122905d9653e117363294e6b",
+    "apps/dns-agent/src/dns_agent/transaction.py": "28ee0605e03dbe69198e364c3d023da301d3ad643c0b8e63a52d443844471da5",
+    "scripts/capture_block_test.py": "e76ba55d1e6bf03514606a301e8aacd4ed28f2a1356c1eb52647255ba4c0c252"
+  },
+  "source_hashes_after": {
+    "apps/dns-agent/src/dns_agent/__init__.py": "f74222e09e410d49a2fcd46ac0233182c03497320d38f2de0f221d4e31760504",
+    "apps/dns-agent/src/dns_agent/__main__.py": "2ed3ea0479eebcbf74f01380c482889c1dfb2eb99e54260c0a3a239aaa846582",
+    "apps/dns-agent/src/dns_agent/_child.py": "f43119103916f76fba247b67a3a394ce7b94934e156ca620011ef3335a881cac",
+    "apps/dns-agent/src/dns_agent/cgroup_guard.py": "bcb052630c0f0dec67a9356d7b37ba9cc86dea2f74b16c893831dc3d8ccf3812",
+    "apps/dns-agent/src/dns_agent/http_notice.py": "918753d0247b28b2757fd169bfdd0ca64b5c041e5d4c3f113dfbd7f7199ef411",
+    "apps/dns-agent/src/dns_agent/policy.py": "0a4011a7f01d9c6ea965bb23b17cbd71c9f11dd5586c2fd6f6468557a47e712a",
+    "apps/dns-agent/src/dns_agent/runtime.py": "0d50507d9621b4bc8c09c9ebe1f6f3844f146a8b122905d9653e117363294e6b",
+    "apps/dns-agent/src/dns_agent/transaction.py": "28ee0605e03dbe69198e364c3d023da301d3ad643c0b8e63a52d443844471da5",
+    "scripts/capture_block_test.py": "e76ba55d1e6bf03514606a301e8aacd4ed28f2a1356c1eb52647255ba4c0c252"
+  },
+  "source_stability_note": "snapshot mode checks read-only permission bits; its owner could still change permissions. Matching hashes do not prove absence of transient writes",
+  "started_at": "2026-11-04T07:37:13.083405+00:00",
+  "finished_at": "2026-11-04T07:37:15.126520+00:00",
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "dnsmasq": {
+    "path": "/usr/sbin/dnsmasq",
+    "sha256": "e39a5fa229a8268a6ae5a9564028a6c6510e523197b654cf9a6f698f7c2c331b",
+    "version": "Dnsmasq version 2.92  Copyright (c) 2000-2025 Simon Kelley"
+  },
+  "dig": {
+    "path": "/usr/bin/dig",
+    "sha256": "656321d867f3b3f4ae4c274ebf9ee9b034e665c6c5ae2a72aad218683fb750d7",
+    "version": "DiG 9.20.24-1ubuntu0.5-Ubuntu"
+  },
+  "upstream_config": "port=38071\nlisten-address=127.0.0.1\nbind-interfaces\nno-resolv\nno-hosts\ncache-size=0\nlocal=/test/\nhost-record=block.test,192.0.2.60,2001:db8::60\n",
+  "upstream_queries": [
+    {
+      "qtype": "A",
+      "transport": "UDP",
+      "started_at": "2026-11-04T07:37:13.099272+00:00",
+      "finished_at": "2026-11-04T07:37:13.110195+00:00",
+      "command": [
+        "/usr/bin/dig",
+        "@127.0.0.1",
+        "-p",
+        "38071",
+        "block.test",
+        "A",
+        "+time=1",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 44288\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+      "stderr": ""
+    },
+    {
+      "qtype": "A",
+      "transport": "TCP",
+      "started_at": "2026-11-04T07:37:13.110225+00:00",
+      "finished_at": "2026-11-04T07:37:13.120636+00:00",
+      "command": [
+        "/usr/bin/dig",
+        "@127.0.0.1",
+        "-p",
+        "38071",
+        "block.test",
+        "A",
+        "+time=1",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer",
+        "+tcp"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 45671\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+      "stderr": ""
+    },
+    {
+      "qtype": "AAAA",
+      "transport": "UDP",
+      "started_at": "2026-11-04T07:37:13.120651+00:00",
+      "finished_at": "2026-11-04T07:37:13.132685+00:00",
+      "command": [
+        "/usr/bin/dig",
+        "@127.0.0.1",
+        "-p",
+        "38071",
+        "block.test",
+        "AAAA",
+        "+time=1",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 13725\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+      "stderr": ""
+    },
+    {
+      "qtype": "AAAA",
+      "transport": "TCP",
+      "started_at": "2026-11-04T07:37:13.132706+00:00",
+      "finished_at": "2026-11-04T07:37:13.143389+00:00",
+      "command": [
+        "/usr/bin/dig",
+        "@127.0.0.1",
+        "-p",
+        "38071",
+        "block.test",
+        "AAAA",
+        "+time=1",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer",
+        "+tcp"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 54956\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+      "stderr": ""
+    }
+  ],
+  "phases": [
+    {
+      "name": "before",
+      "policy": {
+        "issued_at": "2026-11-04T07:37:13+00:00",
+        "expires_at": "2026-11-04T07:40:13+00:00",
+        "rules": []
+      },
+      "apply_result": {
+        "event": "applied",
+        "blocked_count": 0,
+        "policy_sha256": "d95a3f28c67fa2b8fc6b9d4e32c0ee9895e93637276aff2d13903fb6f7761f8b",
+        "expired": false,
+        "rejected_input": null
+      },
+      "active_config": "port=57379\nlisten-address=127.0.0.1\nbind-interfaces\nno-resolv\nno-hosts\ncache-size=0\nlocal-ttl=0\ndomain-needed\nserver=127.0.0.1#38071\nlocal=/capstone.test/\nhost-record=health-e3b0c44298fc1c149afb.capstone.test,192.0.2.1,2001:db8::1\n",
+      "active_config_sha256": "1b668cc0522ca1527d77047eabb31ceeeaabc8cef7ec0391bc24ee59cdf93f1d",
+      "queries": [
+        {
+          "qtype": "A",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:13.201668+00:00",
+          "finished_at": "2026-11-04T07:37:13.212233+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 65171\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "A",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:13.212249+00:00",
+          "finished_at": "2026-11-04T07:37:13.224794+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 26698\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:13.224813+00:00",
+          "finished_at": "2026-11-04T07:37:13.237279+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 43060\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:13.237299+00:00",
+          "finished_at": "2026-11-04T07:37:13.248675+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 15931\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "name": "blocked",
+      "policy": {
+        "issued_at": "2026-11-04T07:37:14+00:00",
+        "expires_at": "2026-11-04T07:40:14+00:00",
+        "rules": [
+          {
+            "domain": "block.test",
+            "decision": "BLOCK",
+            "scope": "SUBTREE",
+            "approved": true,
+            "expires_at": "2026-11-04T07:39:14+00:00",
+            "evidence": "isolated-controlled-fixture"
+          }
+        ]
+      },
+      "apply_result": {
+        "event": "applied",
+        "blocked_count": 1,
+        "policy_sha256": "9afc150169c9ecd5be08fd786f011168b1178e79a6fdf7ef9016221331643a71",
+        "expired": false,
+        "rejected_input": null
+      },
+      "active_config": "port=57379\nlisten-address=127.0.0.1\nbind-interfaces\nno-resolv\nno-hosts\ncache-size=0\nlocal-ttl=0\ndomain-needed\nserver=127.0.0.1#38071\nlocal=/capstone.test/\nhost-record=health-2ee8276a244fc0ec4484.capstone.test,192.0.2.1,2001:db8::1\naddress=/block.test/\n",
+      "active_config_sha256": "1e35f696311c4cae9a242da5f1bb54caf90323fd239c8c3faa3dfd5f147ad218",
+      "queries": [
+        {
+          "qtype": "A",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:14.063030+00:00",
+          "finished_at": "2026-11-04T07:37:14.076281+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NXDOMAIN",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 10534\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "A",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:14.076299+00:00",
+          "finished_at": "2026-11-04T07:37:14.091269+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NXDOMAIN",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 63360\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:14.091285+00:00",
+          "finished_at": "2026-11-04T07:37:14.104672+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NXDOMAIN",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 4599\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:14.104692+00:00",
+          "finished_at": "2026-11-04T07:37:14.115265+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NXDOMAIN",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 11943\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "name": "withdrawn",
+      "policy": {
+        "issued_at": "2026-11-04T07:37:15+00:00",
+        "expires_at": "2026-11-04T07:40:15+00:00",
+        "rules": []
+      },
+      "apply_result": {
+        "event": "applied",
+        "blocked_count": 0,
+        "policy_sha256": "716aba2a85a29845373be542527edfdf836870d24bb07766526dbb5dc015b047",
+        "expired": false,
+        "rejected_input": null
+      },
+      "active_config": "port=57379\nlisten-address=127.0.0.1\nbind-interfaces\nno-resolv\nno-hosts\ncache-size=0\nlocal-ttl=0\ndomain-needed\nserver=127.0.0.1#38071\nlocal=/capstone.test/\nhost-record=health-e3b0c44298fc1c149afb.capstone.test,192.0.2.1,2001:db8::1\n",
+      "active_config_sha256": "1b668cc0522ca1527d77047eabb31ceeeaabc8cef7ec0391bc24ee59cdf93f1d",
+      "queries": [
+        {
+          "qtype": "A",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:15.075378+00:00",
+          "finished_at": "2026-11-04T07:37:15.086321+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 13719\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "A",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:15.086342+00:00",
+          "finished_at": "2026-11-04T07:37:15.099172+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "A",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 56300\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tA\t192.0.2.60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "UDP",
+          "started_at": "2026-11-04T07:37:15.099197+00:00",
+          "finished_at": "2026-11-04T07:37:15.110653+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 6547\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+          "stderr": ""
+        },
+        {
+          "qtype": "AAAA",
+          "transport": "TCP",
+          "started_at": "2026-11-04T07:37:15.110673+00:00",
+          "finished_at": "2026-11-04T07:37:15.123365+00:00",
+          "command": [
+            "/usr/bin/dig",
+            "@127.0.0.1",
+            "-p",
+            "57379",
+            "block.test",
+            "AAAA",
+            "+time=1",
+            "+tries=1",
+            "+noall",
+            "+comments",
+            "+answer",
+            "+tcp"
+          ],
+          "exit_code": 0,
+          "rcode": "NOERROR",
+          "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 38414\n;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n;; ANSWER SECTION:\nblock.test.\t\t0\tIN\tAAAA\t2001:db8::60\n\n",
+          "stderr": ""
+        }
+      ]
+    }
+  ]
+}

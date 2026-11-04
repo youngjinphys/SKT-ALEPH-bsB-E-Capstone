@@ -22,7 +22,7 @@ a.brand:focus-visible{outline:2px solid var(--cyan);outline-offset:6px}
 .cloud-guide-launcher,.cloud-guide{position:fixed;right:max(20px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));z-index:45}
 .cloud-guide-launcher{display:inline-flex;gap:10px;align-items:center;min-height:48px;padding:10px 17px;border:1px solid #72d8e8;border-radius:999px;background:#102e42;color:#e4fbff;font-size:13px;font-weight:750;box-shadow:0 8px 30px #0007}
 .cloud-guide-launcher>span{display:grid;place-items:center;width:24px;height:24px;border:1px solid #72d8e8;border-radius:50%;color:#91eef2;font-size:15px}
-.cloud-guide-launcher:focus-visible{position:fixed;z-index:46}
+.cloud-guide-launcher:focus-visible{z-index:46}
 .cloud-guide{width:390px;max-width:calc(100vw - 32px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);display:flex;flex-direction:column;border:1px solid #5296ad;border-radius:18px;background:#0b2335;color:#edf8fc;box-shadow:0 20px 80px #0009;overflow:hidden}
 .cloud-guide-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px 9px 20px;border-bottom:1px solid #2c5165;background:#113147;flex:none}
 .cloud-guide-label{font-size:10px;letter-spacing:.13em;font-weight:800;color:#95e6ed}
@@ -47,9 +47,9 @@ a.brand:focus-visible{outline:2px solid var(--cyan);outline-offset:6px}
 [data-cloud-guide-target]{outline:2px dashed #7ee4e9!important;outline-offset:4px}
 .toast{bottom:84px;z-index:70}
 body.cloud-guide-visible .toast{top:20px;bottom:auto;max-height:110px;overflow-y:auto}
-.toast:not([hidden])~.cloud-guide{max-height:min(70vh,calc(100vh - 150px));max-height:min(70dvh,calc(100dvh - 150px))}
+body:has(.toast:not([hidden])) .cloud-guide{max-height:min(70vh,calc(100vh - 150px));max-height:min(70dvh,calc(100dvh - 150px))}
 .main-column>.bottom-bar{padding-bottom:88px}
-@media(max-width:700px){.cloud-guide-launcher,.cloud-guide{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom))}.cloud-guide{width:390px;max-height:70vh;max-height:70dvh}.cloud-guide-body{padding:16px}.cloud-guide h2{font-size:20px}.cloud-guide-header{padding-left:16px}.cloud-guide-footer{padding:10px 12px;gap:8px}}
+@media(max-width:700px){.cloud-guide-launcher{position:static;align-self:flex-end;margin:12px 16px 0;box-shadow:none}.cloud-guide{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:390px;max-height:70vh;max-height:70dvh}.cloud-guide-body{padding:16px}.cloud-guide h2{font-size:20px}.cloud-guide-header{padding-left:16px}.cloud-guide-footer{padding:10px 12px;gap:8px}}
 @media(max-height:500px){.cloud-guide{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);bottom:12px}.cloud-guide-header{padding-block:2px}.cloud-guide-footer{padding-block:6px}}
 @media(forced-colors:active){.cloud-guide,.cloud-guide-header,.cloud-guide-footer,.cloud-guide-launcher,.cloud-guide .cloud-guide-boundary{background:Canvas;color:CanvasText;border-color:CanvasText}.cloud-guide p,.cloud-guide li,.cloud-guide li::marker,.cloud-guide-label,.cloud-guide-step,#cloud-guide-count,.cloud-guide-close,.cloud-guide-footer>span,.cloud-guide-launcher>span{color:CanvasText}[data-cloud-guide-target]{outline-color:Highlight!important}}
 '''
@@ -87,7 +87,7 @@ JS = r'''
       boundary:'장치 등록은 DNS 설정을 바꾸지 않습니다. 서명 정책 게시·키 신뢰 변경은 별도 확인이 필요하며 LAN 보호도 별도 검증합니다.'},
     {section:'작업 기록',title:'무엇이 바뀌었는지 돌아보기',view:'audit',
       description:'운영 저장소의 여유와 조회 가능한 작업 이력을 확인합니다.',
-      instructions:['운영 저장소 여유에서 사용량과 진단 상태를 확인합니다.','작업 기록의 시각·이벤트·참조를 확인해 변경 맥락을 살펴봅니다.','필요할 때 우측 하단 “사용방법”으로 이 안내를 다시 열 수 있습니다.'],
+      instructions:['운영 저장소 여유에서 사용량과 진단 상태를 확인합니다.','작업 기록의 시각·이벤트·참조를 확인해 변경 맥락을 살펴봅니다.','필요할 때 “사용방법”으로 이 안내를 다시 열 수 있습니다.'],
       boundary:'작업 이력은 변조 방지된 승인 증명이 아니며, 저장소 진단은 DNS 보호 상태와 다릅니다.'}
   ];
   let index=0,returnFocus=null;

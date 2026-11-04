@@ -45,6 +45,32 @@ def geometry(page):
     }''')
 
 
+def check_mobile_launcher_clearance(page, connected):
+    # The launcher should have its own space rather than float over the
+    # scrolling login or workbench content, including after keyboard focus.
+    for width,height in ((320,568),(390,844)):
+        page.set_viewport_size({'width':width,'height':height})
+        page.evaluate('window.scrollTo(0, 0)')
+        page.locator('#cloud-guide-open').focus()
+        for fraction in (0,0.25,0.5,0.75,1):
+            state=page.evaluate('''fraction => {
+              const maxScroll=document.documentElement.scrollHeight-innerHeight;
+              scrollTo(0, maxScroll*fraction);
+              const launcher=document.querySelector('#cloud-guide-open').getBoundingClientRect();
+              const content=document.querySelector('#main-content').getBoundingClientRect();
+              const visible=r=>({left:Math.max(0,r.left),top:Math.max(0,r.top),
+                right:Math.min(innerWidth,r.right),bottom:Math.min(innerHeight,r.bottom)});
+              const a=visible(launcher),b=visible(content);
+              return {maxScroll,launcher:launcher.toJSON(),content:content.toJSON(),
+                overlap:Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*
+                        Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top))};
+            }''',fraction)
+            assert state['maxScroll']>0,(connected,width,height,'page did not scroll',state)
+            assert state['overlap']==0,(connected,width,height,fraction,'launcher covers content',state)
+    page.set_viewport_size({'width':1440,'height':900})
+    page.evaluate('window.scrollTo(0, 0)')
+
+
 def main():
     OUT.mkdir(parents=True,exist_ok=True)
     html,css,_=assets()
@@ -80,6 +106,7 @@ def main():
                 home=page.get_by_role('link',name='홈으로 이동',exact=True)
                 assert home.is_visible() and home.get_attribute('href')=='/'
                 assert page.locator('.main-column>.bottom-bar').evaluate("el=>parseFloat(getComputedStyle(el).paddingBottom)")>=88
+                check_mobile_launcher_clearance(page,connected)
                 page.locator('#cloud-guide-open').focus();page.keyboard.press('Enter')
                 assert page.locator('#cloud-guide').is_visible()
                 assert page.evaluate('document.activeElement.id')=='cloud-guide-title'

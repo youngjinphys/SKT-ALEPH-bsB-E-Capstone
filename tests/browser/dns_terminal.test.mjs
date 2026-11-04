@@ -50,22 +50,31 @@ test('stored terminal choices use native buttons without capturing arrow keys',(
 });
 
 
-test('the display keeps the Google capture and labels the block.test rejection as simulated',()=>{
+test('the displayed block.test result is a bounded recorded loopback experiment',()=>{
  const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
  const style=fs.readFileSync(path.join(web,'src/components/server-dns-observation.css'),'utf8');
  const slide=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8'));
+ const fixture=JSON.parse(fs.readFileSync(path.join(web,'public/capstone/evidence/block-test-loopback-20261104.json'),'utf8'));
  assert.ok(source.includes('data-command-display="summary"'));
  assert.ok(source.includes('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략'));
  assert.doesNotMatch(source,/SERVER ·|server \/ dig/);
- assert.ok(source.includes('모의 · 실제 질의 미실행'));
- assert.ok(source.includes('NXDOMAIN'));
- assert.ok(source.includes('recorded?"captured":"simulated"'));
+ assert.ok(source.includes('통제된 로컬 DNS 실험 · 운영 DNS 적용 증거 아님'));
+ assert.ok(source.includes('block-test-loopback-20261104.json'));
+ assert.ok(source.includes('blockedQuery.command.join(" ")'));
+ assert.ok(source.includes('{blockedQuery.stdout}'));
+ assert.ok(source.includes('data-command-display="recorded"'));
+ assert.ok(source.includes('publicDns?"captured":"fixture"'));
  assert.doesNotMatch(source,/type Transport|type Route|setTransport|setRoute|record\.server|google\.server|dns-terminal-routes/);
  assert.doesNotMatch(style,/dns-terminal-routes/);
- assert.equal(capture.queries.filter(q=>q.domain==='block.test').length,0);
+ assert.deepEqual(fixture.phases.map(p=>p.name),['before','blocked','withdrawn']);
+ for(const phase of fixture.phases){
+  assert.equal(phase.queries.length,4);
+  assert.deepEqual(new Set(phase.queries.map(q=>`${q.qtype}/${q.transport}`)),new Set(['A/UDP','A/TCP','AAAA/UDP','AAAA/TCP']));
+  for(const q of phase.queries){assert.equal(q.exit_code,0);assert.equal(q.rcode,phase.name==='blocked'?'NXDOMAIN':'NOERROR')}
+ }
  const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
- assert.doesNotMatch(visible,/example\.com|기본 DNS|UDP|TCP/);
- assert.ok(visible.includes('모의'));
+ assert.ok(visible.includes('격리'));
+ assert.ok(visible.includes('운영 DNS 적용'));
 });
 
 test('Google answer display preserves the separate stored public IPv4 record',()=>{

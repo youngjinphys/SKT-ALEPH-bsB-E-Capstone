@@ -12,7 +12,7 @@
     "content:check": "node scripts/validate-content.mjs"
   },
   "engines": {
-    "node": "24.x"
+    "node": "26.x"
   },
   "dependencies": {
     "next": "16.4.3",
@@ -21,7 +21,7 @@
     "three": "0.186.1"
   },
   "devDependencies": {
-    "@types/node": "24.9.2",
+    "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.2.3",
     "typescript": "5.9.3"

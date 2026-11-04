@@ -18,7 +18,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var
 .skip-link{position:fixed;z-index:1000;left:1rem;top:-90px;padding:13px 20px;background:#fff;color:#031320;border-radius:8px}
 .skip-link:focus{top:1rem}
 .shell{width:min(1460px,100%);margin:0 auto;padding-left:clamp(22px,4vw,72px);padding-right:clamp(22px,4vw,72px)}
-.site-root{min-height:100dvh;background:radial-gradient(ellipse at 67% 18%,#17445a88,transparent 48%),linear-gradient(145deg,#071623,#0b1e2b 48%,#071522)}
+.site-root{word-break:keep-all;overflow-wrap:break-word;min-height:100dvh;background:radial-gradient(ellipse at 67% 18%,#17445a88,transparent 48%),linear-gradient(145deg,#071623,#0b1e2b 48%,#071522)}
 .site-topbar{height:93px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:24px}
 .brand{display:inline-flex;gap:14px;align-items:center;white-space:nowrap}
 .brand-glyph{font-size:27px;font-weight:900;display:grid;place-items:center;width:43px;height:43px;color:var(--cyan);border:1px solid var(--cyan);clip-path:polygon(20% 0,80% 0,100% 50%,80% 100%,20% 100%,0 50%)}
@@ -195,7 +195,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var
 .overview-list strong{font-size:12px;line-height:1.5;font-weight:650}
 .overview-help{margin:18px 0 0;font-size:11px;color:var(--dim)}
 /* Deliberately labelled fake law-firm fixture; zero collection */
-.fixture-page{background:#f7f8f6;color:#19313a;font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;min-height:100dvh}
+.fixture-page{word-break:keep-all;overflow-wrap:break-word;background:#f7f8f6;color:#19313a;font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;min-height:100dvh}
 .fixture-banner{background:#11272f;color:#f6e7c2;padding:12px 5vw;text-align:center;font-size:13px;line-height:1.55;letter-spacing:.02em}
 .fixture-banner button{border:0;background:none;text-decoration:underline;color:#fff;margin-left:12px}
 .fixture-gate{min-height:calc(100dvh - 46px);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;background:radial-gradient(circle at 50% 40%,#f4e8cd,#dae2e2);padding:26px}

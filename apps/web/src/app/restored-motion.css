@@ -137,3 +137,11 @@ html[data-motion=off] *::after {
    viewport can scroll to every authored item. Fit layouts retain track sizing. */
 .deck-stage:has(>.slide-active .deck-slide[data-mobile-layout=full]){height:auto;min-height:100%;overflow:visible}
 .deck-stage>.slide-active:has(.deck-slide[data-mobile-layout=full]){position:relative;height:auto;min-height:100%;overflow:visible}
+
+/* Mobile slides can exceed the viewport even in their default pane. Keep the
+   active track in flow so the viewport includes its full scrollable height. */
+@media (max-width:780px), (max-height:500px) and (max-width:1000px) {
+  .deck-stage {height:auto;min-height:100%;overflow:visible}
+  .deck-stage>.slide-active {position:relative;height:auto;min-height:100%;overflow:visible}
+  .slide-overline {touch-action:pan-y pinch-zoom}
+}

@@ -293,5 +293,10 @@
     "label": "2026.11.04 · 공개 DNS 1.1.1.1 별도 질의",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/bf7d1d613b2bd5824454fe9d3695711e7b13eb11/apps/web/public/capstone/evidence/google-dns-observation.json",
     "note": "2026-11-04 07:23:23 UTC 별도 TCP 질의. 공개 리졸버의 응답이며 기존 사설 DNS 실험과 무관합니다."
+  },
+  "block-test-loopback-20261104": {
+    "label": "2026.11.04 · block.test 격리 DNS 실험",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/main/apps/web/public/capstone/evidence/block-test-loopback-20261104.json",
+    "note": "통제 upstream과 로컬 보호 DNS에서 A·AAAA, UDP·TCP의 적용 전·차단·철회를 비교했습니다. 운영 DNS 적용 증거가 아닙니다."
   }
 }

@@ -43,6 +43,7 @@ class RealDnsTests(unittest.TestCase):
         self.now=utcnow().replace(microsecond=0);self.obj=fixture(self.now)
         config=(f'port={self.upstream_port}\nlisten-address=127.0.0.1\nbind-interfaces\n'
                 'no-resolv\nno-hosts\ncache-size=0\nlocal=/test/\n'
+                'host-record=block.test,192.0.2.60,2001:db8::60\n'
                 'host-record=blocked.test,192.0.2.20,2001:db8::20\n'
                 'host-record=child.blocked.test,192.0.2.21,2001:db8::21\n'
                 'host-record=other-blocked.test,192.0.2.22,2001:db8::22\n'
@@ -202,6 +203,29 @@ class RealDnsTests(unittest.TestCase):
                 out=self.dig(name,tcp=tcp)
                 self.assertIn('status: NOERROR',out);self.assertIn(expected,out)
         self.assertIn('2001:db8::30',self.dig('good.test','AAAA'))
+    def test_block_test_real_udp_tcp_before_block_and_after_withdrawal(self):
+        # The .test name must exist in the controlled upstream: otherwise an
+        # ordinary NXDOMAIN could be mistaken for successful enforcement.
+        baseline=fixture(self.now); baseline['rules']=[]
+        self.apply(baseline)
+        def check(expected_status, expect_address):
+            for kind, address in (("A", "192.0.2.60"), ("AAAA", "2001:db8::60")):
+                for tcp in (False, True):
+                    with self.subTest(status=expected_status, kind=kind, tcp=tcp):
+                        output=self.dig('block.test',kind,tcp)
+                        self.assertIn('status: '+expected_status, output)
+                        if expect_address: self.assertIn(address, output)
+                        else: self.assertNotIn(address, output)
+        check('NOERROR', True)
+        blocked=fixture(self.now+timedelta(seconds=1)); blocked['rules']=[{
+            'domain':'block.test','decision':'BLOCK','scope':'SUBTREE','approved':True,
+            'expires_at':(self.now+timedelta(minutes=1)).isoformat(),'evidence':'controlled-fixture'}]
+        self.apply(blocked, now=self.now+timedelta(seconds=1))
+        check('NXDOMAIN', False)
+        withdrawn=fixture(self.now+timedelta(seconds=2)); withdrawn['rules']=[]
+        self.apply(withdrawn, now=self.now+timedelta(seconds=2))
+        check('NOERROR', True)
+
     def test_withdraw_and_invalid_update(self):
         self.apply();self.agent.cycle(b'{broken',now=self.now)
         self.assertIn('status: NXDOMAIN',self.dig('blocked.test'))

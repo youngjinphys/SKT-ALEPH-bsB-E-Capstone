@@ -16,7 +16,7 @@ def assets():
     html=HTML.replace('/console.css','/dashboard/assets/console.css').replace('/console.js','/dashboard/assets/console.js')
     brand='<div class="brand"><div><strong>ALEPH<span class="brand-asterisk">✳</span></strong><small>PROTECTIVE DNS</small></div></div>'
     html=replace_once(html,brand,brand.replace('<div class="brand">','<a class="brand" href="/" aria-label="ALEPH PROTECTIVE DNS 홈">',1)[:-6]+'</a>')
-    html=replace_once(html,'</body>',GUIDE_HTML+'\n</body>')
+    html=replace_once(html,'    <main class="content"',GUIDE_HTML+'\n    <main class="content"')
     html=html.replace('LOCAL CONTROL PLANE','VERCEL CONTROL PLANE').replace('로컬 게시 파일','게시 정책 저장소')
     html=re.sub(r'<form id="login-form">.*?</form>', '''<form id="login-form"><input id="token" type="hidden"><p id="cloud-login-message">Google 세션을 확인한 후 별도의 DNS 운영자 권한을 검사합니다.</p><button type="submit" class="button primary wide">현재 로그인으로 관제센터 연결 →</button></form><a href="/api/oauth?action=start&amp;next=/dashboard" class="button outline wide cloud-google">Google로 로그인 →</a><details class="cloud-login-help"><summary>처음 접속하시나요? 로그인 방법</summary><p>Google로 로그인한 뒤 이 페이지로 돌아옵니다. 이미 로그인했다면 ‘현재 로그인으로 관제센터 연결’을 누르세요.</p><p>관제 운영자 권한은 사이트 로그인과 별개입니다. 등록되지 않은 계정은 관리자에게 이메일 승인을 요청해야 합니다.</p><p>‘Google 로그인 설정 확인 필요’가 표시되면 관리자에게 인증 공급자 설정을 요청하세요. 로컬 콘솔의 액세스 토큰이나 임의 비밀번호는 이 페이지에서 사용하지 않습니다.</p></details><a href="/" class="text-button cloud-home">홈으로 돌아가기</a>''',html,count=1)
     html=html.replace('서버 로컬 토큰으로 인증합니다. 토큰은 브라우저 메모리에만 유지되며 저장하지 않습니다.','동일한 사이트의 Google 인증을 사용합니다. 로그인만으로 DNS 정책 권한이 부여되지는 않습니다.')
