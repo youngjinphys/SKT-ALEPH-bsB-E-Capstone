@@ -31,7 +31,6 @@
 .deck-root .editorial-adoption h2{margin:0 0 4px;font-size:clamp(19px,1.5vw,28px);word-break:keep-all;line-height:1.35}
 .deck-root .adoption-lanes{display:grid;grid-template-columns:1fr;gap:12px}
 .deck-root .adoption-lane{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left;cursor:pointer;border:1px solid #537b8b;background:#0f2c40b3;border-radius:12px;padding:clamp(14px,1.4vh,22px) clamp(16px,1.2vw,22px);min-width:0;transition:all .2s ease}
-.deck-root .adoption-dns{border-color:#77cfb4;background:#14403da3}
 .deck-root .adoption-role{display:flex;align-items:center;gap:10px}
 .deck-root .adoption-role>span:first-child{color:#93dddc;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
 .deck-root .adoption-role{min-width:0}.deck-root .adoption-role>span:last-child{min-width:0}

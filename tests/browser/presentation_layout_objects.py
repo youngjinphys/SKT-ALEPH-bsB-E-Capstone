@@ -23,6 +23,19 @@ def _assert_objects(slide, context):
         };
         const failures = [], describe = el => `${el.tagName}.${el.className}: ${el.textContent.trim().slice(0,70)}`;
         const items = [...root.querySelectorAll('h1,.slide-subtitle,.slide-point,.diagram-panel,.chart-card,.restored-node,.intro-stage,.policy-flow-stage,.policy-timeline-stage,.reference-group,.adoption-lane,.dns-route-node')].filter(visible);
+        // A tall flex child centered above a scroller's content origin cannot
+        // be recovered by wheel/Tab. Off-screen content below that origin is
+        // allowed: this is a scrollable deck, not a fit-to-screen poster.
+        for(const item of items){
+            const r=item.getBoundingClientRect();
+            for(let p=item.parentElement;p;p=p.parentElement){
+                const css=getComputedStyle(p);
+                if(!/auto|scroll/.test(css.overflowY))continue;
+                const box=p.getBoundingClientRect(),scale=box.width/p.offsetWidth||1;
+                const origin=box.top+(p.clientTop-p.scrollTop)*scale;
+                if(r.top<origin-1)failures.push(`Object starts above reachable scroll content: ${describe(item)}`);
+            }
+        }
         for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){
             const a=items[i],b=items[j];
             if(a.contains(b)||b.contains(a))continue;
@@ -51,6 +64,27 @@ def _assert_objects(slide, context):
     return result
 
 
+def _assert_adoption_selection(slide, context):
+    lanes = slide.locator('.adoption-lane')
+    expect(lanes).to_have_count(3)
+    expect(lanes.nth(2)).to_have_attribute('aria-pressed','true')
+    neutral = lanes.nth(0).evaluate("el => {const css=getComputedStyle(el);return {'background-color':css.backgroundColor,'border-top-color':css.borderTopColor};}")
+    for selected in (0, 1):
+        lanes.nth(selected).click()
+        expect(lanes.nth(selected)).to_have_attribute('aria-pressed','true')
+        expect(lanes.nth(2)).to_have_attribute('aria-pressed','false')
+        peer = lanes.nth(1 if selected == 0 else 0)
+        expect(peer).to_have_attribute('aria-pressed','false')
+        for property, color in neutral.items():
+            # Poll both unselected cards through the normal 200ms transition.
+            expect(peer).to_have_css(property,color)
+            expect(lanes.nth(2)).to_have_css(property,color)
+            expect(lanes.nth(selected)).not_to_have_css(property,color)
+        print(f'Adoption selection {context}: {selected+1} selected, 03 matches neutral peer',flush=True)
+    lanes.nth(2).click()
+    expect(lanes.nth(2)).to_have_attribute('aria-pressed','true')
+
+
 def check_layout_objects(browser, origin, slides):
     page = browser.new_page(reduced_motion='reduce')
     screenshots = Path(os.environ.get('ALEPH_LAYOUT_SCREENSHOTS', '/tmp/aleph-build-artifacts/layout'))
@@ -70,6 +104,8 @@ def check_layout_objects(browser, origin, slides):
                 if full.count() and full.is_visible():
                     full.click()
                 slide.evaluate('el => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+                if data['id'] == 'friction-barriers':
+                    _assert_adoption_selection(slide,(width,height))
                 result=_assert_objects(slide,(data['id'],width,height))
                 count += 1
                 page.screenshot(path=str(screenshots/f'{index+1:02}-{data["id"]}-{width}x{height}.png'),full_page=True)

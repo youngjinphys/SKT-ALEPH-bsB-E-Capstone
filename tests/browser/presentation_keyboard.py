@@ -256,11 +256,13 @@ def main():
                     check_header_navigation(browser, ORIGIN)
                     check_dns_decision(browser, ORIGIN)
                     check_protocol_edges(browser, ORIGIN)
+                    # Geometry suites own their pages, so verify them before
+                    # unrelated terminal stress can obscure layout diagnostics.
+                    check_term_callouts(browser, ORIGIN)
+                    check_layout_objects(browser, ORIGIN, SLIDES)
                     check_dns_terminal(browser, ORIGIN)
                     check_motion(page, ORIGIN)
-                    check_term_callouts(browser, ORIGIN)
                     check_flow(browser, ORIGIN)
-                    check_layout_objects(browser, ORIGIN, SLIDES)
                     check_controls(page, ORIGIN, SLIDES)
                 finally:
                     browser.close()
