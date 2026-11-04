@@ -155,9 +155,9 @@
     "note": "상업적 보호 서비스로 확장 시 별도 이용 허가 확인"
   },
   "gsb-v5-method": {
-    "label": "Google Safe Browsing v5alpha1 · urls.search 공식 API",
-    "url": "https://developers.google.com/safe-browsing/reference/rest/v5alpha1/urls/search",
-    "note": "지정 URL 조회 API. 테스트 1개·근거2개는 팀 실호출 기록"
+    "label": "Google Safe Browsing v5 · urls.search 공식 API",
+    "url": "https://developers.google.com/safe-browsing/reference/rest/v5/urls/search",
+    "note": "현재 수집 코드 intel.py의 v5/urls:search 경로와 일치합니다. 과거 v5alpha1 테스트 1개·근거 2개는 별도의 팀 실행 기록이며 현재 API 성능 검증으로 확대하지 않습니다."
   },
   "gsb-terms": {
     "label": "Google Safe Browsing API · 최신 서비스 약관",
@@ -268,5 +268,15 @@
     "label": "2026.11.04 · 합성 DNS fixture 공개 발췌",
     "url": "https://skt-aleph-capstone.vercel.app/capstone/evidence/fixture-summary-20261104.json",
     "note": "합성 질의 240건과 원본 SHA-256. 임시 포트·경로·네트워크 식별자는 제외했습니다. 실제 운영 DNS 재현이 아닙니다."
+  },
+  "interisle-2026": {
+    "label": "Interisle · 2026년 피싱 도메인 집계",
+    "url": "https://cybercrimeinfocenter.squarespace.com/phishing-activity-year-over-year-numbers-may-april-2026",
+    "note": "2025-05-01~2026-04-30 고유 피싱 도메인 3,103,438개. 피드에서 관측한 등록 도메인 집계로, FQDN·URL·피해자 수나 전체 발생량과 다릅니다. 연도 간 피드 구성 일관성이 미확인되어 본편에서는 증가율을 사용하지 않습니다."
+  },
+  "interisle-methodology": {
+    "label": "Interisle · 집계 방법과 범위",
+    "url": "https://interisle.net/research-methodology",
+    "note": "피드 내·피드 간 도메인 중복 제거, 같은 등록 도메인의 여러 호스트·URL은 한 번 집계. 관측 피드가 전체 악용 사례를 포괄하지 않으며 공유호스팅 등록 도메인의 집계는 SUBTREE 차단 승인 근거와 다릅니다."
   }
 }

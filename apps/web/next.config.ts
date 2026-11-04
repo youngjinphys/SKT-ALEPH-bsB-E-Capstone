@@ -16,6 +16,7 @@ const config: NextConfig = {
   // JSON is intentionally loaded by the server filesystem registry.
   outputFileTracingIncludes: {
     '/capstone': ['./capstone/data/**/*.json'],
+    '/capstone/references': ['./capstone/data/**/*.json', './docs/presentation/final-20min-scenario.md'],
     '/': ['./capstone/data/**/*.json'],
   },
   poweredByHeader: false,

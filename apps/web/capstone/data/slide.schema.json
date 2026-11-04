@@ -389,6 +389,29 @@
                 "type": "string",
                 "minLength": 1
               }
+            },
+            "statistic": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "value",
+                "unit",
+                "period"
+              ],
+              "properties": {
+                "value": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unit": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "period": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         },

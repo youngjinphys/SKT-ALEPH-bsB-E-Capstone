@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import "./reference-links.css";
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from "react";
 import {ClapControl} from "@/components/ClapControl";
 import {SlideVisual} from "@/components/SlideVisual";
@@ -310,7 +311,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
   <header className="deck-topbar">
    <Link href="/" className="deck-logo" aria-label="ALEPH. E TEAM 홈으로">ALEPH<span>.</span> <small>E TEAM</small></Link>
    <nav className="deck-chapters" aria-label="발표 장">{chapterStarts.filter(([,at])=>deck[at].id!=="opening").map(([chapter,at])=><button key={chapter} type="button" aria-label={`${chapterLabel(chapter)} 장으로 이동`} aria-current={currentChapter===chapter?"step":undefined} onClick={()=>navigate(at)}>{chapterLabel(chapter)}</button>)}</nav>
-   <div className="deck-header-actions">{micActive&&<button type="button" className="mic-active" onClick={()=>setMicStop(v=>v+1)} aria-label="마이크 사용 중 · 박수 넘김 끄기" title="마이크 사용 중 · 끄기">● 끄기</button>}<button type="button" onClick={()=>setShowDetails(v=>!v)} aria-label={`참조·발표 노트 ${showDetails?'닫기':'보기'}`} aria-expanded={showDetails} aria-controls="slide-details">참조·노트</button><button type="button" onClick={()=>menuRef.current?.showModal()} aria-haspopup="dialog">목차</button></div>
+   <div className="deck-header-actions"><Link href={`/capstone/references#slide-${slide.id}`} className="deck-reference-link" aria-label="전체 참조 페이지 보기">참조</Link>{micActive&&<button type="button" className="mic-active" onClick={()=>setMicStop(v=>v+1)} aria-label="마이크 사용 중 · 박수 넘김 끄기" title="마이크 사용 중 · 끄기">● 끄기</button>}<button type="button" onClick={()=>setShowDetails(v=>!v)} aria-label={`참조·발표 노트 ${showDetails?'닫기':'보기'}`} aria-expanded={showDetails} aria-controls="slide-details">노트</button><button type="button" onClick={()=>menuRef.current?.showModal()} aria-haspopup="dialog">목차</button></div>
   </header>
   <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{hydrated?`${index+1} / ${deck.length} 슬라이드 · ${slide.title.replaceAll("\n"," ")}`:""}</p>
   {announcement&&<p role="status" className="deck-feedback">{announcement}</p>}
@@ -335,6 +336,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
   </main>
   {showDetails && <aside id="slide-details" className="slide-details" aria-label="슬라이드 근거와 발표 노트">
    <div className="details-header"><h2>참조 · 발표 노트</h2><button ref={detailsCloseRef} type="button" onClick={()=>setShowDetails(false)} aria-label="근거 패널 닫기">×</button></div>
+   <Link className="details-reference-page" href={`/capstone/references#slide-${slide.id}`}>전체 참조 페이지 · 화면별 근거와 질문·답변 ↗</Link>
    <h3>이 페이지 참고 자료 · {sourceItems.length}개</h3><ul className="source-links">{sourceItems.map(item=><li key={item.key}><a href={item.url} target="_blank" rel="noreferrer noopener">{item.label} ↗</a>{item.note&&<small>{item.note}</small>}</li>)}</ul>
    <details><summary>전체 발표 참고 자료 · {deckSourceItems.length}개</summary><ul className="source-links">{deckSourceItems.map(item=><li key={item.key}><a href={item.url} target="_blank" rel="noreferrer noopener">{item.label} ↗</a>{item.note&&<small>{item.note}</small>}</li>)}</ul></details>
    <p className="details-cue">{slide.presentation?.cue||"발표용 추가 설명"}</p>

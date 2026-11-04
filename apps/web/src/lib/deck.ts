@@ -9,8 +9,8 @@ export type Reading = {
   sourceLabel?: string;
 };
 export type IndependentSeries = {title:string;sourceKey:string;additionalSourceKeys?:string[]} & (
- | {context:string;unit?:never;max?:never;values?:never;periods?:never}
- | {context?:never;unit:string;max:number;values:number[];periods:string[]}
+ | {context:string;statistic?:{value:number;unit:string;period:string};unit?:never;max?:never;values?:never;periods?:never}
+ | {context?:never;statistic?:never;unit:string;max:number;values:number[];periods:string[]}
 );
 export type Visual =
   | { type: "independent-trends"; title:string; left:IndependentSeries;right:IndependentSeries;caveat:string }

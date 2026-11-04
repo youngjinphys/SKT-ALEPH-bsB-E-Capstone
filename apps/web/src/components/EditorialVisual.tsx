@@ -25,15 +25,18 @@ export function IndependentTrends({visual,sources,paused=false}:{visual:Trend;so
  const format=(value:number,unit:string)=>unit==="%"?`${value}%`:`${value.toLocaleString("ko-KR")} ${unit}`;
  return <figure className="diagram-panel chart-card independent-trends" aria-label={visual.title}>
   <figcaption><p className="diagram-caption">TWO OBSERVATIONS · SEPARATE MEASURES</p><h2>{visual.title}</h2></figcaption>
-  <div className="independent-panels">{[visual.left,visual.right].map((series,index)=><section className="independent-series" data-series={index===0?"ai":"smishing"} aria-label={series.context!==undefined?series.title:`${series.title}, 단위 ${series.unit}`} key={series.sourceKey}>
+  <div className="independent-panels">{[visual.left,visual.right].map(series=><section className="independent-series" data-series={series.context===undefined||series.statistic?"quantitative":"context"} aria-label={series.context!==undefined?series.title:`${series.title}, 단위 ${series.unit}`} key={series.sourceKey}>
    <div className="series-heading"><h3>{series.title}</h3>{series.context===undefined&&<span>단위 {series.unit}</span>}</div>
-   {series.context!==undefined?<p className="series-context">{series.context}</p>:<div className="series-column-chart" data-motion={!ready?'pending':paused||reduced?'done':motion} data-count={series.values.length} style={{'--series-count':series.values.length} as CSSProperties}>
+   {series.context!==undefined?<>
+    {series.statistic&&<div className="series-statistic"><strong>{series.statistic.value.toLocaleString("ko-KR")}<span>{series.statistic.unit}</span></strong><span className="series-statistic-period">{series.statistic.period}</span></div>}
+    <p className="series-context">{series.context}</p>
+   </>:<div className="series-column-chart" data-motion={!ready?'pending':paused||reduced?'done':motion} data-count={series.values.length} style={{'--series-count':series.values.length} as CSSProperties}>
     <div className="series-y-axis" aria-hidden="true">{[series.max,series.max/2,0].map(value=><span key={value}>{value.toLocaleString('ko-KR')}</span>)}</div>
-    <ol ref={ref} className="series-observations" aria-hidden="true">{series.values.map((value,i)=><li key={series.periods[i]}>
+    <ol ref={ref} className="series-observations" aria-label={`${series.title} 기간별 관측값`}>{series.values.map((value,i)=><li key={series.periods[i]}>
      <div className="series-track" aria-hidden="true"><span style={{height:`${Math.max(0, value/series.max*100)}%`,'--reveal-delay':`${i*50}ms`} as CSSProperties}/></div>
      <span className="series-period">{series.periods[i]}</span>
+     <span className="series-value">{format(value,series.unit)}</span>
     </li>)}</ol>
-    <dl className="series-exact-values">{series.values.map((value,i)=><div key={series.periods[i]}><dt>{series.periods[i]}</dt><dd className="series-value">{format(value,series.unit)}</dd></div>)}</dl>
    </div>}
 
    <div className="series-footer">{series.context===undefined&&<span>막대 범위 0–{format(series.max,series.unit)}</span>}{[series.sourceKey,...(series.additionalSourceKeys||[])].map(key=><a key={key} href={sources[key].url} rel="noopener noreferrer" target="_blank">{sources[key].label} ↗</a>)}</div>

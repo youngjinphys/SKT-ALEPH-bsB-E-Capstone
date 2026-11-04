@@ -54,7 +54,12 @@ export function validateContent(){
       assert(Array.isArray(series.additionalSourceKeys)&&new Set(series.additionalSourceKeys).size===series.additionalSourceKeys.length&&series.additionalSourceKeys.every(key=>typeof key==="string"&&Object.hasOwn(references,key)),"Unknown or duplicate additional independent-series source: "+entry.id+"."+name);
      if(typeof series.context==="string"){
       assert(series.context.length>=10&&!Object.hasOwn(series,"values")&&!Object.hasOwn(series,"max")&&!Object.hasOwn(series,"unit")&&!Object.hasOwn(series,"periods"),"Qualitative context must remain separate from numerical series: "+entry.id);
+      if(series.statistic!==undefined){
+       const stat=series.statistic;
+       assert(stat&&typeof stat==="object"&&!Array.isArray(stat)&&Object.keys(stat).sort().join(",")==="period,unit,value"&&Number.isSafeInteger(stat.value)&&stat.value>=0&&typeof stat.unit==="string"&&stat.unit.length>0&&typeof stat.period==="string"&&stat.period.length>0,"Invalid dated statistic: "+entry.id);
+      }
      }else{
+      assert(!Object.hasOwn(series,"statistic"),"Trend series cannot also declare a standalone statistic: "+entry.id);
       assert(Number.isFinite(series.max)&&series.max>0&&typeof series.unit==="string", "Missing independent scale: "+entry.id);
       assert(series.periods?.length>=2&&series.periods.length===series.values?.length&&series.values.every(v=>Number.isFinite(v)&&v>=0&&v<=series.max),"Bad independent-series values: "+entry.id);
      }

@@ -23,6 +23,7 @@ npm run build
 
 - `/`: 프로젝트 홈
 - `/capstone`: 14장 발표·참조·발표자 노트
+- `/capstone/references`: 활성 화면의 전체 출처와 최종 원고의 Q&A를 연결한 별도 참조 페이지. 발표 순서·시간에는 추가하지 않습니다.
 - `/fishing`: 개인정보를 수집하지 않는 모의 사이트
 - `/app`: 서버에서 접근 권한을 검증하는 연구실
 - `/dashboard`: 같은 배포의 Python 클라우드 관제. 구성·권한은 [통합 운영 문서](../../docs/unified-vercel-dashboard.md) 참조

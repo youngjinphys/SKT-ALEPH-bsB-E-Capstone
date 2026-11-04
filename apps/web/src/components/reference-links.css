@@ -1,0 +1,5 @@
+.deck-root .deck-header-actions>.deck-reference-link{border:1px solid var(--line);background:#1732448c;border-radius:7px;font-size:12px;padding:10px 12px;white-space:nowrap;text-decoration:none;color:inherit;display:flex;align-items:center;justify-content:center;min-height:40px}
+.deck-root .deck-header-actions>.deck-reference-link:hover{border-color:var(--cyan);color:var(--cyan)}
+.deck-root .deck-reference-link:focus-visible,.deck-root .details-reference-page:focus-visible{outline:3px solid #ffcf91;outline-offset:3px}
+.deck-root .details-reference-page{display:block;margin:4px 0 22px;padding:12px 14px;border:1px solid #578c8e;border-radius:7px;color:#a7efde;font-size:14px;line-height:1.5;text-underline-offset:3px}
+@media(max-width:780px){.deck-root .deck-header-actions>.deck-reference-link{padding:8px 9px}.deck-root .deck-header-actions{gap:4px}.deck-root .deck-header-actions>button{padding-inline:8px}}
