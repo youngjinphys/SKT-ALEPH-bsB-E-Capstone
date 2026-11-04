@@ -44,3 +44,7 @@ The second exact run (`58e27ca`) passed all four active callouts at five viewpor
 ## Mobile policy-state readability
 
 Exact CI on `81162b3` passed the complete flow/replay suite and all callout/connector geometries. The exhaustive controls audit then found that a three-column mobile policy timeline forced each button to 88px, while its DNS response and name were prohibited from wrapping. Below 540px, use compact full-width rows and downward arrows in the gaps. Keep larger layouts unchanged and allow emergency token wrapping without shrinking readable text. The existing all-control test retains its strict text-fit, focus, activation and arrow-navigation checks.
+
+## Integrated evidence-mode navigation
+
+The new server/fixture evidence selector initially used a radio group with arrow-key interception. That contradicted the existing presentation requirement: after choosing an in-slide display, Left/Right must still navigate slides. Use native pressed buttons in a labeled group, with normal Tab order and no custom key handler. Keep genuine editable inputs and keyboard-operated widgets protected by the deck guard. The exhaustive audit now explicitly clicks each evidence mode and requires slide navigation in both directions, alongside the existing scenario checks.

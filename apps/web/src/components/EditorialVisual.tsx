@@ -58,15 +58,9 @@ export function DnsEvidenceDashboard({visual,paused=false}:{visual:Chain;paused?
  const [mode,setMode]=useState<"server"|"fixture">("server");
  const [caseName,setCaseName]=useState<"cname"|"subtree">("cname");
  return <TermExplanation term={mode==="fixture"&&caseName==="cname"?"cname":undefined} paused={paused}><section className="diagram-panel dns-evidence-dashboard" aria-label="실제 DNS 관측과 격리 실험">
-  <div className="dns-observation-modes" role="radiogroup" aria-label="검증 자료 선택" onKeyDown={event=>{
-   if(event.key!=="ArrowLeft"&&event.key!=="ArrowRight")return;
-   event.preventDefault();
-   const next=mode==="server"?"fixture":"server";
-   setMode(next);
-   event.currentTarget.querySelector<HTMLButtonElement>(`[data-evidence-mode="${next}"]`)?.focus();
-  }}>
-   <button type="button" role="radio" data-evidence-mode="server" aria-checked={mode==="server"} tabIndex={mode==="server"?0:-1} onClick={()=>setMode("server")}>실제 server 질의</button>
-   <button type="button" role="radio" data-evidence-mode="fixture" aria-checked={mode==="fixture"} tabIndex={mode==="fixture"?0:-1} onClick={()=>setMode("fixture")}>격리 fixture</button>
+  <div className="dns-observation-modes" role="group" aria-label="검증 자료 선택">
+   <button type="button" data-scenario-step="true" data-evidence-mode="server" aria-pressed={mode==="server"} onClick={()=>setMode("server")}>실제 server 질의</button>
+   <button type="button" data-scenario-step="true" data-evidence-mode="fixture" aria-pressed={mode==="fixture"} onClick={()=>setMode("fixture")}>격리 fixture</button>
   </div>
   {mode==="server"?<ServerDnsObservation/>:<>
    <div className="dns-evidence-top"><strong>240<span>/240</span></strong><div><b>11월 4일 · 합성 DNS 기대 응답 일치</b><small>3회 × 4상태 × 5이름 × A/AAAA × UDP/TCP</small><small>루프백 fixture · 실제 탐지율 아님 · 두 반례 포함</small></div></div>

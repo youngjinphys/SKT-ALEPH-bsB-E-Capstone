@@ -82,7 +82,7 @@ def check_flow(browser, origin):
 
         # Internal causal stages loop, but paired demonstrations remain chosen.
         open_slide('bypass', '.dns-evidence-dashboard')
-        page.get_by_role('radio', name='격리 fixture', exact=True).click()
+        page.get_by_role('button', name='격리 fixture', exact=True).click()
         page.locator('.chain-step').first.scroll_into_view_if_needed()
         chain = page.locator('.cname-walkthrough')
         loop(chain, 1)
