@@ -83,7 +83,7 @@ def check_flow(browser, origin):
         # Internal causal stages loop, but paired demonstrations remain chosen.
         open_slide('bypass', '.dns-evidence-dashboard')
         expect(page.locator('.server-dns-observation')).to_be_visible()
-        expect(page.get_by_role('button', name='SUBTREE 과차단', exact=True)).to_have_attribute('aria-pressed', 'true')
+        expect(page.locator('.server-dns-observation')).to_have_attribute('data-evidence-state', 'captured')
 
         open_slide('topology-public', '.dns-route-topology')
         routes = page.locator('.dns-route-topology')

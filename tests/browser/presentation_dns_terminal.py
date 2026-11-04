@@ -41,8 +41,8 @@ def _wheel_reach(page,target,direction,context):
 
 
 def _check_natural_reachability(page,context):
-    first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
-    last=page.locator('.dns-terminal-routes button').last
+    first=page.get_by_role('group',name='질의 이름 선택',exact=True).get_by_role('button').first
+    last=page.locator('.dns-terminal-status a')
     _wheel_reach(page,last,1,context)
     page.screenshot(path=str(OUT/f'terminal-scroll-end-{context}.png'),full_page=True)
     _wheel_reach(page,first,-1,context)
@@ -79,66 +79,81 @@ def _assert_terminal_visibility(page):
 
 def check_dns_terminal(browser, origin):
     OUT.mkdir(parents=True, exist_ok=True)
-    total = 0
-    for width, height in ((1440,900),(1366,768),(390,844),(390,720),(320,667)):
+    google=next(q for q in CAPTURE['queries'] if q['domain']=='google.com' and q['route']=='private' and q['transport']=='TCP')
+    expected='\n'.join([google['header'],google['flags'],';; QUESTION SECTION:',google['question'],';; ANSWER SECTION:',*google['answers'],f";; Query time: {google['queryMs']} msec"])
+    total=0
+    for width,height in ((1440,900),(1366,768),(390,844),(390,720),(320,667)):
         context=browser.new_context(viewport={'width':width,'height':height},reduced_motion='reduce')
         page=context.new_page()
         errors=[]
-        page.on('pageerror', lambda error: errors.append(str(error)))
+        page.on('pageerror',lambda error:errors.append(str(error)))
         def open_terminal():
             page.goto(origin+'/capstone#8')
             expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
             visual=page.locator('.slide-active').get_by_role('button',name='시각 자료',exact=True)
             if visual.count() and visual.is_visible():visual.click()
-            expect(page.locator('.server-dns-observation')).to_be_visible()
+            expect(page.locator('.server-dns-observation')).to_have_attribute('data-evidence-state','captured')
             page.bring_to_front()
         try:
             open_terminal()
             assert page.evaluate('document.characterSet')=='UTF-8'
-            # A real self-hosted Korean font must load, not silently use local fallbacks.
             assert page.evaluate('''async()=>{
                 const loaded=(await Promise.all([400,700].map(weight=>document.fonts.load(`${weight} 16px "Aleph DNS UI"`,'실제 질의 기록')))).flat();
                 await document.fonts.ready;
                 return loaded.length===2&&loaded.every(font=>font.status==='loaded');
             }''')
+            root=page.locator('.server-dns-observation')
+            choices=root.get_by_role('group',name='질의 이름 선택',exact=True)
+            expect(choices.get_by_role('button')).to_have_count(2)
+            expect(root.get_by_role('group')).to_have_count(1)
             _assert_terminal_visibility(page)
             _check_natural_reachability(page,f'{width}x{height}')
-            for query in CAPTURE['queries']:
-                root=page.locator('.server-dns-observation')
-                root.get_by_role('group',name='저장된 질의 이름 선택',exact=True).get_by_role('button',name=query['domain'],exact=True).click()
-                root.get_by_role('group',name='저장된 전송 방식 선택',exact=True).get_by_role('button',name=query['transport'],exact=True).click()
-                routes=root.get_by_role('group',name='저장된 DNS 경로 선택',exact=True)
-                route=routes.get_by_role('button',name=re.compile('^사설 DNS' if query['route']=='private' else '^기본 DNS'))
-                route.click()
-                expect(root).to_have_attribute('data-query-id',query['id'])
-                expect(root.locator('.dns-terminal-command code')).to_have_text(query['command'])
-                output=root.locator('.dns-terminal-output').inner_text()
-                expected='\n'.join([query['header'],query['flags'],';; QUESTION SECTION:',query['question'],';; ANSWER SECTION:',*query['answers'],f";; Query time: {query['queryMs']} msec",query['server']])
-                assert output==expected,(width,height,query['id'],'transcript changed')
-                assert output.count('[REDACTED]')==query['answerCount']
-                assert f"Query time: {query['queryMs']} msec" in output
-                assert query['server'] in output
-                assert '\ufffd' not in root.inner_text()
-                assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',root.inner_text())
-                expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',query['timestamp'])
-                for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
-                    _assert_readable(root.locator(selector),(width,height,query['id'],selector))
+            for domain in ('google.com','block.test'):
+                choices.get_by_role('button',name=domain,exact=True).click()
+                text=root.inner_text()
+                for removed in ('example.com','기본 DNS','사설 DNS','TCP','UDP','SERVER:','+time','+tries','+tcp'):
+                    assert removed not in text,(width,height,domain,removed)
+                assert '\ufffd' not in text
+                assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',text)
+                if domain=='google.com':
+                    expect(root).to_have_attribute('data-evidence-state','captured')
+                    expect(root).to_have_attribute('data-query-id',google['id'])
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig google.com A')
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('명령·응답 일부 생략')
+                    assert root.locator('.dns-terminal-output').inner_text()==expected
+                    expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',google['timestamp'])
+                    expect(root.locator('.dns-terminal-pending')).to_have_count(0)
+                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
+                        _assert_readable(root.locator(selector),(width,height,domain,selector))
+                else:
+                    expect(root).to_have_attribute('data-evidence-state','unverified')
+                    assert root.get_attribute('data-query-id') is None
+                    expect(root.locator('.dns-terminal-pending')).to_contain_text('질의 미실행 · 차단 미확인')
+                    expect(root.locator('.dns-terminal-command,.dns-terminal-output,.dns-terminal-status,time')).to_have_count(0)
+                    for false_evidence in ('NOERROR','NXDOMAIN','exit ','Query time:','[REDACTED]','02:42'):
+                        assert false_evidence not in text,(domain,false_evidence)
+                    _wheel_reach(page,root.locator('.dns-terminal-pending p'),1,f'{width}x{height}-pending')
+                    _assert_readable(root.locator('.dns-terminal-pending'),(width,height,domain))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+                page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
                 total+=1
-            # Each new ordinary choice preserves the user's global arrow behavior.
-            for group_name in ('저장된 질의 이름 선택','저장된 전송 방식 선택','저장된 DNS 경로 선택'):
-                for ordinal in (0,1):
-                    for key,destination in (('ArrowLeft',7),('ArrowRight',9)):
-                        open_terminal()
-                        button=page.get_by_role('group',name=group_name,exact=True).get_by_role('button').nth(ordinal)
-                        button.click();expect(button).to_be_focused()
-                        assert button.evaluate('el=>el.tabIndex')==0
-                        page.keyboard.press(key)
-                        expect(page).to_have_url(origin+f'/capstone#{destination}')
-                        expect(page.locator('#slide-area')).to_be_focused()
+            # A return to the captured case must not retain the pending state.
+            choices.get_by_role('button',name='google.com',exact=True).click()
+            expect(root).to_have_attribute('data-evidence-state','captured')
+            assert root.locator('.dns-terminal-output').inner_text()==expected
+            _check_natural_reachability(page,f'{width}x{height}-roundtrip')
+            # Both native domain buttons retain global slide-arrow behavior.
+            for domain in ('google.com','block.test'):
+                for key,destination in (('ArrowLeft',7),('ArrowRight',9)):
+                    open_terminal()
+                    button=page.get_by_role('group',name='질의 이름 선택',exact=True).get_by_role('button',name=domain,exact=True)
+                    button.click();expect(button).to_be_focused()
+                    assert button.evaluate('el=>el.tabIndex')==0
+                    page.keyboard.press(key)
+                    expect(page).to_have_url(origin+f'/capstone#{destination}')
+                    expect(page.locator('#slide-area')).to_be_focused()
             open_terminal()
-            page.locator('.dns-terminal').scroll_into_view_if_needed()
-            page.screenshot(path=str(OUT/f'terminal-{width}x{height}.png'),full_page=True)
             if (width,height) in ((1440,900),(390,844)):
                 page.emulate_media(reduced_motion='no-preference')
                 page.goto(origin+'/capstone#7')
@@ -154,12 +169,11 @@ def check_dns_terminal(browser, origin):
             if width==1366:
                 open_terminal()
                 page.evaluate('async()=>{await document.fonts.ready}')
-                # A text-only size stress test, not a claim of browser pinch zoom.
                 page.locator('.server-dns-observation').evaluate('''root=>{
                     const entries=[root,...root.querySelectorAll('*')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);
                     entries.forEach(([el,size])=>el.style.fontSize=`${size*2}px`);
                 }''')
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
-            assert not errors, errors
+            assert not errors,errors
         finally:context.close()
-    print(f'DNS terminal: {total} stored records, 60 choice-to-arrow cases, UTF-8, web fonts, high-contrast glass transcript, wheel/Tab reachability and text-size stress verified')
+    print(f'DNS terminal: {total} captured/unverified states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')

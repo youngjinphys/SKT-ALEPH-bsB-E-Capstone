@@ -1,6 +1,5 @@
 @font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-400.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-700.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
-@media(max-height:800px){.server-dns-observation{gap:4px}.server-dns-commands>div{padding:4px 8px}}
 
 /* Glass belongs to the window chrome. Transcript pixels stay dark, crisp and
    high contrast; backdrop blur never filters the foreground text. The build
@@ -12,7 +11,7 @@
 .server-dns-heading>time{font-size:12px;line-height:1.45;color:#c3d7e8;text-align:right;font-variant-numeric:tabular-nums}
 .server-dns-selectors{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .server-dns-selectors>[role=group]{display:flex;gap:5px}
-.server-dns-selectors button,.dns-terminal-routes button{font:inherit;font-size:13px;line-height:1.4;font-weight:400;letter-spacing:0;min-width:0;min-height:36px;cursor:pointer;color:#d7e7f5;background:#132738;border:1px solid #6a8da5;border-radius:7px;padding:6px 10px}
+.server-dns-selectors button{font:inherit;font-size:13px;line-height:1.4;font-weight:400;letter-spacing:0;min-width:0;min-height:36px;cursor:pointer;color:#d7e7f5;background:#132738;border:1px solid #6a8da5;border-radius:7px;padding:6px 10px}
 .server-dns-selectors button[aria-pressed=true]{color:#f0fffa;background:#164d41;border-color:#9af1cf;box-shadow:inset 0 0 0 1px #9af1cf}
 .deck-root .server-dns-observation button:focus-visible{outline:3px solid #fff;outline-offset:3px}
 .deck-root .dns-terminal{min-width:0;margin:0;background:linear-gradient(135deg,#d7f5ff24,#9acaff08 55%),#0d1b2bba;border:1px solid #d2edff80;border-radius:14px;overflow:hidden;box-shadow:inset 0 1px 0 #fff4,inset 0 0 0 1px #b9deff14,0 18px 40px #0006,0 3px 10px #0003;backdrop-filter:blur(20px) saturate(125%);color:#edf5ff}
@@ -20,11 +19,7 @@
 .dns-terminal-titlebar>span:nth-child(2){font-family:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-weight:400}
 .dns-terminal-titlebar>span:last-child{margin-left:auto;font-size:10px;letter-spacing:.06em;color:#d0e1ee}
 .dns-terminal-lights{display:flex;gap:7px}.dns-terminal-lights i{width:10px;height:10px;border-radius:50%;background:#ff6b65;box-shadow:inset 0 0 0 1px #0002}.dns-terminal-lights i:nth-child(2){background:#f7c354}.dns-terminal-lights i:nth-child(3){background:#62cf85}
-.dns-terminal-routes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid #9fbdd54d;background:#0a1422b3}
-.dns-terminal-routes button{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;border-radius:0;background:transparent;padding:10px 12px;font-size:12px;color:#ccdeee}
-.dns-terminal-routes button+button{border-left:1px solid #b5d1e338}.dns-terminal-routes b{font-weight:700;white-space:nowrap;color:inherit}
-.dns-terminal-routes button[aria-pressed=true]{color:#edfff9;background:#164438d9;box-shadow:inset 0 -3px #9af1cf}
-.dns-terminal-routes button[aria-pressed=true] b{color:#b5ffdd}
+
 .dns-terminal-body{padding:15px 16px;min-width:0;background:#080f19e6}
 .deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-family:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:14px;font-weight:400;line-height:1.6;letter-spacing:0;font-variant-ligatures:none;text-shadow:none;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;tab-size:2;margin:0}
 .dns-terminal-command{color:#f6faff}.dns-terminal-command>span{color:#9af1c7;font-weight:700}
@@ -33,14 +28,14 @@
 .dns-terminal-line--section{color:#9be8f1}.dns-terminal-line--answer{color:#f2f7ff}
 .dns-terminal-status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid #7895af66;font-size:12px;line-height:1.5;font-variant-numeric:tabular-nums}.dns-terminal-status>span{color:#b0f3cf}.dns-terminal-status>time{color:#c2d5e7}
 @media(min-width:781px) and (max-height:800px){.deck-root .server-dns-observation{gap:8px}.server-dns-heading h3{font-size:19px}.dns-terminal-body{padding:12px 14px}.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-size:13px;line-height:1.55}.deck-root .dns-terminal-output{min-height:calc(13px * 1.55 * 13);margin-top:11px}}
-@media(max-width:780px){.deck-root .server-dns-observation{gap:8px}.server-dns-heading h3{font-size:18px}.server-dns-heading .server-dns-kicker{font-size:10px}.server-dns-heading>time{font-size:11px}.server-dns-selectors{gap:6px}.server-dns-selectors button{padding:6px 8px;font-size:12px;min-height:38px}.dns-terminal-titlebar{padding:10px 11px;gap:9px}.dns-terminal-titlebar>span:last-child{font-size:9px}.dns-terminal-routes button{display:block;text-align:left;font-size:11px;padding:8px 10px}.dns-terminal-routes b{display:block;font-size:11px;margin-top:3px}.dns-terminal-body{padding:12px 11px}.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-size:13px;line-height:1.55}.deck-root .dns-terminal-output{min-height:calc(13px * 1.55 * 13);margin-top:11px}.dns-terminal-status{font-size:11px}}
+@media(max-width:780px){.deck-root .server-dns-observation{gap:8px}.server-dns-heading h3{font-size:18px}.server-dns-heading .server-dns-kicker{font-size:10px}.server-dns-heading>time{font-size:11px}.server-dns-selectors{gap:6px}.server-dns-selectors button{padding:6px 8px;font-size:12px;min-height:38px}.dns-terminal-titlebar{padding:10px 11px;gap:9px}.dns-terminal-titlebar>span:last-child{font-size:9px}.dns-terminal-body{padding:12px 11px}.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-size:13px;line-height:1.55}.deck-root .dns-terminal-output{min-height:calc(13px * 1.55 * 13);margin-top:11px}.dns-terminal-status{font-size:11px}}
 @supports not (backdrop-filter:blur(1px)){.deck-root .dns-terminal{background:#142536}}
 @media(prefers-reduced-transparency:reduce){.deck-root .dns-terminal{background:#142536;backdrop-filter:none}.dns-terminal-body{background:#080f19}}
-@media(forced-colors:active){.deck-root .dns-terminal,.dns-terminal-titlebar,.dns-terminal-routes button,.server-dns-selectors button,.dns-terminal-body{background:Canvas;color:CanvasText;border-color:CanvasText;backdrop-filter:none}.dns-terminal-command,.deck-root .dns-terminal-output,.dns-terminal-line--section,.dns-terminal-line--answer,.dns-terminal-status>span,.dns-terminal-status>time{color:CanvasText}.dns-terminal-routes button[aria-pressed=true],.server-dns-selectors button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dns-terminal-lights{visibility:hidden}}
+@media(forced-colors:active){.deck-root .dns-terminal,.dns-terminal-titlebar,.server-dns-selectors button,.dns-terminal-body{background:Canvas;color:CanvasText;border-color:CanvasText;backdrop-filter:none}.dns-terminal-command,.deck-root .dns-terminal-output,.dns-terminal-line--section,.dns-terminal-line--answer,.dns-terminal-status>span,.dns-terminal-status>time{color:CanvasText}.server-dns-selectors button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dns-terminal-lights{visibility:hidden}}
 
 /* A stored transcript can exceed a pane's nominal fit budget. Put the active
    mobile track in normal flow so wheel/touch reaches the real outer viewport,
-   exactly as full view already does. Keep other slides and fixture mode intact. */
+   exactly as full view already does. Keep other slides intact. */
 @media(max-width:780px){
  .deck-root .deck-stage:has(>.slide-active .slide-bypass[data-mobile-layout=panes] .server-dns-observation){height:auto;min-height:100%;overflow:visible}
  .deck-root .deck-stage>.slide-active:has(.slide-bypass[data-mobile-layout=panes] .server-dns-observation){position:relative;height:auto;min-height:100%;overflow:visible}
@@ -50,3 +45,14 @@
  .deck-root .deck-slide[data-mobile-layout=desktop] .slide-visual-container:has(.server-dns-observation){overflow-y:auto;justify-content:flex-start;justify-content:safe center}
  .deck-root .deck-slide[data-mobile-layout=desktop] .slide-visual-container:has(.server-dns-observation)>.term-scene{flex:none}
 }
+
+/* One captured response and one unverified request; neither is executable. */
+.server-dns-unverified{color:#f5d8a5;font-size:12px}
+.deck-root .dns-terminal-excerpt{margin:0 0 9px;color:#c6d9ea;font-size:12px;line-height:1.5}
+.dns-terminal-status a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px}
+.dns-terminal-pending{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:14px;min-height:260px;padding:20px 10px;color:#f5d8a5}
+.dns-terminal-pending>span{font:12px ui-monospace,Consolas,monospace;letter-spacing:.08em;border:1px solid #b39765;border-radius:5px;padding:5px 8px}
+.dns-terminal-pending h4{margin:0;font:700 24px ui-monospace,Consolas,monospace;color:#f2f7ff;overflow-wrap:anywhere}
+.deck-root .dns-terminal-pending p{margin:0;font-size:14px;line-height:1.6;color:#f5d8a5}
+.server-dns-observation[data-evidence-state=unverified] .server-dns-selectors button[aria-pressed=true]{background:#493b21;border-color:#efd39b;box-shadow:inset 0 0 0 1px #efd39b;color:#fff0cf}
+@media(forced-colors:active){.dns-terminal-pending,.dns-terminal-pending h4,.deck-root .dns-terminal-pending p,.deck-root .dns-terminal-excerpt,.server-dns-unverified,.dns-terminal-status a{color:CanvasText}.server-dns-observation[data-evidence-state=unverified] .server-dns-selectors button[aria-pressed=true]{background:Canvas;color:CanvasText}}

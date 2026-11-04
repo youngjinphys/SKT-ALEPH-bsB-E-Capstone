@@ -1,30 +1,30 @@
 {
   "id": "bypass",
   "chapter": "03 · 검증",
-  "title": "실제 DNS 질의와\n응답 기록을 확인했습니다",
-  "subtitle": "2026.11.04 · 실제 질의 8건 · 기본 및 사설 DNS",
+  "title": "확인한 DNS 응답과\n차단 검증 상태를 구분합니다",
+  "subtitle": "google.com 응답 기록 · block.test 검증 대기",
   "seconds": 150,
   "kind": "limits",
   "status": "evidence-snapshot",
   "points": [
     {
-      "title": "실제 DNS 질의 8건",
-      "body": "google.com·example.com A × 기본·사설 DNS × UDP·TCP"
+      "title": "google.com 정상 반환",
+      "body": "저장된 실제 질의: NOERROR · A 주소 6개"
     },
     {
-      "title": "사설 DNS의 응답",
-      "body": "google.com A는 UDP·TCP 모두 NOERROR·주소 6개"
+      "title": "block.test 미검증",
+      "body": "실제 질의 미실행 · 차단 성공으로 표시하지 않음"
     },
     {
-      "title": "경로 및 전송 비교",
-      "body": "로컬 stub 1개 vs 사설 DNS 6개 · UDP와 TCP 동일 응답"
+      "title": "명령과 응답은 발췌",
+      "body": "옵션·서버 정보는 화면에서 생략 · 원문 기록 보존"
     },
     {
       "title": "판정 경계",
-      "body": "8/8은 정상 응답 관측 · 차단 성공률이나 현재 정책 확인이 아님"
+      "body": "일반 NXDOMAIN만으로 필터 차단을 입증할 수 없음"
     }
   ],
-  "notes": "[화면] 실제 DNS 질의의 기본·사설 DNS 경로와 응답을 터미널 기록에서 확인합니다.\n\n[발표] 11월 4일 11시 42분 KST, 실험 호스트에서 google.com과 example.com A를 기본 DNS와 사설 DNS에 UDP와 TCP로 각각 질의했습니다. 여덟 건 모두 NOERROR와 주소를 반환했고, 사설 DNS의 google.com은 UDP와 TCP 모두 주소 여섯 개였습니다. 이때 해당 질의의 차단 응답은 관측되지 않았습니다. 여덟 건은 정상 응답 관측이지 보호 성공률이 아닙니다.\n\n기본 dig는 로컬 스텁에 질의합니다. 실제 후단 서버와 캐시 사용은 확인하지 않았습니다. 사설 경로는 @${PRIVATE_DNS}를 명시해 직접 질의했습니다. 명령, 응답 상태와 시간은 민감 정보를 제외한 공개 발췌본에서 확인할 수 있습니다. 이전 2026-11-04 02:27:45 UTC 서명 보고 sequence 235는 EXPIRED였지만 현재 상태는 재확인하지 않았고 이번 응답의 원인도 단정할 수 없습니다. 빈 출력만으로 차단을 판단하지 않습니다.\n\nCNAME 별칭이나 SUBTREE와 같은 구조적 한계와 정책 상태는 별도로 검토합니다. 같은 호스트의 정상 /home과 악성 /phish도 DNS 이름만으로 구분할 수 없어 URL 수준의 보호와 사이트 복구가 필요합니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
+  "notes": "[화면] google.com은 확인된 저장 응답을, block.test는 미실행·미검증 상태를 표시합니다.\n\n[발표] google.com 화면은 2026-11-04 02:42:22.054700 UTC에 실험 호스트에서 관측한 실제 기록입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 표시 명령은 읽기 쉽게 축약했고, 응답의 서버 정보도 생략했습니다. 원래 명령과 조건을 포함한 기록은 수정하지 않았습니다.\n\nblock.test는 실제 질의를 실행하지 못했으므로 응답이나 차단 성공을 표시하지 않습니다. 기존 example.com 기록의 이름을 바꾸거나 합성 차단 결과로 대체하지 않았습니다. .test 이름의 일반 NXDOMAIN만으로 보호 정책에 의한 차단을 증명할 수 없으며, 현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다.\n\n확인된 주소 반환은 해당 시점의 관측이며 현재 정책이나 차단 성공률을 뜻하지 않습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
   "sources": [
     "dns-query-20261104",
     "review-current",
@@ -33,92 +33,92 @@
   ],
   "mood": "concerned",
   "presentation": {
-    "title": "실제 DNS 질의와\n응답 기록을 확인했습니다",
-    "subtitle": "2026.11.04 · 실제 질의 8건 · 기본 및 사설 DNS",
-    "cue": "실제 DNS 질의 기록과 기본·사설 DNS 응답 결과를 설명합니다.",
-    "reviewNote": "2026-11-04 실험 호스트에서 실제 질의 8건을 수행한 기록입니다. 실측 8/8은 주소 응답 관측이고 보호 성공률이 아닙니다.",
+    "title": "확인한 DNS 응답과\n차단 검증 상태를 구분합니다",
+    "subtitle": "google.com 응답 기록 · block.test 검증 대기",
+    "cue": "확인된 google.com 응답과 미검증 block.test를 구분합니다.",
+    "reviewNote": "google.com의 저장 응답을 축약 표시하며, block.test의 차단 성공은 확인하지 못했습니다.",
     "points": [
       {
-        "title": "실제 DNS 질의 8건",
-        "body": "google.com·example.com A × 기본·사설 DNS × UDP·TCP"
+        "title": "google.com 정상 반환",
+        "body": "저장된 실제 질의: NOERROR · A 주소 6개"
       },
       {
-        "title": "사설 DNS의 응답",
-        "body": "google.com A는 UDP·TCP 모두 NOERROR·주소 6개"
+        "title": "block.test 미검증",
+        "body": "실제 질의 미실행 · 차단 성공으로 표시하지 않음"
       },
       {
-        "title": "경로 및 전송 비교",
-        "body": "로컬 stub 1개 vs 사설 DNS 6개 · UDP와 TCP 동일 응답"
+        "title": "명령과 응답은 발췌",
+        "body": "옵션·서버 정보는 화면에서 생략 · 원문 기록 보존"
       },
       {
         "title": "판정 경계",
-        "body": "8/8은 정상 응답 관측 · 차단 성공률이나 현재 정책 확인이 아님"
+        "body": "일반 NXDOMAIN만으로 필터 차단을 입증할 수 없음"
       }
     ],
-    "compactTitle": "실제 DNS 질의 기록"
+    "compactTitle": "DNS 응답과 검증 상태"
   },
   "reading": {
-    "title": "실제 DNS 질의 관측 기록",
+    "title": "DNS 응답과 검증 상태",
     "columns": [
-      "질의 조건",
+      "질의 이름",
       "관측 결과",
       "해석 및 경계"
     ],
     "rows": [
       [
-        "실험 호스트 · 기본/사설 · UDP/TCP",
-        "google.com·example.com A 8/8 NOERROR와 주소",
-        "정상 응답 관측, 보호 성공률 아님"
+        "google.com",
+        "저장된 실제 응답: NOERROR · 주소 6개",
+        "2026-11-04 02:42 UTC 관측"
       ],
       [
-        "실험 호스트 → 사설 DNS",
-        "google.com A UDP/TCP 각각 주소 6개",
-        "해당 시점 차단 응답 미관측"
+        "block.test",
+        "실제 질의 미실행 · 차단 미확인",
+        "기존 기록을 바꾸거나 차단 응답을 만들지 않음"
       ],
       [
-        "기본 로컬 stub vs 사설 DNS",
-        "기본 1개 주소 / 사설 6개 주소 응답",
-        "경로별 전달 동작 확인"
+        "화면의 명령·응답",
+        "읽기 쉽게 일부 생략한 발췌",
+        "전체 원문 기록은 보존"
       ],
       [
-        "UDP vs TCP 전송 방식",
-        "두 프로토콜 모두 동일한 주소 응답",
-        "전송 계층별 일관된 해석"
+        "차단 판정",
+        "현재 적용 규칙과 실제 응답 근거가 함께 필요",
+        "일반 NXDOMAIN만으로 정책 차단을 단정하지 않음"
       ]
     ],
-    "takeaway": "기본 스텁의 후단 서버·캐시와 현재 사설 DNS 정책은 확인하지 않았습니다. 빈 출력은 차단 판정이 아닙니다.",
+    "takeaway": "google.com의 주소 반환은 관측했습니다. block.test의 실제 차단 여부는 아직 확인하지 못했습니다.",
     "source": "https://skt-aleph-capstone.vercel.app/capstone/evidence/dns-query-20261104.txt",
     "sourceLabel": "2026.11.04 공개 발췌본 ↗"
   },
   "headline": {
-    "focus": "실제 DNS 질의 기록",
+    "focus": "응답과 미검증 구분",
     "tone": "info"
   },
   "visual": {
     "type": "cname-chain",
-    "title": "실제 DNS 질의 기록",
+    "title": "DNS 응답과 검증 상태",
     "sourceKey": "dns-query-20261104",
     "nodes": [
       {
-        "label": "질의 도메인",
+        "label": "확인된 질의",
         "value": "google.com",
         "state": "NOERROR"
       },
       {
-        "label": "사설 DNS 경로",
-        "value": "PRIVATE_DNS",
-        "state": "DIRECT"
-      },
-      {
-        "label": "응답 주소",
+        "label": "실제 응답",
         "value": "6개 주소 반환",
         "state": "A"
+      },
+      {
+        "label": "미검증 질의",
+        "value": "block.test",
+        "state": "UNVERIFIED"
       }
     ],
     "links": [
-      "직접 질의",
-      "주소 반환"
+      "주소 반환",
+      "별도 검증 필요"
     ],
-    "caveat": "2026.11.04 02:42 UTC 실험 호스트 질의 기록 발췌 · 차단 응답 미관측"
+    "caveat": "google.com은 저장된 실측 기록 · block.test는 미실행·미검증"
   }
 }
