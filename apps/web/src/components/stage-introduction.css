@@ -1,5 +1,5 @@
 /* Progress changes emphasis, never removes the evidence or changes its geometry. */
-.stage-introduction [data-stage-state]{transition:border-color 260ms ease,background-color 260ms ease,box-shadow 260ms ease}
+.stage-introduction [data-stage-state]{transition:border-color calc(260ms * var(--presentation-motion-scale, 1)) ease,background-color calc(260ms * var(--presentation-motion-scale, 1)) ease,box-shadow calc(260ms * var(--presentation-motion-scale, 1)) ease}
 .deck-root .stage-introduction [data-stage-state="active"]{border-color:#8de7db;box-shadow:inset 3px 0 #8de7db;background-color:#1a4252}
 .deck-root .stage-introduction [data-stage-state="done"]{border-color:#72afa9}
 .stage-introduction .stage-connector[data-stage-state="active"],

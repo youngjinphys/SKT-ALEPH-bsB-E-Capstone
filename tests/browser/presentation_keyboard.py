@@ -223,7 +223,7 @@ def check_keyboard(page):
 
 
 def main():
-    subprocess.run(["node", "--test", "tests/browser/flow-timing.test.mjs", "tests/browser/term-leader-geometry.test.mjs", "tests/browser/dns_terminal.test.mjs"], cwd=ROOT, check=True)
+    subprocess.run(["node", "--test", "tests/browser/flow-timing.test.mjs", "tests/browser/presentation-motion.test.mjs", "tests/browser/term-leader-geometry.test.mjs", "tests/browser/dns_terminal.test.mjs"], cwd=ROOT, check=True)
     with tempfile.TemporaryFile(mode="w+") as log:
         server = subprocess.Popen(
             ["npm", "run", "start", "--", "--hostname", "127.0.0.1", "--port", str(PORT)],

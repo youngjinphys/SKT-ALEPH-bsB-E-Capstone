@@ -4,7 +4,7 @@ import {useDiagramVisibility} from './useDiagramVisibility';
 import {flowDelay,nextFlowFrame,type FlowFrame} from './flow-timing.mjs';
 
 const DEFAULT_DURATIONS:readonly number[]=[];
-/** Repeat only this flow, with a quiet one-second gap. Never choose another scenario. */
+/** Repeat only this flow, with a quiet two-second gap. Never choose another scenario. */
 export function useDiagramPlayback({steps,paused,loopStart=0,reducedStep=0,durations=DEFAULT_DURATIONS}:{steps:number;paused:boolean;loopStart?:number;reducedStep?:number;durations?:readonly number[]}){
  const {ref:diagramRef,inView}=useDiagramVisibility();
  const last=Math.max(0,steps-1);

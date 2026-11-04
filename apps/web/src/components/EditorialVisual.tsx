@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState,type CSSProperties} from "react";
+import {presentationDuration} from "./presentation-motion.mjs";
 import {useStageIntroduction} from "./useStageIntroduction";
 import "./stage-introduction.css";
 import {useDiagramVisibility} from "./useDiagramVisibility";
@@ -20,7 +21,7 @@ export function IndependentTrends({visual,sources,paused=false}:{visual:Trend;so
  const [ready,setReady]=useState(false),[reduced,setReduced]=useState(true);
  useEffect(()=>{const media=matchMedia('(prefers-reduced-motion: reduce)');const sync=()=>{setReduced(media.matches);setReady(true)};sync();media.addEventListener('change',sync);return()=>media.removeEventListener('change',sync)},[]);
  useEffect(()=>{if(!ready)return;if(paused||reduced){setMotion('done');return}if(!inView){setMotion(value=>value==='reveal'?'done':value);return}if(inView)setMotion(value=>value==='pending'?'reveal':value)},[ready,paused,reduced,inView]);
- useEffect(()=>{if(motion!=='reveal')return;const finish=()=>setMotion('done');const hidden=()=>{if(document.hidden)finish()};document.addEventListener('visibilitychange',hidden);const timer=setTimeout(finish,1800);return()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',hidden)}},[motion]);
+ useEffect(()=>{if(motion!=='reveal')return;const finish=()=>setMotion('done');const hidden=()=>{if(document.hidden)finish()};document.addEventListener('visibilitychange',hidden);const timer=setTimeout(finish,presentationDuration(1800));return()=>{clearTimeout(timer);document.removeEventListener('visibilitychange',hidden)}},[motion]);
  const format=(value:number,unit:string)=>unit==="%"?`${value}%`:`${value.toLocaleString("ko-KR")} ${unit}`;
  return <figure className="diagram-panel chart-card independent-trends" aria-label={visual.title}>
   <figcaption><p className="diagram-caption">TWO OBSERVATIONS · SEPARATE MEASURES</p><h2>{visual.title}</h2></figcaption>

@@ -13,15 +13,15 @@
 .landing-facts strong{font-size:clamp(20px,2.3vw,31px);font-variant-numeric:tabular-nums;letter-spacing:-.06em;line-height:1.1;font-weight:800;color:#effeff}
 .landing-facts span{color:var(--muted);font-size:11px;letter-spacing:.02em}
 .trail-panel{padding-top:21px}
-.trail-tabs button{transition:background .2s ease,border-color .2s ease,color .2s ease}
-.trail-info{animation:landing-reveal .22s ease both}
+.trail-tabs button{transition:background calc(.2s * var(--presentation-motion-scale, 1)) ease,border-color calc(.2s * var(--presentation-motion-scale, 1)) ease,color calc(.2s * var(--presentation-motion-scale, 1)) ease}
+.trail-info{animation:landing-reveal calc(.22s * var(--presentation-motion-scale, 1)) ease both}
 .landing-scene{isolation:isolate}
 .landing-scene::before{content:"";position:absolute;z-index:-2;top:3%;left:0;right:0;height:85%;background:radial-gradient(ellipse at center,rgba(29,137,160,.24),transparent 65%);pointer-events:none}
-.mascot-button{transition:filter .24s ease}
+.mascot-button{transition:filter calc(.24s * var(--presentation-motion-scale, 1)) ease}
 .mascot-button:hover{filter:drop-shadow(0 12px 34px rgba(105,231,227,.18))}
 .mascot-message{border-color:rgba(119,212,223,.38);background:linear-gradient(135deg,rgba(19,55,72,.92),rgba(8,30,43,.92))}
 .landing-layers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:clamp(20px,4vw,58px) 0 20px}
-.landing-layer{position:relative;display:flex;flex-direction:column;min-width:0;min-height:170px;padding:22px clamp(16px,2vw,28px);border:1px solid rgba(113,174,192,.22);border-top:2px solid rgba(102,217,233,.55);background:linear-gradient(145deg,rgba(20,57,74,.82),rgba(8,30,44,.7));border-radius:12px;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+.landing-layer{position:relative;display:flex;flex-direction:column;min-width:0;min-height:170px;padding:22px clamp(16px,2vw,28px);border:1px solid rgba(113,174,192,.22);border-top:2px solid rgba(102,217,233,.55);background:linear-gradient(145deg,rgba(20,57,74,.82),rgba(8,30,44,.7));border-radius:12px;transition:transform calc(.2s * var(--presentation-motion-scale, 1)) ease,border-color calc(.2s * var(--presentation-motion-scale, 1)) ease,background calc(.2s * var(--presentation-motion-scale, 1)) ease}
 .landing-layer:hover,.landing-layer:focus-visible{transform:translateY(-4px);border-color:rgba(99,225,236,.68);background:linear-gradient(145deg,rgba(28,73,90,.95),rgba(8,38,55,.86))}
 .layer-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.09em;margin-bottom:21px}
 .layer-topline span:last-child{font-size:20px;line-height:1}

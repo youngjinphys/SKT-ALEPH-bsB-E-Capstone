@@ -61,7 +61,7 @@ const none=()=>({setMotion(){},updateProjection(){},setFallback(){},destroy(){}}
 const px=n=>n.toFixed(3)+'px';
 const cq=(n,total)=>((n/total)*100).toFixed(4);
 const translated=(x,y,w,h)=>'translate3d('+cq(x,w)+'cqw,'+cq(y,h)+'cqh,0) translate(-50%,-50%)';
-export function createOpeningOrbit(visual,{motion=true}={}){
+export function createOpeningOrbit(visual,{motion=true,motionRate=1}={}){
  const globe=visual?.querySelector?.('.restored-globe');
  const layer=visual?.querySelector?.('.cyber-space-infos');
  if(!visual||!globe||!layer)return none();
@@ -160,7 +160,7 @@ export function createOpeningOrbit(visual,{motion=true}={}){
     if(!initial){role.initialized=false;role.card.dataset.placement='pending';visible(role,false);return;}
     role.rect=initial;role.initialized=true;role.needsReflow=false;role.card.dataset.placement='ready';
    }
-   else if(role.depthShown&&enabled())role.rect=advanceFloatingCard(role.rect,target,obstacles,{width,height:height-28},85*frameDelta,8,1-Math.exp(-frameDelta/.16));
+   else if(role.depthShown&&enabled())role.rect=advanceFloatingCard(role.rect,target,obstacles,{width,height:height-28},85*frameDelta*motionRate,8,1-Math.exp(-frameDelta*motionRate/.16));
    writeTransform(role,role.card,'cardTransform','translate3d('+px(role.rect.left-role.size.left)+','+px(role.rect.top-role.size.top)+',0)');
    role.card.dataset.cardX=role.rect.left.toFixed(3);role.card.dataset.cardY=role.rect.top.toFixed(3);
   }

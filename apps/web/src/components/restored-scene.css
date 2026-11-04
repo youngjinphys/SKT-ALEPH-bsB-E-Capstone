@@ -1,7 +1,7 @@
 .restored-scene{position:relative;isolation:isolate;display:flex;align-items:center;justify-content:center;width:100%;min-height:0;height:100%;margin:0;container-type:size;overflow:visible}
 .restored-globe{position:relative;width:min(72cqw,72cqh,670px);aspect-ratio:1;flex:none;z-index:1}
-.restored-earth-fallback{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 35px #42b8dd40);transition:opacity .15s ease}
-.restored-globe .cyber-earth-canvas{position:absolute;display:block;pointer-events:none;opacity:0;transition:opacity .15s ease}
+.restored-earth-fallback{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 35px #42b8dd40);transition:opacity calc(.15s * var(--presentation-motion-scale, 1)) ease}
+.restored-globe .cyber-earth-canvas{position:absolute;display:block;pointer-events:none;opacity:0;transition:opacity calc(.15s * var(--presentation-motion-scale, 1)) ease}
 .restored-globe[data-earth-state="ready"] .cyber-earth-canvas{opacity:1}
 .restored-globe[data-earth-state="ready"] .restored-earth-fallback{opacity:0}
 .restored-globe-orbit{position:absolute;left:50%;top:50%;width:80cqmin;height:55cqmin;border:1px solid #61ddff20;border-radius:50%;transform:translate(-50%,-50%) rotate(-23deg);pointer-events:none}
@@ -36,7 +36,7 @@
 .restored-scene .cyber-surface-pin--attacker{--surface-accent:#ff628c}
 .restored-scene .cyber-surface-pin--users{--surface-accent:#b1bdff}
 .restored-scene .cyber-surface-pin--isp{--surface-accent:#51ffcd}
-.restored-scene .cyber-surface-leader{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:left center;z-index:1;background:#c8d6e3b3;transition:opacity .12s linear}
+.restored-scene .cyber-surface-leader{position:absolute;left:0;top:0;width:1px;height:1px;transform-origin:left center;z-index:1;background:#c8d6e3b3;transition:opacity calc(.12s * var(--presentation-motion-scale, 1)) linear}
 
 @media(max-width:780px){
  .restored-scene{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;justify-items:center;gap:12px;aspect-ratio:auto;min-height:0;height:auto;padding-bottom:8px}
@@ -58,5 +58,5 @@
 
 @media(prefers-reduced-motion:reduce){.restored-scene .cyber-surface-leader{transition:none}}
 
-.restored-scene[data-orbit-layout=surface] .cyber-space-panel{transition:opacity .12s linear}
+.restored-scene[data-orbit-layout=surface] .cyber-space-panel{transition:opacity calc(.12s * var(--presentation-motion-scale, 1)) linear}
 @media(prefers-reduced-motion:reduce){.restored-scene .cyber-space-panel{transition:none!important}}

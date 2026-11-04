@@ -122,7 +122,7 @@ const BEACON=`
  }
 `;
 const inert=()=>Object.freeze({ready:Promise.resolve(false),setMotion(){},destroy(){}});
-export function mountEarthGlobe(host,{motion=true,anchors=[],onProjection=null,onFallback=null}={}){
+export function mountEarthGlobe(host,{motion=true,motionRate=1,anchors=[],onProjection=null,onFallback=null}={}){
  if(!host||typeof window==='undefined')return inert();
  const win=window,doc=host.ownerDocument||document;
  let renderer,scene,spinning,clouds,disposed=false,lost=false,failed=false,rendererReleased=false;
@@ -192,7 +192,7 @@ export function mountEarthGlobe(host,{motion=true,anchors=[],onProjection=null,o
  function frame(time){
   rafId=null;if(!canAnimate()){stopFrames();return;}
   if(lastRender&&time-lastRender<MIN_FRAME_MS){rafId=win.requestAnimationFrame(frame);return;}
-  const dt=boundedFrameDelta(time,lastTime);lastTime=lastRender=time;
+  const dt=boundedFrameDelta(time,lastTime)*motionRate;lastTime=lastRender=time;
   spinning.rotation.y=(spinning.rotation.y+.086*dt)%(Math.PI*2);
   clouds.rotation.y=(clouds.rotation.y+.012*dt)%(Math.PI*2);
   animationTime+=dt;

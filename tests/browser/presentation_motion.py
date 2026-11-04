@@ -1,4 +1,4 @@
-"""Text handoffs stay smooth, stable and readable without changing playback timing.
+"""Text handoffs stay smooth, stable and readable at half-speed presentation timing.
 
 Imported by presentation_keyboard.py so this uses the existing built-app runner.
 """
@@ -23,7 +23,7 @@ def check_motion(page, origin):
             const css = getComputedStyle(el);
             return el.getAttribute('aria-hidden') === 'true'
                 ? css.visibility === 'hidden' && css.opacity === '0' && css.transitionDuration === '0s'
-                : css.transitionProperty === 'opacity' && parseFloat(css.transitionDuration) > 0;
+                : css.transitionProperty === 'opacity' && Math.abs(parseFloat(css.transitionDuration) - 0.64) < 0.001;
         })"""), selector
         expect(page.locator(selector + ' .diagram-text-layer[aria-hidden="false"]')).to_have_count(1)
 
@@ -35,10 +35,10 @@ def check_motion(page, origin):
     assert_fade('.dns-upstream strong')
     initial = title.bounding_box()
     # Observe before the real handoff. Assertion polling can be a second apart
-    # and return only after a 320ms fade has finished; sample rendered frames in
+    # and return only after a 640ms fade has finished; sample rendered frames in
     # the page instead, without unsafe-eval or changing the application clock.
     handoff = title.evaluate("""el => new Promise(resolve => {
-        const deadline=performance.now()+10000;
+        const deadline=performance.now()+20000;
         const sample=()=>{
             const layers=[...el.querySelectorAll('.diagram-text-layer')];
             const active=layers.find(layer=>layer.getAttribute('aria-hidden')==='false');
@@ -58,7 +58,7 @@ def check_motion(page, origin):
     settled = title.bounding_box()
     assert abs(initial['width'] - settled['width']) < 1
     assert abs(initial['height'] - settled['height']) < 1
-    expect(dns).to_have_attribute('data-intro-step', '11', timeout=10000)
+    expect(dns).to_have_attribute('data-intro-step', '11', timeout=20000)
     # Rapid scenario reversals cannot leave stale labels, blank text or reflow.
     web = page.locator('.dns-web')
     before = web.bounding_box()
@@ -89,7 +89,7 @@ def check_motion(page, origin):
             page.locator(button).first.click()
             target.click()
             sampled = detail.evaluate("""el => new Promise(resolve => {
-                const until=performance.now()+400, samples=[];
+                const until=performance.now()+800, samples=[];
                 const sample=()=>{
                     const layers=[...el.querySelectorAll('.diagram-text-layer')];
                     const visible=layers.filter(layer=>getComputedStyle(layer).visibility!=='hidden'&&Number(getComputedStyle(layer).opacity)>0);

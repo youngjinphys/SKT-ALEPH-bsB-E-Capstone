@@ -1,6 +1,6 @@
 /* Every fact stays visible. Only emphasis/packet motion advances; no accumulating cards. */
 .deck-root .cname-walkthrough .chain-nodes{flex:0 0 auto;gap:6px}
-.deck-root .cname-walkthrough .chain-step{position:relative;min-width:0;transition:border-color .18s ease,background-color .18s ease}
+.deck-root .cname-walkthrough .chain-step{position:relative;min-width:0;transition:border-color calc(.18s * var(--presentation-motion-scale, 1)) ease,background-color calc(.18s * var(--presentation-motion-scale, 1)) ease}
 .deck-root .cname-walkthrough .chain-step[data-active=true]{border-left-color:#ffe3a6;background:#12394b;box-shadow:inset 0 0 0 1px #ffe3a666}
 .deck-root .cname-walkthrough .chain-step>span{color:#bcd7e4;overflow-wrap:anywhere}
 .deck-root .cname-walkthrough .chain-step strong{overflow-wrap:anywhere}
@@ -10,7 +10,7 @@
 .cname-arrow{position:relative;grid-column:2;text-align:center;line-height:24px}
 .cname-link-label{grid-column:3;justify-self:start;min-width:0;overflow-wrap:anywhere}
 .cname-walkthrough .cname-packet{display:none}
-.cname-walkthrough[data-playing=true] .cname-link[data-active=true] .cname-packet{display:block;position:absolute;left:calc(50% - 2.5px);top:1px;width:5px;height:5px;border-radius:50%;background:#a5f2fa;animation:cname-packet 1.8s linear 1 both}
+.cname-walkthrough[data-playing=true] .cname-link[data-active=true] .cname-packet{display:block;position:absolute;left:calc(50% - 2.5px);top:1px;width:5px;height:5px;border-radius:50%;background:#a5f2fa;animation:cname-packet calc(1.8s * var(--presentation-motion-scale, 1)) linear 1 both}
 .cname-progress{display:grid;grid-template-columns:minmax(0,1fr);margin:7px 0 0;color:#c6e7f0;font-size:12px;line-height:1.4}
 .deck-root .cname-walkthrough .visual-caveat{margin:8px 0 0;flex-shrink:0}
 @keyframes cname-packet{from{transform:translateY(0);opacity:0}20%,80%{opacity:1}to{transform:translateY(14px);opacity:0}}

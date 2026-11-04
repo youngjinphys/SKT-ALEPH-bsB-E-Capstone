@@ -1,5 +1,5 @@
 .diagram-text-swap{display:inline-grid;grid-template-columns:minmax(0,1fr);max-width:100%;min-width:0;vertical-align:top}
-.diagram-text-swap>.diagram-text-layer{grid-area:1 / 1;min-width:0;opacity:1;transition:opacity 320ms ease-in-out}
+.diagram-text-swap>.diagram-text-layer{grid-area:1 / 1;min-width:0;opacity:1;transition:opacity calc(320ms * var(--presentation-motion-scale, 1)) ease-in-out}
 .diagram-text-swap>.diagram-text-layer[aria-hidden=true]{opacity:0;visibility:hidden;transition:none;pointer-events:none;user-select:none}
 .diagram-text-swap[data-motion-paused=true]>.diagram-text-layer,
 html[data-motion=off] .diagram-text-swap>.diagram-text-layer{transition:none!important}

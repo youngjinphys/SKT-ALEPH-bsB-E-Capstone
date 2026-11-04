@@ -6,8 +6,8 @@
 .dns-route-stages button[aria-pressed=true]{border-color:#9ee8dd;background:#214f59;color:#ecfffa}
 .dns-route-stages button:focus-visible{outline:3px solid #e0f8ff;outline-offset:3px}
 .dns-route-map{display:grid;grid-template-columns:minmax(0,1fr) minmax(66px,.6fr) minmax(0,1.4fr);gap:14px;align-items:center}
-.dns-route-source{grid-column:1;grid-row:1}.dns-route-transfer{grid-column:2;grid-row:1;min-width:0}.dns-route-resolver{grid-column:3;grid-row:1;animation:dns-resolver-select .22s ease-out}
-.dns-route-node{border:1px solid #547b90;border-radius:13px;padding:15px 12px;display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:168px;background:linear-gradient(145deg,#1c3b50d9,#0b2135eb);box-shadow:inset 0 1px 0 #bcecff16;transition:border-color .35s,box-shadow .35s}
+.dns-route-source{grid-column:1;grid-row:1}.dns-route-transfer{grid-column:2;grid-row:1;min-width:0}.dns-route-resolver{grid-column:3;grid-row:1;animation:dns-resolver-select calc(.22s * var(--presentation-motion-scale, 1)) ease-out}
+.dns-route-node{border:1px solid #547b90;border-radius:13px;padding:15px 12px;display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:168px;background:linear-gradient(145deg,#1c3b50d9,#0b2135eb);box-shadow:inset 0 1px 0 #bcecff16;transition:border-color calc(.35s * var(--presentation-motion-scale, 1)),box-shadow calc(.35s * var(--presentation-motion-scale, 1))}
 .dns-route-node strong{display:flex;align-items:center;min-height:2.8em;font-size:clamp(15px,1.25vw,20px);line-height:1.4;color:#e8f7fb;word-break:keep-all;overflow-wrap:anywhere}.dns-route-node small,.dns-route-node span{font-size:12px;line-height:1.5;color:#bdd7e3;word-break:keep-all}.dns-route-node svg{width:32px;height:32px;color:#a6dffc;flex:none}
 .dns-route-client{align-items:center;text-align:center}.dns-route-client strong{justify-content:center}
 .dns-route-policy{border-style:dashed;border-color:#a6a0d5;background:linear-gradient(120deg,#30354d,#18283b)}.dns-route-policy small{color:#d2cdfa}.dns-route-policy strong{color:#eeeaff}
@@ -28,9 +28,9 @@
 }
 @media(max-width:780px){.deck-root .dns-route-topology{max-height:none;padding:16px;gap:12px}.dns-route-stages button{min-height:44px;font-size:11px;padding:7px 9px}}
 @media(min-width:781px) and (max-height:850px){.deck-root .dns-route-topology{gap:8px;padding:16px}}
-.dns-route-topology[data-playing=true][data-stage="0"] .dns-route-policy-line .dns-route-query{stroke-dasharray:5 5;animation:dns-route-distribute 1.8s linear 1}
+.dns-route-topology[data-playing=true][data-stage="0"] .dns-route-policy-line .dns-route-query{stroke-dasharray:5 5;animation:dns-route-distribute calc(1.8s * var(--presentation-motion-scale, 1)) linear 1}
 .dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="0"] .dns-route-query,
-.dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="1"] .dns-route-answer{stroke-dasharray:7 5;animation:dns-route-distribute 1.8s linear 1;stroke-width:2}
+.dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="1"] .dns-route-answer{stroke-dasharray:7 5;animation:dns-route-distribute calc(1.8s * var(--presentation-motion-scale, 1)) linear 1;stroke-width:2}
 @keyframes dns-route-distribute{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion:reduce){.dns-route-node{transition:none;animation:none}.dns-route-topology path{animation:none!important}}
 html[data-motion=off] .dns-route-topology path,html[data-motion=off] .dns-route-resolver{animation:none!important}

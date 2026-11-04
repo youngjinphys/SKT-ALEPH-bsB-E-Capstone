@@ -1,5 +1,5 @@
 /* All six cards remain visible; focus advances, not the topology. */
-.protocol-walkthrough .restored-node{transition:box-shadow .18s ease,background-color .18s ease}
+.protocol-walkthrough .restored-node{transition:box-shadow calc(.18s * var(--presentation-motion-scale, 1)) ease,background-color calc(.18s * var(--presentation-motion-scale, 1)) ease}
 .protocol-walkthrough{container:protocol / inline-size}
 .protocol-walkthrough .restored-node[data-active=true]{box-shadow:0 0 0 2px #9beaff;background:#173e53}
 .protocol-walkthrough [data-protocol=https] .restored-node[data-active=true]{box-shadow:0 0 0 2px #ffd7a4;background:#352d24}
@@ -7,7 +7,7 @@
 .protocol-walkthrough [data-protocol=https] .restored-protocol-arrow{color:#ffd7a4}
 .protocol-walkthrough .restored-protocol-arrow[data-active=true] svg{filter:drop-shadow(0 0 4px currentColor)}
 .protocol-walkthrough .protocol-packet{display:none;position:absolute;top:calc(50% - 3px);left:5%;width:6px;height:6px;background:#b8f3ff;border-radius:50%;pointer-events:none}
-.protocol-walkthrough[data-playback=running] [data-active=true] .protocol-packet{display:block;animation:protocol-request 1.8s linear 1 both}
+.protocol-walkthrough[data-playback=running] [data-active=true] .protocol-packet{display:block;animation:protocol-request calc(1.8s * var(--presentation-motion-scale, 1)) linear 1 both}
 .protocol-control-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin-top:8px}
 .protocol-stage{display:flex;gap:10px;align-items:baseline;padding:5px 8px;margin-top:0;border-left:3px solid #8edff1;background:#0a2033;font-size:clamp(12px,.85vw,18px);line-height:1.45}
 .protocol-stage>span{white-space:nowrap;color:#a6c8da}.protocol-stage strong{word-break:keep-all}

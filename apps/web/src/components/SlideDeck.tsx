@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
 import "./reference-links.css";
-import {useCallback,useEffect,useLayoutEffect,useRef,useState} from "react";
+import {useCallback,useEffect,useLayoutEffect,useRef,useState,type CSSProperties} from "react";
 import {ClapControl} from "@/components/ClapControl";
 import {SlideVisual} from "@/components/SlideVisual";
 import {DnsDecisionPoints} from "@/components/DnsDecisionPoints";
 import {useMobilePresentation} from "@/components/useMobilePresentation";
 import {clampSlideIndex,slideIndexFromHash} from "@/lib/deck";
 import type {DeckSlide,SourceRegistry} from "@/lib/deck";
+
+import {PRESENTATION_MOTION_SCALE,SLIDE_TRANSITION_MS} from "./presentation-motion.mjs";
 
 const statusLabels:Record<string,string>={
  implemented:"구현 범위",research:"연구 소개",hypothesis:"검증 가설",proposal:"확장 제안",
@@ -169,7 +171,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
    leavingTimerRef.current=setTimeout(()=>{
     setLeavingIndex(null);
     leavingTimerRef.current=null;
-   },380);
+   },SLIDE_TRANSITION_MS);
   }
  },[motionPaused]);
 
@@ -297,7 +299,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
    setAnnouncement("");
   }catch{setAnnouncement("브라우저에서 전체 화면 전환을 허용하지 않았습니다. 일반 화면에서 발표를 계속할 수 있습니다.");}
  }
- return <div className="deck-root" data-hydrated={hydrated?"true":"false"}>
+ return <div className="deck-root" style={{"--presentation-motion-scale":PRESENTATION_MOTION_SCALE} as CSSProperties} data-hydrated={hydrated?"true":"false"}>
   <a className="skip-link" href="#slide-area" onClick={event=>{event.preventDefault();document.getElementById("slide-area")?.focus();}}>슬라이드 내용으로 이동</a>
   <header className="deck-topbar">
    <Link href="/" className="deck-logo" aria-label="ALEPH. E TEAM 홈으로">ALEPH<span>.</span> <small>E TEAM</small></Link>

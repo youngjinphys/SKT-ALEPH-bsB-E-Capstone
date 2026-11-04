@@ -1,7 +1,7 @@
 /* Selection never moves by itself. A quiet border cue invites an explicit choice
    only after the current flow has completed and its one-second rest has ended. */
 .deck-root [data-flow-cue=true] button[aria-pressed=false],
-.deck-root .dns-evidence-dashboard:has([data-flow-cycle]:not([data-flow-cycle="0"])[data-playing=true]) [data-flow-alternatives] button[aria-pressed=false]{animation:flow-alternative-cue 3.6s ease-in-out infinite}
+.deck-root .dns-evidence-dashboard:has([data-flow-cycle]:not([data-flow-cycle="0"])[data-playing=true]) [data-flow-alternatives] button[aria-pressed=false]{animation:flow-alternative-cue calc(3.6s * var(--presentation-motion-scale, 1)) ease-in-out infinite}
 @keyframes flow-alternative-cue{
   0%,100%{box-shadow:0 0 0 0 #a5e9db00}
   50%{box-shadow:0 0 0 2px #a5e9db55,0 0 10px #a5e9db18}

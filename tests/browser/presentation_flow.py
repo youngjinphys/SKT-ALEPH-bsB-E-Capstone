@@ -17,7 +17,7 @@ def check_flow(browser, origin):
         expect(page.locator('.deck-root')).to_have_attribute('data-hydrated', 'true')
         page.locator(anchor).first.scroll_into_view_if_needed()
 
-    def loop(panel, expected_cycle, timeout=18000):
+    def loop(panel, expected_cycle, timeout=36000):
         expect(panel).to_have_attribute('data-flow-cycle', str(expected_cycle), timeout=timeout)
 
     try:
@@ -33,17 +33,17 @@ def check_flow(browser, origin):
         expect(dns).to_have_attribute('data-intro-step', '11')
         expect(dns).to_have_attribute('data-step', '0')
         expect(blocked).to_have_attribute('aria-pressed', 'false')
-        # Every selected packet has a slower 1.8s traversal within a 2.2s stage.
+        # Every selected packet has a slower 3.6s traversal within a 4.4s stage.
         packet = page.locator('.dns-query-link .lane-horizontal .lane-packet[data-flow=query]')
-        assert packet.evaluate("el => getComputedStyle(el).animationDuration") == '1.8s'
-        expect(dns).to_have_attribute('data-flow-resting', 'true', timeout=16000)
+        assert packet.evaluate("el => getComputedStyle(el).animationDuration") == '3.6s'
+        expect(dns).to_have_attribute('data-flow-resting', 'true', timeout=32000)
         expect(dns).to_have_attribute('data-step', '5')
         expect(dns).to_have_attribute('data-playback', 'paused')
         expect(choices).to_have_attribute('data-flow-cue', 'false')
-        # The pure timing test enforces the 1000ms rest. An eventual browser
+        # The pure timing test enforces the 2000ms rest. An eventual browser
         # observation can arrive partway through it, so do not start a second
         # fixed sleep here and accidentally require more than the authored rest.
-        loop(dns, 1, 2000)
+        loop(dns, 1, 4000)
         expect(dns).to_have_attribute('data-step', '0')
         expect(dns).to_have_attribute('data-scenario', 'allow')
         expect(allow).to_have_attribute('aria-pressed', 'true')
@@ -66,14 +66,14 @@ def check_flow(browser, origin):
         # Global pause freezes state/cues and resume keeps the same selection.
         page.locator('#slide-area').press('m')
         state = dns.get_attribute('data-step')
-        page.wait_for_timeout(2600)
+        page.wait_for_timeout(5200)
         expect(dns).to_have_attribute('data-step', state)
         expect(choices).to_have_attribute('data-flow-cue', 'false')
         page.locator('#slide-area').press('m')
         expect(dns).to_have_attribute('data-scenario', 'block')
         page.emulate_media(reduced_motion='reduce')
         blocked.click()
-        page.wait_for_timeout(2600)
+        page.wait_for_timeout(5200)
         expect(dns).to_have_attribute('data-flow-cycle', '0')
         expect(choices).to_have_attribute('data-flow-cue', 'false')
         assert blocked.evaluate("el => getComputedStyle(el).animationName") == 'none'
@@ -89,7 +89,7 @@ def check_flow(browser, origin):
         expect(observation).to_have_attribute('data-evidence-state', 'illustration')
         fixture_result = observation.locator('.dns-terminal-body').text_content()
         page.locator('#slide-area').press('r')
-        page.wait_for_timeout(2200)
+        page.wait_for_timeout(4400)
         expect(fixture).to_have_attribute('aria-pressed', 'true')
         expect(observation).to_have_attribute('data-evidence-state', 'illustration')
         expect(observation.locator('.dns-terminal-body')).to_have_text(fixture_result)
@@ -100,7 +100,7 @@ def check_flow(browser, origin):
         selected_record = observation.get_attribute('data-query-id')
         selected_output = observation.locator('.dns-terminal-output').inner_text()
         page.locator('#slide-area').press('r')
-        page.wait_for_timeout(2200)
+        page.wait_for_timeout(4400)
         expect(observation).to_have_attribute('data-query-id', selected_record)
         expect(observation.locator('.dns-terminal-output')).to_have_text(selected_output)
         expect(selected).to_have_attribute('aria-pressed', 'true')
@@ -117,7 +117,7 @@ def check_flow(browser, origin):
         expect(routes.locator('.dns-route-resolver')).to_have_count(1)
         expect(routes.locator('.dns-route-resolver')).to_have_attribute('data-resolver', 'external')
         expect(routes.locator('.dns-route-policy-line')).to_have_count(0)
-        expect(routes).to_have_attribute('data-flow-step', '1', timeout=5000)
+        expect(routes).to_have_attribute('data-flow-step', '1', timeout=10000)
         assert routes.locator('.dns-route-rails:visible .dns-route-answer').evaluate('el => getComputedStyle(el).animationName') == 'dns-route-distribute'
         assert routes.locator('.dns-route-rails:visible .dns-route-query').evaluate('el => getComputedStyle(el).animationName') == 'none'
         loop(routes, 1)
@@ -134,7 +134,7 @@ def check_flow(browser, origin):
             expect(choice).to_have_attribute('aria-pressed', 'true')
         selected = page.locator('.policy-timeline button').last
         selected.click()
-        page.wait_for_timeout(4000)
+        page.wait_for_timeout(8000)
         expect(selected).to_have_attribute('aria-pressed', 'true')
         assert lifecycle.get_attribute('data-step') == '2'
 
@@ -145,6 +145,6 @@ def check_flow(browser, origin):
         # Automatic visual repetition does not announce every phase indefinitely.
         expect(page.locator('.protocol-stage')).to_have_attribute('aria-live', 'off')
         assert not errors, errors
-        print('Presentation flow checks passed: manual scenarios, slower repeated paths, 1s rest, cues, pause and reduced motion')
+        print('Presentation flow checks passed: manual scenarios, slower repeated paths, 2s rest, cues, pause and reduced motion')
     finally:
         page.close()
