@@ -71,8 +71,8 @@ def _assert_terminal_visibility(page):
         // White behind the glass is the lightest possible backing. Foreground
         // must remain clear even then, not only against the current dark slide.
         const worst=surface.slice(0,3).map(v=>v*alpha+255*(1-alpha));
-        const samples=[root.querySelector('.dns-terminal-command'),root.querySelector('.dns-terminal-output'),...root.querySelectorAll('.dns-terminal-output span')];
-        const contrast=samples.map(el=>{const fg=luminance(rgba(getComputedStyle(el).color)),bg=luminance(worst);return(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)});
+        const samples=[root.querySelector('.dns-terminal-command'),root.querySelector('.dns-terminal-output'),...root.querySelectorAll('.dns-terminal-output span,.dns-terminal-result')];
+        const contrast=samples.map(el=>{const css=getComputedStyle(el),fg=luminance(rgba(css.color)),bg=luminance(el.matches('.dns-terminal-result')?rgba(css.backgroundColor):worst);return(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)});
         const output=getComputedStyle(root.querySelector('.dns-terminal-output'));
         return {minContrast:Math.min(...contrast),fontSize:parseFloat(output.fontSize),lineHeight:parseFloat(output.lineHeight)/parseFloat(output.fontSize),textShadow:output.textShadow,filter:getComputedStyle(root).filter,backdrop:getComputedStyle(root).backdropFilter,whiteSpace:output.whiteSpace};
     }""")
@@ -122,6 +122,16 @@ def check_dns_terminal(browser, origin):
                     assert removed not in text,(width,height,domain,removed)
                 assert not re.search(r'\b(?:TCP|UDP)\b',text,re.IGNORECASE),(width,height,domain,'transport detail visible')
                 assert '\ufffd' not in text
+                expected_code='NOERROR' if domain=='google.com' else 'NXDOMAIN'
+                expected_count=f"ANSWER: {google['answerCount']}" if domain=='google.com' else 'ANSWER: 0'
+                tone='success' if domain=='google.com' else 'negative'
+                results=root.locator('.dns-terminal-output .dns-terminal-result')
+                expect(results).to_have_text([expected_code,expected_count])
+                for token in results.all():
+                    expect(token).to_have_attribute('data-result',tone)
+                    expect(token).to_have_css('font-weight','700')
+                    expect(token).to_have_css('text-decoration-line','underline')
+                expect(root.locator('.dns-terminal-status .dns-terminal-result')).to_have_text(expected_code)
                 if domain=='google.com': assert '1.1.1.1' in text and all(line.split()[-1] in text for line in google['answers'])
                 if domain=='google.com':
                     expect(root).to_have_attribute('data-evidence-state','captured')
@@ -163,6 +173,14 @@ def check_dns_terminal(browser, origin):
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
                 total+=1
+            if width==1440:
+                unchanged=root.locator('.dns-terminal-output').inner_text()
+                page.emulate_media(forced_colors='active')
+                for token in root.locator('.dns-terminal-result').all():
+                    expect(token).to_have_css('font-weight','700')
+                    expect(token).to_have_css('text-decoration-line','underline')
+                assert root.locator('.dns-terminal-output').inner_text()==unchanged
+                page.emulate_media(forced_colors='none')
             # A return to the public captured case must not retain the fixture state.
             choices.get_by_role('button',name='google.com',exact=True).click()
             expect(root).to_have_attribute('data-evidence-state','captured')

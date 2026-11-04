@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {terminalResultParts} from '../../apps/web/src/lib/dns-terminal-results.ts';
 const web=path.resolve(import.meta.dirname,'../../apps/web');
 const capture=JSON.parse(fs.readFileSync(path.join(web,'public/capstone/evidence/dns-terminal-20261104.json'),'utf8'));
 const extract=fs.readFileSync(path.join(web,'public/capstone/evidence/dns-query-20261104.txt'),'utf8');
@@ -61,7 +62,7 @@ test('the displayed block.test result is a bounded recorded loopback experiment'
  assert.doesNotMatch(source,/dns-fixture-summary|dns-fixture-boundary/);
  assert.ok(source.includes('block-test-loopback-20261104.json'));
  assert.ok(source.includes('<code>dig block.test A</code>'));
- assert.ok(source.includes('{blockedOutput}'));
+ assert.ok(source.includes('<Transcript text={blockedOutput}/>'));
  assert.ok(source.includes('격리 DNS 실험 · 명령·응답 일부 생략'));
  assert.equal((source.match(/data-command-display="summary"/g)||[]).length,2);
  assert.doesNotMatch(source,/blockedQuery\.command\.join|data-command-display="recorded"/);
@@ -94,4 +95,34 @@ test('Google answer display preserves the separate stored public IPv4 record',()
  assert.ok(source.includes('google-dns-observation.json'));
  assert.ok(source.includes('공개 DNS 별도 관측'));
  assert.equal(JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8')).reading.source,'https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/bf7d1d613b2bd5824454fe9d3695711e7b13eb11/apps/web/public/capstone/evidence/google-dns-observation.json');
+});
+
+test('highlighting preserves response bytes and marks result codes and answer counts',()=>{
+ const cases=[
+  [';; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 10534',[['NXDOMAIN','negative']]],
+  [';; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1',[['ANSWER: 0','negative']]],
+  ['status: NOERROR; ANSWER: 6',[['NOERROR','success'],['ANSWER: 6','success']]],
+  ['status: SERVFAIL; ANSWER: 0',[['ANSWER: 0','negative']]],
+  ['literal NOERRORsuffix and prefixNXDOMAIN · 한글\n',[]]
+ ];
+ for(const [text,highlights] of cases){
+  const parts=terminalResultParts(text);
+  assert.equal(parts.map(part=>part.text).join(''),text);
+  assert.deepEqual(parts.filter(part=>part.tone).map(part=>[part.text,part.tone]),highlights);
+ }
+ const fixture=JSON.parse(fs.readFileSync(path.join(web,'public/capstone/evidence/block-test-loopback-20261104.json'),'utf8'));
+ for(const phase of fixture.phases)for(const query of phase.queries){
+  assert.equal(terminalResultParts(query.stdout).map(part=>part.text).join(''),query.stdout);
+ }
+ const style=fs.readFileSync(path.join(web,'src/components/server-dns-observation.css'),'utf8');
+ assert.ok(style.includes('font-weight:700'));
+ assert.ok(style.includes('text-decoration:underline'));
+ assert.ok(style.includes('.dns-terminal-result[data-result]{color:CanvasText;background:Canvas}'));
+ const luminance=hex=>[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+ const palettes=[...style.matchAll(/data-result=(\w+)\]\{color:#([a-f0-9]{6});background:#([a-f0-9]{6})/g)];
+ assert.equal(palettes.length,2);
+ for(const [,name,foreground,background] of palettes){
+  const a=luminance(foreground),b=luminance(background);
+  assert.ok((Math.max(a,b)+.05)/(Math.min(a,b)+.05)>=7,`${name} token contrast`);
+ }
 });

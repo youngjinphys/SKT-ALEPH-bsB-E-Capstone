@@ -62,3 +62,10 @@
 .dns-terminal-pending a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px;font-size:13px}
 
 .deck-root .server-dns-observation[data-evidence-state=fixture] .dns-terminal-output{min-height:0}
+
+/* Exact response tokens remain selectable/copyable. Weight and an underline
+   retain emphasis without relying on green/red colour alone. */
+.deck-root .dns-terminal-result{font:inherit;font-weight:700;border-radius:2px;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;box-decoration-break:clone}
+.deck-root .dns-terminal-result[data-result=success]{color:#b0f3cf;background:#153d2c}
+.deck-root .dns-terminal-result[data-result=negative]{color:#ffd3d3;background:#54202a}
+@media(forced-colors:active){.deck-root .dns-terminal-result[data-result]{color:CanvasText;background:Canvas}}
