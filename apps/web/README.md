@@ -17,7 +17,7 @@ npm run build
 
 개발 서버는 `npm run dev`, 프로덕션은 `npm run start`입니다. 기존 CI는 콘텐츠 정합성·타입 검사·프로덕션 빌드를 수행합니다. 콘텐츠 검사는 14장 순서, 1,200초 배분, 발표자 노트와 최종 시나리오의 본문 일치를 검증합니다.
 
-프로덕션 웹 화면 우측 하단의 `Updated at`은 빌드 서버가 `next build`를 시작할 때 기록한 UTC 시각입니다. `next.config.ts`의 production-build 단계에서 한 번 기록하고 컴파일 결과에 고정하므로 새로고침·서버 재시작·방문자의 시간대에 따라 바뀌지 않습니다. 캐시된 빌드를 다시 배포하면 원래 빌드 시각을 유지하며, 실제 배포 완료 시각이나 Python 관제 서비스의 갱신 시각을 뜻하지 않습니다. 개발 모드에는 표시하지 않습니다. 회귀 검사는 저장소 루트에서 `node --test tests/browser/build_timestamp.test.mjs`와 프로덕션 빌드 후 `python3 -B tests/browser/build_timestamp.py`로 실행합니다.
+프로덕션 웹 화면 우측 하단의 `Updated at`은 빌드 서버가 `next build`를 시작할 때 한 번 기록한 시각입니다. UTC 원본은 컴파일 결과와 `<time datetime>`에 고정하고, 브라우저가 로드되면 방문자 기기의 시간대로 변환해 날짜·시각·GMT 오프셋을 표시합니다. 해당 빌드 날짜의 일광절약시간(DST)도 적용합니다. 서버 HTML과 첫 클라이언트 렌더는 UTC로 일치시키며, JavaScript나 시간대 기능을 사용할 수 없으면 UTC를 유지합니다. 현재 시각을 표시하는 타이머가 아니므로 새로고침·서버 재시작·기기 시계 변경으로 빌드 시점이 바뀌지 않습니다. 캐시된 빌드를 다시 배포하면 원래 빌드 시각을 유지하며, 실제 배포 완료 시각이나 Python 관제 서비스의 갱신 시각을 뜻하지 않습니다. 개발 모드·유효하지 않은 메타데이터에는 표시하지 않습니다. 회귀 검사는 저장소 루트에서 `node --test tests/browser/build_timestamp.test.mjs`와 프로덕션 빌드 후 `python3 -B tests/browser/build_timestamp.py`로 실행합니다.
 
 ## 페이지와 발표 조작
 
