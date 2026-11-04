@@ -6,7 +6,9 @@ on:
 permissions: {}
 jobs:
   verify:
-    if: github.repository == 'youngjinphys/SKT-ALEPH-bsB-E-Capstone' && github.event.head_commit.message == 'chore: validate reviewed node observability changes'
+    if: >-
+      github.repository == 'youngjinphys/SKT-ALEPH-bsB-E-Capstone' &&
+      github.event.head_commit.message == 'chore: validate reviewed node observability changes'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
