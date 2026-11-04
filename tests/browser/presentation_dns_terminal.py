@@ -10,6 +10,51 @@ CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/dns-terminal-20261
 OUT = Path('/tmp/aleph-build-artifacts/dns-terminal')
 
 
+def _visible_without_scrolling(locator):
+    return locator.evaluate("""el => {
+        const r=el.getBoundingClientRect();
+        let left=0,right=innerWidth,top=0,bottom=innerHeight;
+        for(let p=el.parentElement;p;p=p.parentElement){
+            const c=getComputedStyle(p),b=p.getBoundingClientRect();
+            if(/hidden|clip|auto|scroll/.test(c.overflowX)){left=Math.max(left,b.left);right=Math.min(right,b.right);}
+            if(/hidden|clip|auto|scroll/.test(c.overflowY)){top=Math.max(top,b.top);bottom=Math.min(bottom,b.bottom);}
+        }
+        return r.width>0&&r.height>0&&r.left>=left-1&&r.right<=right+1&&r.top>=top-1&&r.bottom<=bottom+1;
+    }""")
+
+
+def _wheel_reach(page,target,direction,context):
+    # Deliver actual wheel input inside the visible visual column. Do not use
+    # scrollIntoView, locator.hover/click, or focus, which can force a hidden
+    # overflow container to scroll and mask the user's mouse/touch defect.
+    point=page.locator('.slide-active .slide-visual-container').evaluate("""el=>{
+        const r=el.getBoundingClientRect(),v=document.querySelector('#slide-area').getBoundingClientRect();
+        const top=Math.max(r.top,v.top,0),bottom=Math.min(r.bottom,v.bottom,innerHeight);
+        return {x:Math.min(innerWidth-16,Math.max(16,r.left+r.width/2)),y:bottom>top?(top+bottom)/2:(v.top+v.bottom)/2};
+    }""")
+    page.mouse.move(point['x'],point['y'])
+    for _ in range(24):
+        if _visible_without_scrolling(target):return
+        page.mouse.wheel(0,direction*500)
+        page.wait_for_timeout(70)
+    assert _visible_without_scrolling(target),(context,'unreachable with wheel')
+
+
+def _check_natural_reachability(page,context):
+    first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
+    last=page.locator('.server-dns-note a').last
+    _wheel_reach(page,last,1,context)
+    page.screenshot(path=str(OUT/f'terminal-scroll-end-{context}.png'),full_page=True)
+    _wheel_reach(page,first,-1,context)
+    first.focus()
+    for _ in range(24):
+        focused=page.locator(':focus')
+        assert _visible_without_scrolling(focused),(context,'focused control clipped')
+        if last.evaluate('el=>el===document.activeElement'):break
+        page.keyboard.press('Tab')
+    else:raise AssertionError((context,'source link missing from Tab order'))
+
+
 def check_dns_terminal(browser, origin):
     OUT.mkdir(parents=True, exist_ok=True)
     total = 0
@@ -24,6 +69,7 @@ def check_dns_terminal(browser, origin):
             visual=page.locator('.slide-active').get_by_role('button',name='시각 자료',exact=True)
             if visual.count() and visual.is_visible():visual.click()
             expect(page.locator('.server-dns-observation')).to_be_visible()
+            page.bring_to_front()
         try:
             open_terminal()
             assert page.evaluate('document.characterSet')=='UTF-8'
@@ -33,6 +79,14 @@ def check_dns_terminal(browser, origin):
                 await document.fonts.ready;
                 return loaded.length===2&&loaded.every(font=>font.status==='loaded');
             }''')
+            _check_natural_reachability(page,f'{width}x{height}')
+            if (width,height)==(390,844):
+                first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
+                _wheel_reach(page,first,-1,'mode-cycle')
+                page.get_by_role('button',name='격리 fixture',exact=True).click()
+                expect(page.locator('.cname-walkthrough')).to_be_visible()
+                page.get_by_role('button',name='실제 server 질의',exact=True).click()
+                _check_natural_reachability(page,'390x844-server-fixture-server')
             for query in CAPTURE['queries']:
                 root=page.locator('.server-dns-observation')
                 root.get_by_role('group',name='저장된 질의 이름 선택',exact=True).get_by_role('button',name=query['domain'],exact=True).click()
@@ -68,6 +122,27 @@ def check_dns_terminal(browser, origin):
             open_terminal()
             page.locator('.dns-terminal').scroll_into_view_if_needed()
             page.screenshot(path=str(OUT/f'terminal-{width}x{height}.png'),full_page=True)
+            if (width,height) in ((1440,900),(390,844)):
+                page.emulate_media(reduced_motion='no-preference')
+                page.goto(origin+'/capstone#7')
+                expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
+                page.locator('#slide-area').focus()
+                page.keyboard.press('ArrowRight')
+                expect(page).to_have_url(origin+'/capstone#8')
+                expect(page.locator('.slide-leaving')).to_have_count(0)
+                _check_natural_reachability(page,f'{width}x{height}-normal-motion')
+                page.keyboard.press('ArrowRight')
+                expect(page).to_have_url(origin+'/capstone#9')
+                expect(page.locator('.slide-leaving')).to_have_count(0)
+            if width==1366:
+                open_terminal()
+                page.evaluate('async()=>{await document.fonts.ready}')
+                # A text-only size stress test, not a claim of browser pinch zoom.
+                page.locator('.server-dns-observation').evaluate('''root=>{
+                    const entries=[root,...root.querySelectorAll('*')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);
+                    entries.forEach(([el,size])=>el.style.fontSize=`${size*2}px`);
+                }''')
+                _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors, errors
         finally:context.close()
-    print(f'DNS terminal: {total} stored records, 60 choice-to-arrow cases, UTF-8 and web font verified')
+    print(f'DNS terminal: {total} stored records, 60 choice-to-arrow cases, UTF-8, web fonts, wheel/Tab reachability and text-size stress verified')
