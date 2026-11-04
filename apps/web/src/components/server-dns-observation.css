@@ -43,7 +43,7 @@
 /* Browser text scaling must not strand the top of an oversized centered panel. */
 @media(min-width:781px){
  .deck-root .deck-slide[data-mobile-layout=desktop] .slide-visual-container:has(.server-dns-observation){overflow-y:auto;justify-content:flex-start;justify-content:safe center}
- .deck-root .deck-slide[data-mobile-layout=desktop] .slide-visual-container:has(.server-dns-observation)>.term-scene{flex:none}
+ .deck-root .deck-slide.slide-bypass[data-mobile-layout=desktop] .slide-visual-container>.dns-evidence-dashboard{flex:none;height:auto;max-height:none;overflow:visible;justify-content:flex-start}
 }
 
 /* One captured response and one unverified request; neither is executable. */

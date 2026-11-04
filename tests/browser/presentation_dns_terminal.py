@@ -37,7 +37,13 @@ def _wheel_reach(page,target,direction,context):
         if _visible_without_scrolling(target):return
         page.mouse.wheel(0,direction*500)
         page.wait_for_timeout(70)
-    assert _visible_without_scrolling(target),(context,'unreachable with wheel')
+    if not _visible_without_scrolling(target):
+        page.screenshot(path=str(OUT/f'terminal-unreachable-{context}-{direction}.png'),full_page=True)
+        geometry=target.evaluate('''el=>[el,...function*(node){while(node.parentElement){node=node.parentElement;yield node}}(el)].map(node=>{
+            const r=node.getBoundingClientRect(),s=getComputedStyle(node);
+            return {tag:node.tagName,class:node.className,top:r.top,bottom:r.bottom,left:r.left,right:r.right,scrollTop:node.scrollTop,scrollHeight:node.scrollHeight,clientHeight:node.clientHeight,overflowY:s.overflowY,justifyContent:s.justifyContent,flexShrink:s.flexShrink};
+        })''')
+        raise AssertionError((context,'unreachable with wheel',geometry))
 
 
 def _check_natural_reachability(page,context):
@@ -173,6 +179,12 @@ def check_dns_terminal(browser, origin):
                     const entries=[root,...root.querySelectorAll('*')].map(el=>[el,parseFloat(getComputedStyle(el).fontSize)]);
                     entries.forEach(([el,size])=>el.style.fontSize=`${size*2}px`);
                 }''')
+                # The removed fixture wrapper must not leave the real dashboard
+                # shrinking/centering oversized content above scrollTop=0.
+                panel=page.locator('.dns-evidence-dashboard')
+                expect(panel).to_have_css('flex-shrink','0')
+                expect(panel).to_have_css('max-height','none')
+                expect(panel).to_have_css('overflow-y','visible')
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors,errors
         finally:context.close()
