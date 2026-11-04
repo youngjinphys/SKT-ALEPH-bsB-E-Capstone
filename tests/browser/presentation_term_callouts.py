@@ -88,7 +88,17 @@ def _assert_near_word(scene):
         const gap=(box.top-word.bottom)/scale;
         if(gap<0 || gap>72)failures.push(`definition is too far from word: ${gap}px`);
         if((word.left+word.right)/2<box.left-1 || (word.left+word.right)/2>box.right+1)failures.push('definition does not align toward word');
-        if(note.scrollWidth>note.clientWidth+1 || note.scrollHeight>note.clientHeight+1)failures.push('definition text clips');
+        // scrollWidth includes the translated decorative ::before sheen. Test
+        // rendered glyphs instead so decoration cannot masquerade as clipped text.
+        const noteWalker=document.createTreeWalker(note,NodeFilter.SHOW_TEXT),noteRange=document.createRange();
+        let noteNode;
+        while((noteNode=noteWalker.nextNode())){
+            if(!noteNode.textContent.trim())continue;
+            noteRange.selectNodeContents(noteNode);
+            for(const r of noteRange.getClientRects())if(r.width&&r.height &&
+                (r.left<box.left-1 || r.right>box.right+1 || r.top<box.top-1 || r.bottom>box.bottom+1))
+                failures.push('definition text clips');
+        }
         const overlaps=r=>Math.min(box.right,r.right)-Math.max(box.left,r.left)>1 && Math.min(box.bottom,r.bottom)-Math.max(box.top,r.top)>1;
         const walker=document.createTreeWalker(root.querySelector('.term-anchor'),NodeFilter.SHOW_TEXT),range=document.createRange();
         let node;
@@ -155,12 +165,12 @@ def check_term_callouts(browser, origin):
                     _assert_chain_connectors(scene)
                 baseline = (width, height) == (1440, 900)
                 result = _assert_clear(scene, required=baseline)
-                _assert_near_word(scene)
                 if width in (1440, 390, 320) and height != 667:
                     screenshots = Path(os.environ.get('ALEPH_CALLOUT_SCREENSHOTS', '/tmp/aleph-build-artifacts/callouts'))
                     screenshots.mkdir(parents=True, exist_ok=True)
                     scene.locator('.term-note').scroll_into_view_if_needed()
                     page.screenshot(path=str(screenshots / f'{term}-{width}x{height}.png'))
+                _assert_near_word(scene)
                 if term == 'dnsmasq' and baseline:
                     assert result['side'] == 'bottom', result
                 # Reflow at fractional browser zoom, then nested slide scrolling.
