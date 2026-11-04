@@ -12,7 +12,7 @@
   "apwg-2025": {
     "label": "APWG · 2025년 4분기 피싱 관측 보고서",
     "url": "https://docs.apwg.org/reports/apwg_trends_report_q4_2025.pdf",
-    "note": "공식 보고서 3쪽: 고유 피싱 사이트의 보고 기반 관측. 2024 약376만·2025 약380만으로 높은 수준의 소폭 증가. 실제 전체 발생량·피해자 수와 다르며 AI의 인과 기여도를 추정하지 않습니다."
+    "note": "공식 보고서 3쪽: 보고된 고유 피싱 사이트 관측. 2024 약376만·2025 약380만으로 높은 수준의 소폭 증가. 집계 범위는 보고 기반 관측이며, 전체 발생량·피해자 수·AI의 인과 기여도는 각각 별도 자료가 필요합니다."
   },
   "ai-social": {
     "label": "영국 NCSC · AI와 사회공학 위협 평가",
@@ -77,7 +77,7 @@
   "demo": {
     "label": "선택형 평문 HTTP 안내와 HTTPS 경계",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/http-notice.md",
-    "note": "통제된 HTTP 안내는 기본 NXDOMAIN과 별도 옵션입니다. 원래 HTTPS 호스트 신원 검증을 우회하지 않습니다."
+    "note": "통제된 HTTP 안내는 기본 NXDOMAIN과 별도 옵션입니다. HTTPS 안내 연결에도 원래 호스트의 신뢰된 인증서 검증이 필요합니다."
   },
   "tls": {
     "label": "RFC 9525 · Service Identity in TLS",
@@ -157,7 +157,7 @@
   "gsb-v5-method": {
     "label": "Google Safe Browsing v5 · urls.search 공식 API",
     "url": "https://developers.google.com/safe-browsing/reference/rest/v5/urls/search",
-    "note": "현재 수집 코드 intel.py의 v5/urls:search 경로와 일치합니다. 과거 v5alpha1 테스트 1개·근거 2개는 별도의 팀 실행 기록이며 현재 API 성능 검증으로 확대하지 않습니다."
+    "note": "현재 수집 코드 intel.py의 v5/urls:search 경로와 일치합니다. 과거 v5alpha1 테스트 1개·근거 2개는 팀 실행 기록으로 구분하며, 현재 API 성능은 별도 검증이 필요합니다."
   },
   "gsb-terms": {
     "label": "Google Safe Browsing API · 최신 서비스 약관",
@@ -197,7 +197,7 @@
   "oest-2020": {
     "label": "Oest et al. · Sunrise to Sunset (USENIX Security 2020)",
     "url": "https://www.usenix.org/conference/usenixsecurity20/presentation/oest-sunrise",
-    "note": "피싱 공격의 평균 지속 약 21시간, 탐지는 첫 피해자 방문 후 평균 약 9시간 뒤(논문 본문 확인). 2020년·특정 대규모 관측 환경의 값이며 현재 Safe Browsing 지연과 같다고 단정할 수 없음."
+    "note": "피싱 공격의 평균 지속 약 21시간, 탐지는 첫 피해자 방문 후 평균 약 9시간 뒤(논문 본문 확인). 특정 환경의 과거 관측이며, 현재 Safe Browsing 지연은 동시점 자료로 별도 측정해야 합니다."
   },
   "mozilla-canary": {
     "label": "Mozilla · DoH canary domain (use-application-dns.net)",
@@ -232,12 +232,12 @@
   "console-current": {
     "label": "운영자 관제 · 검토·초안·게시 상태·노드 보고",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/CONSOLE.md",
-    "note": "GUI/API와 제한된 갱신 worker·노드 보고가 구현되어 있습니다. 초안은 미서명·미게시이고, 로컬 DNS probe는 전체 LAN 단말 보호의 증명이 아닙니다."
+    "note": "GUI/API와 제한된 갱신 worker·노드 보고가 구현되어 있습니다. 초안은 외부 서명·게시 전 단계입니다. 로컬 DNS probe는 해당 노드의 응답을 확인하며, LAN 전체 보호는 단말별 검증이 필요합니다."
   },
   "dns-runtime-current": {
     "label": "현행 dnsmasq 정책 계약·캐시 설정",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/dns-agent/src/dns_agent/policy.py",
-    "note": "SUBTREE만 허용하며 EXACT를 자동 확대하지 않습니다. cache-size=0·local-ttl=0으로 일반 질의를 업스트림에 전달합니다. 만료 BLOCK은 집행 대상에서 제외합니다."
+    "note": "집행 입력은 별도 승인된 SUBTREE로 한정합니다. cache-size=0·local-ttl=0으로 일반 질의를 업스트림에 전달합니다. 만료 BLOCK은 집행 대상에서 제외합니다."
   },
   "dns-expiry-current": {
     "label": "현행 만료·갱신 거부·복구 처리",
@@ -247,7 +247,7 @@
   "dns-latency-method": {
     "label": "Pi 전달 경로·임시 캐시 실험의 실행 기록",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/docs/review/dns-latency-arms-20261103.md",
-    "note": "측정 시 제품 :53에 활성 address= 차단 줄이 없었고 로컬 캐시는 꺼져 있었습니다. :55353은 별도 임시 캐시 서버입니다. 원문은 nearest-rank, 발표 그래프는 같은 CSV의 선형보간이므로 분위수 차이를 구분합니다."
+    "note": "측정 조건은 제품 :53의 활성 address= 차단 규칙 0건과 로컬 캐시 비활성입니다. :55353은 별도 임시 캐시 서버입니다. 원문은 nearest-rank, 발표 그래프는 같은 CSV의 선형보간이므로 분위수 차이를 구분합니다."
   },
   "sde-ietf": {
     "label": "IETF · Structured Error Data for Filtered DNS (Internet-Draft)",
@@ -267,27 +267,27 @@
   "dns-fixture-20261104": {
     "label": "2026.11.04 · 합성 DNS fixture 공개 발췌",
     "url": "https://skt-aleph-capstone.vercel.app/capstone/evidence/fixture-summary-20261104.json",
-    "note": "합성 질의 240건과 원본 SHA-256. 임시 포트·경로·네트워크 식별자는 제외했습니다. 실제 운영 DNS 재현이 아닙니다."
+    "note": "합성 질의 240건과 원본 SHA-256. 임시 포트·경로·네트워크 식별자는 제외했습니다. 검증 범위는 해당 격리 실험 조건이며 운영 DNS 재현은 별도 검증 항목입니다."
   },
   "interisle-2026": {
     "label": "Interisle · 2026년 피싱 도메인 집계",
     "url": "https://cybercrimeinfocenter.squarespace.com/phishing-activity-year-over-year-numbers-may-april-2026",
-    "note": "2025-05-01~2026-04-30 고유 피싱 도메인 3,103,438개. 피드에서 관측한 등록 도메인 집계로, FQDN·URL·피해자 수나 전체 발생량과 다릅니다. 연도 간 피드 구성 일관성이 미확인되어 본편에서는 증가율을 사용하지 않습니다."
+    "note": "2025-05-01~2026-04-30 고유 피싱 도메인 3,103,438개. 집계 단위는 등록 도메인이고 관측 범위는 해당 위협정보 피드입니다. 연도별 증가율 분석에는 피드 구성의 일관성 확인이 필요합니다."
   },
   "interisle-methodology": {
     "label": "Interisle · 집계 방법과 범위",
     "url": "https://interisle.net/research-methodology",
-    "note": "피드 내·피드 간 도메인 중복 제거, 같은 등록 도메인의 여러 호스트·URL은 한 번 집계. 관측 피드가 전체 악용 사례를 포괄하지 않으며 공유호스팅 등록 도메인의 집계는 SUBTREE 차단 승인 근거와 다릅니다."
+    "note": "피드 내·피드 간 도메인 중복 제거, 같은 등록 도메인의 여러 호스트·URL은 한 번 집계. 관측 범위는 해당 피드의 수집 대상이며, 공유호스팅의 SUBTREE 차단은 하위 서비스 영향까지 별도로 검토해 승인해야 합니다."
   },
   "candidate-promotion-current": {
     "label": "후보 승격 코드 · 공급자 근거와 만료 확인",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/src/policy_server/intel.py",
-    "note": "최종 원고에서 인용한 고정 커밋의 구현 기록입니다. 현재 운영 상태를 보증하지 않습니다."
+    "note": "최종 원고에서 인용한 고정 커밋의 구현 기록입니다. 현재 운영 상태는 별도의 운영 기록으로 확인해야 합니다."
   },
   "oest-2020-paper": {
     "label": "Oest et al. · Sunrise to Sunset 논문 원문 (2020)",
     "url": "https://www.usenix.org/system/files/sec20-oest-sunrise.pdf",
-    "note": "USENIX Security 2020 논문 원문입니다. 우리 시스템의 탐지 성능 평가가 아닙니다."
+    "note": "USENIX Security 2020 논문 원문으로 과거 피싱 사이트의 생애주기를 관측한 자료입니다. 본 프로젝트의 탐지 성능은 별도 평가 항목입니다."
   },
   "dns-google-public-20261104": {
     "label": "2026.11.04 · 공개 DNS 1.1.1.1 별도 질의",

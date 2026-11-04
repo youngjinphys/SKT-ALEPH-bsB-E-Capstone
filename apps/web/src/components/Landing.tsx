@@ -89,7 +89,7 @@ export function Landing({content,stats}:{content:LandingContent;stats:LandingSta
        <RestoredMascot paused={paused}/>
       </button>
       <div className="mascot-message"><div><span className="live-dot"/> 피라냥 · PROJECT GUIDE</div><p aria-live="polite">{greet%3===1?"반가워! 관측과 추측을 나눠 보자.":greet%3===2?"확인한 근거부터 차근차근 연결해 봐!":"어서 와! 오늘도 근거로 확인해 보자. 🐾"}</p><button className="motion-toggle" aria-pressed={paused} onClick={()=>setPaused(n=>!n)}>{paused?"움직임 켜기":"움직임 멈추기"}</button></div>
-      <p className="mascot-disclaimer">캐릭터는 교육용 안내 요소이며 실시간 보안 탐지를 수행하지 않습니다.</p>
+      <p className="mascot-disclaimer">캐릭터는 보안 개념을 설명하는 교육용 안내 요소입니다. 실제 탐지·정책 적용 결과는 실험·관제 기록으로 확인합니다.</p>
     </div>
    </section>
    <section className="landing-layers" aria-label="검증의 세 경계">

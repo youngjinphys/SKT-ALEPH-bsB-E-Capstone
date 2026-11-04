@@ -17,7 +17,7 @@
     "latencyBoundary": "클라이언트의 DNS 질의 송신부터 응답 수신까지의 왕복 시간",
     "population": "warmup_excluded=false인 440행: 운영 Pi :53 240행, 공용 DNS 직접 120행, 임시 캐시 :55353 80행. 분석 구간은 모두 ok=true이며 각 series·arm은 40행입니다.",
     "displayedDifference": "선택 arm의 요약 p50 또는 p95에서 첫 arm의 같은 요약 통계를 뺀 값",
-    "interpretation": "표시 차이는 짝별 차이의 요약이나 보호 정책 추가 비용의 추정치가 아닙니다."
+    "interpretation": "표시 차이는 각 조건의 p50 또는 p95 요약값 사이의 차이입니다. 짝별 차이의 요약과 정책 추가 비용은 각각 별도 분석이 필요합니다."
   },
   "pairedWarmComparison": {
     "seriesId": "warm_paired",
@@ -27,7 +27,7 @@
     "p50LinearMs": 4.731,
     "p50NearestRankMs": 4.701,
     "differenceOfArmP50Ms": 6.159,
-    "note": "원시 CSV의 같은 이름 40쌍에서 재산출. 보고서의 4.701ms는 ceil(n×p) 순위, 선형보간 중앙값은 4.731ms입니다. 정책 적용 전후 비교는 아닙니다."
+    "note": "원시 CSV의 같은 이름 40쌍에서 재산출. 보고서의 4.701ms는 ceil(n×p) 순위, 선형보간 중앙값은 4.731ms입니다. 같은 이름의 직접 질의와 Pi 전달 경로를 비교한 값입니다. 정책 적용 전후 비교는 후속 실험 항목입니다."
   },
   "rows": 446,
   "excluded": 6,
@@ -183,7 +183,7 @@
       "cacheSize": 10000,
       "minCacheTtlSeconds": 60,
       "order": "같은 이름의 미스 다음에 히트 측정",
-      "lifetime": "캐시 기구 측정 동안만 별도 dnsmasq 실행. 운영 :53 구성은 변경하지 않음"
+      "lifetime": "캐시 기구 측정 동안만 별도 dnsmasq 실행. 운영 :53 구성 유지"
     },
     "measurementWindowUtc": {
       "production": "2026-11-03T06:26:23.500553Z/2026-11-03T06:27:12.991505Z",
