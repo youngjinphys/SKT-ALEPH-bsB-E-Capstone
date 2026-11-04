@@ -7,6 +7,13 @@ ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / 'apps/web'
 
 class PresentationLatencyTests(unittest.TestCase):
+    def test_latency_difference_wraps_between_phrases_without_shrinking_text(self):
+        component=(WEB/'src/components/PiNetworkPlan.tsx').read_text()
+        styles=(WEB/'src/components/pi-network-plan.css').read_text()
+        self.assertIn("</span>{' '}<span>· ",component)
+        self.assertIn('.latency-delta>span{white-space:nowrap}',styles)
+        self.assertIn('repeat(auto-fit,minmax(min(100%,9em),1fr))',styles)
+
     def test_latency_presentation_keeps_one_population_and_preserves_other_experiments(self):
         data=json.loads((WEB/'capstone/data/dns-latency.json').read_text())
         self.assertEqual([s['id'] for s in data['series']], [

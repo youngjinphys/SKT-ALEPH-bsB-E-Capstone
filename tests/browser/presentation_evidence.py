@@ -124,7 +124,7 @@ def main():
                     page.on('pageerror',lambda e:errors.append(str(e)))
                     results=[check(page,w,h,m) for w,h in ((1440,900),(1280,720),(390,844),(320,568),(844,390)) for m in ('reduce','no-preference')]
                     results += [check_references(page,w,h) for w,h in ((1440,900),(390,844),(320,568))]
-                    for width,height in ((1440,900),(390,844)):
+                    for width,height in ((1440,900),(390,844),(320,568)):
                         page.set_viewport_size({'width':width,'height':height})
                         page.goto(ORIGIN+'/capstone#pi-network-plan')
                         expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
@@ -132,9 +132,22 @@ def main():
                         if full.count() and full.is_visible():full.click()
                         chart=page.locator('.slide-active #latency-chart')
                         expect(chart).to_have_attribute('data-metric','combined')
+                        expect(chart.locator('.latency-delta>span')).to_have_count(4)
+                        for chunk in chart.locator('.latency-delta>span').all():
+                            geometry=chunk.evaluate('''el => {
+                              const r=el.getBoundingClientRect(),column=el.closest('dd').getBoundingClientRect();
+                              const range=document.createRange();range.selectNodeContents(el);
+                              const css=getComputedStyle(el);
+                              return {nowrap:css.whiteSpace==='nowrap',
+                                oneLine:range.getBoundingClientRect().height<=parseFloat(css.lineHeight)+1,
+                                fits:r.left>=column.left-1&&r.right<=column.right+1};
+                            }''')
+                            assert all(geometry.values()),(width,height,chunk.inner_text(),geometry)
                         chart.scroll_into_view_if_needed()
                         chart.screenshot(path=str(OUT/f'latency-chart-{width}x{height}.png'))
                         page.screenshot(path=str(OUT/f'latency-page-{width}x{height}.png'))
+                        results.append({'latencyViewport':[width,height],'phraseChunks':4,'phraseContainment':True})
+                        print(f'PASS latency phrase containment {width}x{height}',flush=True)
                     assert not errors,errors
                     (OUT/'results.json').write_text(json.dumps(results,indent=2))
                 finally:browser.close()

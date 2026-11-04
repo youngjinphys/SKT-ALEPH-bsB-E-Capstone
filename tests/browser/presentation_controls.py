@@ -309,6 +309,10 @@ def check_controls(page, origin, slides):
                 expect(chart.locator('[data-arm="local_repeat"]')).to_have_count(0)
                 expect(results.locator(".latency-quality, .latency-source")).to_have_count(0)
                 expect(results.get_by_role("link")).to_have_count(0)
+                expect(chart.locator('.latency-delta>span')).to_have_count(4)
+                for direction in chart.locator('.latency-delta>span:last-child').all():
+                    expect(direction).to_have_text('· 더 느림')
+                    assert direction.evaluate("el => getComputedStyle(el).whiteSpace") == 'nowrap'
                 _assert_readable(chart, (viewport, "warm_paired", "chart"))
                 page.locator("#slide-area").focus()
                 arrow(index, key)

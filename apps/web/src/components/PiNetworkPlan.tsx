@@ -11,7 +11,7 @@ export function PiNetworkPlan({paused=false}:{paused?:boolean}){
  const arms=series.arms.filter(arm=>arm.id==='no_dns'||arm.id==='local_upstream');
  const ceiling=Math.ceil(Math.max(...arms.map(arm=>arm.p95))/50)*50;
  const baseline=arms[0];
- const deltaLabel=(value:number)=>`${value>0?'+':''}${milliseconds.format(value)} ms · ${value>0?'더 느림':value<0?'더 빠름':'동일'}`;
+ const deltaLabel=(value:number)=><><span>{`${value>0?'+':''}${milliseconds.format(value)} ms`}</span>{' '}<span>· {value>0?'더 느림':value<0?'더 빠름':'동일'}</span></>;
  return <div className="latency-scene">
   <section className="diagram-panel latency-results" aria-label="일반 도메인 40개의 운영 DNS 응답 지연">
    <header><span>2026.11.03 · Pi DNS 실측 · UDP A</span><h2>운영 DNS :53의 응답 지연</h2></header>
