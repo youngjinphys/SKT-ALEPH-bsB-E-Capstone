@@ -121,3 +121,14 @@ test('leader can connect a nearby overlay in surrounding slide background',()=>{
  for(const point of line.points)assert.ok(point.x>=input.bounds.left&&point.x<=input.bounds.right&&point.y>=input.bounds.top&&point.y<=input.bounds.bottom);
  for(const r of input.text.map(r=>expand(r,LEADER_TEXT_GAP)))for(let i=1;i<line.points.length;i++)assert.equal(leaderSegmentIntersectsRect(line.points[i-1],line.points[i],r),false);
 });
+
+
+test('FQDN HUD stays entirely outside the diagram panel, not across its empty border',()=>{
+ const target=rect(400,225,450,245),panel=rect(300,200,850,600);
+ for(const scale of [1,1.25,2]){
+  const scaled=r=>Object.fromEntries(Object.entries(r).map(([key,value])=>[key,value*scale]));
+  const placed=placeTermNote({target:scaled(target),bounds:scaled(rect(0,0,900,700)),width:320*scale,height:115*scale,obstacles:[scaled(panel)],gap:8*scale,maxDistance:180*scale});
+  assert.ok(placed);
+  assert.ok(placed.rect.bottom<=192*scale,'HUD clears the complete panel by eight pixels');
+ }
+});

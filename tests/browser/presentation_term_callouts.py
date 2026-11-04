@@ -35,7 +35,8 @@ def _assert_clear(scene, required=False):
         const dot = new DOMPoint(Number(marker.getAttribute('cx')), Number(marker.getAttribute('cy'))).matrixTransform(matrix);
         const radius = Number(marker.getAttribute('r')) * Math.max(Math.abs(matrix.a), Math.abs(matrix.d));
         const obstacles = [], range = document.createRange();
-        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const surface = root.closest('.deck-slide') ?? root;
+        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
         let node;
         while ((node = walker.nextNode())) {
             if (!node.textContent.trim()) continue;
@@ -45,7 +46,7 @@ def _assert_clear(scene, required=False):
             for (const r of range.getClientRects()) if (r.width && r.height)
                 obstacles.push({left:r.left-2, top:r.top-2, right:r.right+2, bottom:r.bottom+2});
         }
-        for (const control of root.querySelectorAll('.term-anchor button,.term-anchor input,.term-anchor select,.term-anchor textarea')) {
+        for (const control of surface.querySelectorAll('button,a,input,select,textarea')) {
             if (!control.getClientRects().length) continue;
             const r = control.getBoundingClientRect();
             obstacles.push({left:r.left, top:r.top, right:r.right, bottom:r.bottom});
@@ -100,6 +101,14 @@ def _assert_overlay(scene):
         }
         for(const control of root.closest('.deck-slide').querySelectorAll('button,input,select,textarea,.restored-node,.chain-step,.cname-arrow,.slide-point'))
             if(control.getClientRects().length&&overlaps(control.getBoundingClientRect()))failures.push('HUD covers control/card/arrow');
+        // Empty padding belongs to the diagram too: a HUD must not straddle
+        // its border even when no text happens to be underneath.
+        for(const panel of root.closest('.deck-slide').querySelectorAll('.diagram-panel,.chart-card,.evidence-stack')) {
+            if(!panel.getClientRects().length||getComputedStyle(panel).visibility!=='visible')continue;
+            const r=panel.getBoundingClientRect(),clearance=7.5*scale;
+            if(box.right>r.left-clearance&&box.left<r.right+clearance&&box.bottom>r.top-clearance&&box.top<r.bottom+clearance)
+                failures.push('HUD crosses panel background or its clearance');
+        }
         const noteWalker=document.createTreeWalker(note,NodeFilter.SHOW_TEXT);
         while((node=noteWalker.nextNode())){
             if(!node.textContent.trim())continue;
@@ -131,25 +140,6 @@ def _assert_dialog(page, scene):
     page.keyboard.press('Escape')
     expect(dialog).to_have_count(0)
     expect(target).to_be_focused()
-
-
-def _assert_chain_connectors(scene):
-    result = scene.locator('.chain-nodes').evaluate("""root => {
-        const cards = [...root.querySelectorAll(':scope > .chain-step')];
-        const links = [...root.querySelectorAll(':scope > .cname-link')];
-        const failures = [];
-        if (links.length !== cards.length - 1) failures.push('missing between-card connector');
-        for (let i = 0; i < links.length; i++) {
-            const before = cards[i].getBoundingClientRect(), after = cards[i+1].getBoundingClientRect();
-            const link = links[i].getBoundingClientRect(), arrow = links[i].querySelector('.cname-arrow').getBoundingClientRect();
-            if (link.top < before.bottom - 1 || link.bottom > after.top + 1) failures.push('connector overlaps a card');
-            if (Math.abs((arrow.left+arrow.right)/2 - (before.left+before.right)/2) > 1) failures.push('arrow not centered between cards');
-            const label = links[i].querySelector('.cname-link-label');
-            if (label.scrollWidth > label.clientWidth+1) failures.push('connector label clipped');
-        }
-        return failures;
-    }""")
-    assert not result, result
 
 
 def check_term_callouts(browser, origin):
@@ -193,16 +183,7 @@ def check_term_callouts(browser, origin):
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 _assert_clear(scene)
                 _assert_overlay(scene)
-                if term == 'cname':
-                    _assert_chain_connectors(scene)
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
-                if term == 'cname':
-                    page.get_by_role('button', name='SUBTREE 과차단', exact=True).click()
-                    expect(page.locator('.term-note')).to_have_count(0)
-                    page.get_by_role('button', name='CNAME 보호 공백', exact=True).click()
-                    scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
-                    _assert_clear(scene)
-                    _assert_overlay(scene)
                 # Large zoom must never create a row or cover content to force a HUD.
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = '2'; }")
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()

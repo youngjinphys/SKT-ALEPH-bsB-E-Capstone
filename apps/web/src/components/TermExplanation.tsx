@@ -74,11 +74,18 @@ export function TermExplanation({term,children,paused=false}:{term?:ExplainedTer
    bounds.left+=4*scale;bounds.right-=4*scale;bounds.top+=4*scale;bounds.bottom-=4*scale;
    const text=textRects(surface,r);
    const controls=Array.from(surface.querySelectorAll<HTMLElement>('button,a,input,select,textarea,[role="button"],[role="tab"],.restored-node,.restored-lane,.bidirectional-lane,.chain-step,.cname-arrow,.adoption-lane,.policy-timeline-result,.server-dns-observation,.slide-point,svg:not(.term-leader)')).filter(el=>el.getClientRects().length>0).map(el=>relativeLeaderRect(el.getBoundingClientRect(),r));
+   // A panel's empty padding is still part of that visual object. Keep the HUD
+   // wholly on slide background, with the same gap as text and controls. These
+   // rectangles apply only to the HUD; a leader may cross empty panel padding
+   // to reach its word without crossing the panel's text or interactive nodes.
+   const panels=Array.from(surface.querySelectorAll<HTMLElement>('.diagram-panel,.chart-card,.evidence-stack'))
+    .filter(el=>el.getClientRects().length>0&&getComputedStyle(el).visibility==='visible')
+    .map(el=>relativeLeaderRect(el.getBoundingClientRect(),r));
    let placement:ReturnType<typeof placeTermNote>=null,chosenWidth=360;
    for(const width of [360,320,280]){
     note.style.width=`${width}px`;
     const box=note.getBoundingClientRect();
-    const candidate=placeTermNote({target:relativeLeaderRect(target.getBoundingClientRect(),r),bounds,width:box.width,height:box.height,obstacles:[...text,...controls],gap:8*scale,maxDistance:180*scale});
+    const candidate=placeTermNote({target:relativeLeaderRect(target.getBoundingClientRect(),r),bounds,width:box.width,height:box.height,obstacles:[...text,...controls,...panels],gap:8*scale,maxDistance:180*scale});
     if(candidate&&(!placement||candidate.score<placement.score)){placement=candidate;chosenWidth=width;}
    }
    note.style.width=`${chosenWidth}px`;
