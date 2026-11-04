@@ -314,20 +314,18 @@ def check_controls(page, origin, slides):
                 arrow(index, key)
 
             index = indexes["http"]
-            for protocol in (("HTTP", "HTTPS") if viewport[0] <= 780 else (None,)):
-                for standard in ("EDE · RFC 8914", "SDE · IETF 초안"):
-                    open_slide(index)
-                    if protocol:
-                        click_named(protocol)
+            open_slide(index)
+            expect(page.locator(".protocol-standard-panel")).to_have_count(0)
+            if viewport[0] <= 780:
+                for protocol in ("HTTP", "HTTPS"):
+                    for key in ("ArrowLeft", "ArrowRight"):
+                        open_slide(index)
+                        button = page.locator(ACTIVE).get_by_role("button", name=protocol, exact=True)
+                        activate(button, "click", (viewport, protocol))
                         expect(page.locator(f"#panel-protocol-{protocol.lower()}")).to_be_visible()
                         other = "http" if protocol == "HTTPS" else "https"
                         expect(page.locator(f"#panel-protocol-{other}")).to_be_hidden()
-                    button = page.locator(ACTIVE).get_by_role("button", name=standard, exact=True)
-                    activate(button, "click", (viewport, protocol, standard))
-                    expect(page.locator("#panel-standards")).to_have_attribute("role", "region")
-                    expect(page.locator("#panel-standards")).to_have_attribute(
-                        "aria-labelledby", "tab-ede" if standard.startswith("EDE") else "tab-sde")
-                    arrow(index, "ArrowRight", button)
+                        arrow(index, key, button)
 
             print(f"Presentation control inventory {viewport[0]}x{viewport[1]}: " +
                   ", ".join(f'{slide["id"]}={inventory[(viewport, slide["id"])]}' for slide in slides), flush=True)
@@ -338,8 +336,7 @@ def check_controls(page, origin, slides):
         viewport = (390, 844)
         page.set_viewport_size({"width": viewport[0], "height": viewport[1]})
         for slide_id, selector in (("dns", ".mobile-pane-tabs"),
-                                   ("http", ".protocol-path-tabs"),
-                                   ("http", ".protocol-standard-tabs")):
+                                   ("http", ".protocol-path-tabs")):
             open_slide(indexes[slide_id])
             group = page.locator(ACTIVE).locator(selector)
             buttons = group.get_by_role("button")

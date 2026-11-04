@@ -97,17 +97,10 @@
   line-height: 1.35;
  }
 
- /* Standards guidance needs the same reading size as the protocol explanation. */
- .deck-root .deck-slide[data-mobile-layout=desktop] .protocol-standard-explainer :is(strong,p),
- .deck-root .deck-slide[data-mobile-layout=desktop] .protocol-standard-tabs button,
+ /* The current protocol stage remains part of the readable explanation. */
  .deck-root .deck-slide[data-mobile-layout=desktop] .protocol-stage {
   font-size: var(--desktop-copy);
   line-height: 1.4;
- }
- .deck-root .deck-slide[data-mobile-layout=desktop] .protocol-standard-explainer {
-  min-height: 0;
-  gap: 4px;
-  padding-top: 6px;
  }
 
  /* The conclusion is excluded from audience.css's global type uplift. */

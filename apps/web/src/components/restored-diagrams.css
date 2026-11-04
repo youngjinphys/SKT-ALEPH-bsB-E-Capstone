@@ -30,7 +30,7 @@
 @media(min-width:2400px){.restored-dns-map{gap:12px}.restored-node{padding:18px 12px}.restored-protocol-path{grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr) 60px minmax(0,1fr)}}
 @media(max-width:780px){
  .restored-dns-map{grid-template-columns:minmax(0,1fr) clamp(84px,18vw,112px) minmax(0,1fr);grid-template-areas:'. . policy' '. . control' 'client query resolver' 'web-link . upstream-link' 'web . upstream';gap:6px}
- .restored-protocol-path{grid-template-columns:minmax(0,1fr);gap:6px}.restored-protocol-arrow{height:22px}.restored-protocol-arrow b{display:block;transform:rotate(90deg)}
+ .restored-protocol-path{grid-template-columns:minmax(0,1fr);gap:6px}.restored-protocol-arrow{height:22px}
  .restored-protocol-path .restored-node{display:grid;grid-template-columns:32px minmax(0,1fr);text-align:left;gap:5px 10px;justify-items:start}.restored-protocol-path .restored-icon{grid-row:span 2}.restored-protocol-path small{grid-column:2}
  .deck-root .restored-topology .topology-flow{grid-template-columns:minmax(0,1fr)}
  .deck-root .restored-topology .topology-step{min-height:0;gap:7px}.deck-root .restored-topology .topology-lane{min-height:48px}

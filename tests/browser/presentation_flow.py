@@ -108,10 +108,8 @@ def check_flow(browser, origin):
 
         open_slide('http', '.restored-protocol-path')
         protocol = page.locator('.protocol-walkthrough')
-        page.get_by_role('button', name='SDE · IETF 초안', exact=True).click()
         page.locator('.restored-protocol-path').first.scroll_into_view_if_needed()
         loop(protocol, 1)
-        expect(page.get_by_role('button', name='SDE · IETF 초안', exact=True)).to_have_attribute('aria-pressed', 'true')
         # Automatic visual repetition does not announce every phase indefinitely.
         expect(page.locator('.protocol-stage')).to_have_attribute('aria-live', 'off')
         assert not errors, errors

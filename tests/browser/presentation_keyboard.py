@@ -21,6 +21,7 @@ from presentation_build_timestamp import check_build_timestamp
 from presentation_dns_terminal import check_dns_terminal
 from presentation_header import check_header_navigation
 from presentation_dns_decision import check_dns_decision
+from presentation_protocol_edges import check_protocol_edges
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "apps/web"
@@ -176,27 +177,26 @@ def check_keyboard(page):
         assert not consumed, role
         at(2)
 
-    # Presentation choices are honest action-button groups: Enter/Space
-    # changes content while plain arrows always move the deck.
+    # Remaining HTTP/HTTPS choices still use native button and arrow behavior.
+    page.set_viewport_size({"width": 390, "height": 844})
     open_slide("http")
-    ede = page.get_by_role("button", name="EDE · RFC 8914", exact=True)
-    sde = page.get_by_role("button", name="SDE · IETF 초안", exact=True)
-    sde.focus()
+    visual = page.get_by_role("button", name="도식", exact=True)
+    if visual.is_visible():
+        visual.click()
+    https = page.get_by_role("button", name="HTTPS", exact=True)
+    https.focus()
     page.keyboard.press("Space")
-    expect(sde).to_be_focused()
-    expect(sde).to_have_attribute("aria-pressed", "true")
-    expect(page).to_have_url(f"{ORIGIN}/capstone#http")
+    expect(https).to_be_focused()
+    expect(https).to_have_attribute("aria-pressed", "true")
+    expect(page.locator(".protocol-standard-panel")).to_have_count(0)
     page.keyboard.press("ArrowRight")
     at(next(i for i, slide in enumerate(SLIDES) if slide["id"] == "http") + 1)
-    expect(page.locator("#slide-area")).to_be_focused()
     open_slide("http")
-    ede.click()
+    if visual.is_visible():
+        visual.click()
+    page.locator(".protocol-walkthrough").focus()
     page.keyboard.press("ArrowLeft")
     at(next(i for i, slide in enumerate(SLIDES) if slide["id"] == "http") - 1)
-    open_slide("http")
-    page.locator("#panel-standards").focus()
-    page.keyboard.press("ArrowRight")
-    at(next(i for i, slide in enumerate(SLIDES) if slide["id"] == "http") + 1)
 
     page.set_viewport_size({"width": 390, "height": 844})
     page.emulate_media(reduced_motion="reduce")
@@ -254,6 +254,7 @@ def main():
                     check_keyboard(page)
                     check_header_navigation(browser, ORIGIN)
                     check_dns_decision(browser, ORIGIN)
+                    check_protocol_edges(browser, ORIGIN)
                     check_dns_terminal(browser, ORIGIN)
                     check_motion(page, ORIGIN)
                     check_term_callouts(browser, ORIGIN)
