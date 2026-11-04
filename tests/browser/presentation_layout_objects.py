@@ -22,7 +22,7 @@ def _assert_objects(slide, context):
             return true;
         };
         const failures = [], describe = el => `${el.tagName}.${el.className}: ${el.textContent.trim().slice(0,70)}`;
-        const items = [...root.querySelectorAll('h1,.slide-subtitle,.slide-point,.diagram-panel,.chart-card,.restored-node,.intro-stage,.policy-flow-stage,.policy-timeline-stage,.reference-group,.adoption-lane,.dns-route-node')].filter(visible);
+        const items = [...root.querySelectorAll('.slide-heading,.mobile-pane-controls,.slide-point,.diagram-panel,.chart-card,.evidence-table-panel,.restored-node,.intro-stage,.policy-flow-stage,.policy-timeline-stage,.reference-slide-group,.adoption-lane,.dns-route-node,.editorial-roadmap li,.latency-arm,.editorial-thanks')].filter(visible);
         // A tall flex child centered above a scroller's content origin cannot
         // be recovered by wheel/Tab. Off-screen content below that origin is
         // allowed: this is a scrollable deck, not a fit-to-screen poster.
@@ -45,7 +45,7 @@ def _assert_objects(slide, context):
         }
         // Measure glyph ranges, not scrollWidth (decorative shadows/pseudo-elements
         // can enlarge the scrollable area without clipping a single letter).
-        const blocks=[...root.querySelectorAll('h1,h2,h3,p,button,summary,td,th')].filter(visible);
+        const blocks=[...root.querySelectorAll('h1,h2,h3,p,button,summary,td,th,caption,a,strong,small,span')].filter(visible);
         for(const block of blocks){
             if(block.closest('.sr-only,.term-note'))continue;
             const box=block.getBoundingClientRect(), range=document.createRange();
