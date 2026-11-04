@@ -8,7 +8,7 @@ import os
 
 from playwright.sync_api import expect
 
-TERMS = (('dns', 'dnsmasq'), ('bypass', 'cname'),
+TERMS = (('dns', 'dnsmasq'),
          ('policy-demo', 'ttl'), ('friction-barriers', 'fqdn'))
 
 
@@ -173,12 +173,8 @@ def check_term_callouts(browser, origin):
                 visual = page.get_by_role('button', name='도식', exact=True)
                 if visual.count() and visual.first.is_visible():
                     visual.first.click()
-                if term == 'cname':
-                    page.get_by_role('button', name='격리 fixture', exact=True).click()
                 scene = page.locator(f'.slide-active .term-scene[data-term="{term}"]').first
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
-                if term == 'cname':
-                    _assert_chain_connectors(scene)
                 baseline = (width, height) == (1440, 900)
                 _assert_clear(scene)
                 placement = _assert_overlay(scene)

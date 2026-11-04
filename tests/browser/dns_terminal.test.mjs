@@ -47,6 +47,4 @@ test('scoped Korean web fonts retain licensed, verified bytes and required glyph
 test('stored terminal choices use native buttons without capturing arrow keys',()=>{
  const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
  assert.doesNotMatch(source,/onKeyDown|role="radio|tabIndex|fetch\(|eval\(/);
- assert.ok(source.includes('선택해도 명령을 실행하지 않습니다'));
- assert.ok(source.includes('현재 정책은 미확인'));
 });

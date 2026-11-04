@@ -341,7 +341,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
    <p className="details-cue">{slide.presentation?.cue||"발표용 추가 설명"}</p>
    {slide.presentation?.reviewNote && <div className="details-review"><strong>재평가 메모</strong><p>{slide.presentation.reviewNote}</p></div>}
    <details><summary>최종 발표 대본 · 화면 조작·전환 포함</summary><p>{slide.notes}</p></details>
-   {slide.reading && <div className="reading-panel"><h3>{slide.reading.title}</h3><div className="reading-scroll"><table><thead><tr>{slide.reading.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{slide.reading.rows.map((row,i)=><tr key={i}>{row.map((val,j)=><td key={j}>{val}</td>)}</tr>)}</tbody></table></div>{slide.reading.takeaway&&<p>{slide.reading.takeaway}</p>}<a href={slide.reading.source} target="_blank" rel="noreferrer noopener">{(slide.reading.sourceLabel||"자료 출처").replace(/(?:\s*↗)+\s*$/,"")} ↗</a></div>}
+   {slide.reading && <div className="reading-panel"><h3>{slide.reading.title}</h3><div className="reading-scroll"><table><thead><tr>{slide.reading.columns.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{slide.reading.rows.map((row,i)=><tr key={i}>{row.map((val,j)=><td key={j}>{val}</td>)}</tr>)}</tbody></table></div><a href={slide.reading.source} target="_blank" rel="noreferrer noopener">{(slide.reading.sourceLabel||"자료 출처").replace(/(?:\s*↗)+\s*$/,"")} ↗</a></div>}
   </aside>}
   <dialog ref={menuRef} className="deck-overview" aria-label="슬라이드 목차" onClick={event=>{if(event.target===menuRef.current)menuRef.current.close()}}>
    <div className="overview-head"><h2>슬라이드 목차</h2><button onClick={()=>menuRef.current?.close()} aria-label="목차 닫기">×</button></div>

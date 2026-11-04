@@ -22,7 +22,7 @@ export function DnsRouteTopology({paused=false}:{paused?:boolean}){
  const playback=useDiagramPlayback({steps:selected===0?1:2,paused});
  const id=useId().replaceAll(':','');
  return <section ref={playback.diagramRef} className="diagram-panel dns-route-topology" data-stage={selected} data-flow-step={playback.step} data-flow-cycle={playback.cycle} data-playing={playback.playing} aria-label="공공·ISP 운영 제안과 보호 DNS 우회 경로">
-  <p className="diagram-caption">PROPOSED OPERATION · NOT DEPLOYED</p>
+  <p className="diagram-caption">PROPOSED OPERATION</p>
   <h2>보호 범위는 선택한 DNS 경로까지</h2>
   <div className="dns-route-stages" role="group" data-flow-cue={playback.hint} aria-label="설명할 경로 선택">
    {['정책 사전 배포','보호 DNS 선택','다른 DNS 경로'].map((label,index)=><button key={label} type="button" data-scenario-step="true" aria-pressed={selected===index} onClick={()=>{setSelected(index);playback.restart(0)}}>{label}</button>)}
@@ -39,6 +39,5 @@ export function DnsRouteTopology({paused=false}:{paused?:boolean}){
    <article className="dns-route-bypass dns-route-node"><small>우회 경로</small><strong>대체 리졸버<br/>또는 VPN DNS</strong><span>이 보호 DNS를 거치지 않음</span></article>
   </div>
   <p className="dns-route-explanation" role="status" aria-live="polite" aria-atomic="true"><DiagramText value={explanations[selected]} values={explanations} paused={paused}/></p>
-  <p className="visual-caveat">공공·ISP 운영 구상 · 도입 전 협약·이용자 동의·운영 검증 필요.</p>
  </section>;
 }

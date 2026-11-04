@@ -25,7 +25,6 @@ function ComparisonBars({visual,sources}:{visual:Extract<NonNullable<DeckSlide["
  return <figure className="chart-card" aria-label={visual.title}>
   <figcaption><span>OBSERVED DATA</span><h2>{visual.title}</h2></figcaption>
   <div className="bar-chart">{visual.measurements.map((m,i)=><div key={m.label} className="bar-row"><div className="bar-info"><span>{m.label}</span><strong>{m.value.toLocaleString("ko-KR")} <small>{visual.unit}</small></strong></div><div className="bar-track"><span className={i===visual.measurements.length-1?"bar-fill bar-accent":"bar-fill"} style={{width:`${Math.max(1,m.value/peak*100)}%`}}/></div></div>)}</div>
-  <p className="visual-caveat">{visual.caveat}</p>
   {sources[visual.sourceKey]&&<a href={sources[visual.sourceKey].url} target="_blank" rel="noreferrer noopener">집계 출처 ↗</a>}
  </figure>;
 }
@@ -78,7 +77,6 @@ function IntelEvidence(){
     <strong>별도 검증 결과</strong><b aria-hidden="true">→</b>
     <span>검토 파일 (approved: false)</span>
    </div>
-   <p className="visual-caveat">10월 30일 팀 기록 · 원본 API 응답·해시·요청 시각 인수 필요.</p>
   </section>;
 }
 function PolicyVerdicts(){
@@ -100,7 +98,6 @@ function PolicyVerdicts(){
    <span>DNS 응답</span><strong>{selected.answer}</strong>
    <p>{selected.detail}</p>
   </div>
-  <p className="visual-caveat">후속: 근거 인증·자동 공급·가중치 보정.</p>
  </section>;
 }
 
@@ -163,7 +160,7 @@ function DnsLab({paused=false}:{paused?:boolean}){
  const webLabel=scenario==='block'?'이번 새 이름 조회에 의존한 웹 연결 중단':'클라이언트에서 웹 서버로 직접 연결';
  const choose=(key:keyof typeof diagrams.dnsFlow)=>{setScenario(key);playback.restart(11)};
  return <TermExplanation term="dnsmasq" paused={paused}><section tabIndex={0} className="diagram-panel restored-diagram restored-dns" data-scenario={scenario} data-intro-step={introStep} data-intro-state={introStates[introStep]} data-complete={complete} data-flow-cycle={playback.cycle} data-flow-resting={playback.resting} data-playback={flowRunning?'running':'paused'} data-step={step} data-playback-epoch={playbackEpoch} aria-label="일반 DNS 조회에서 보호 DNS 계층을 추가하는 과정과 두 가지 DNS 응답 사례">
-  <p className="diagram-caption dns-implementation-caption">동작 설명 · <TermTarget term="dnsmasq">dnsmasq</TermTarget> · 실시간 질의 아님</p>
+  <p className="diagram-caption dns-implementation-caption">동작 설명 · <TermTarget term="dnsmasq">dnsmasq</TermTarget></p>
   <div className="restored-controls" role="group" data-flow-cue={playback.hint} aria-label="DNS 시나리오 선택">{(Object.keys(diagrams.dnsFlow) as (keyof typeof diagrams.dnsFlow)[]).map(key=><button type="button" key={key} data-scenario-step="true" aria-pressed={scenario===key} onClick={()=>choose(key)}>{diagrams.dnsFlow[key].label}</button>)}</div>
   <p className="dns-intro-status" aria-live={playback.automatic?"off":"polite"} aria-atomic="true"><DiagramText value={status} values={statuses} paused={textPaused}/></p>
   <div className="restored-dns-map" ref={mapRef}>
@@ -189,7 +186,7 @@ function PolicyLifecycle({paused=false}:{paused?:boolean}){
  const [active,setActive]=useState(0);
  const playback=useDiagramPlayback({steps:1,paused});
  const current=policyTimeline[active];
- return <TermExplanation term="ttl" paused={paused}><div tabIndex={0} role="region" aria-label="정책 적용과 철회 설명용 시뮬레이션" className="diagram-panel policy-lifecycle" data-step={active} data-playback={playback.playing?'running':'paused'}><p className="diagram-caption">정책 응답 변화 · 설명용 재현</p><h2>정상 → 차단 → 철회: 같은 이름의 응답 변화</h2>
+ return <TermExplanation term="ttl" paused={paused}><div tabIndex={0} role="region" aria-label="정책 적용과 철회 설명용 시뮬레이션" className="diagram-panel policy-lifecycle" data-step={active} data-playback={playback.playing?'running':'paused'}><p className="diagram-caption">정책 응답 변화 · <TermTarget term="ttl">TTL</TermTarget></p><h2>정상 → 차단 → 철회: 같은 이름의 응답 변화</h2>
   <div className="policy-review-gates" role="list" aria-label="후보 검토·승인·만료의 생애주기">{["URL 발견","approved: false","검토·서명 승인","만료 또는 철회"].map((x,i)=><span role="listitem" key={x}>{x}{i<3&&<b aria-hidden="true">→</b>}</span>)}</div>
   <div ref={playback.diagramRef} className="policy-timeline" data-flow-cue={playback.hint} role="group" aria-label="정상 차단 철회 상태 선택">
    {policyTimeline.map((state,i)=><div className="policy-timeline-stage" key={state.phase}>
@@ -198,13 +195,12 @@ function PolicyLifecycle({paused=false}:{paused?:boolean}){
    </div>)}
   </div>
   <div className="policy-timeline-result" aria-live="polite" aria-atomic="true"><span><DiagramText value={`선택한 시점 · ${current.phase}`} values={policyTimeline.map(state=>`선택한 시점 · ${state.phase}`)} paused={paused}/></span><strong><DiagramText value={current.response} values={policyTimeline.map(state=>state.response)} paused={paused}/></strong><p><DiagramText value={current.note} values={policyTimeline.map(state=>state.note)} paused={paused}/></p></div>
-  <p className="visual-caveat">서버 응답 복원과 단말의 양성·음성 캐시를 구분 · <TermTarget term="ttl">TTL</TermTarget></p>
  </div></TermExplanation>;
 }
 function Topology({publicMode:initialPublic,comparison=true}:{publicMode:boolean;comparison?:boolean}){
  const [publicMode,setPublicMode]=useState(initialPublic);
  const nodes=publicMode?diagrams.topology.proposal:diagrams.topology.lab;
- return <div tabIndex={0} role="region" aria-label="운영 주체 및 DNS 토폴로지" className="diagram-panel topology-panel restored-diagram restored-topology"><p className="diagram-caption">{publicMode?"PROPOSED OPERATION · NOT DEPLOYED":"LAB IMPLEMENTATION · NOT A PRODUCTION PILOT"}</p><h2>{publicMode?"운영 주체가 달라져도 검증 책임은 남습니다":"정책 공급과 이름 조회를 분리합니다"}</h2>
+ return <div tabIndex={0} role="region" aria-label="운영 주체 및 DNS 토폴로지" className="diagram-panel topology-panel restored-diagram restored-topology"><p className="diagram-caption">{publicMode?"PROPOSED OPERATION":"LAB IMPLEMENTATION"}</p><h2>{publicMode?"운영 주체가 달라져도 검증 책임은 남습니다":"정책 공급과 이름 조회를 분리합니다"}</h2>
   {comparison&&<div className="restored-controls" role="group" aria-label="토폴로지 운영 주체 선택"><button type="button" data-scenario-step="true" aria-pressed={!publicMode} onClick={()=>setPublicMode(false)}>실험실</button><button type="button" data-scenario-step="true" aria-pressed={publicMode} onClick={()=>setPublicMode(true)}>공공 · ISP 제안</button></div>}
   <div className="topology-flow" aria-live="polite">
    <div className="topology-step"><DiagramIcon name="document"/><span>01</span><strong>{nodes[0].name}</strong><small>{nodes[0].desc}</small></div>
@@ -213,15 +209,13 @@ function Topology({publicMode:initialPublic,comparison=true}:{publicMode:boolean
    <BidirectionalLane className="topology-dns-lane" reverse verticalOnMobile label="클라이언트에서 보호 DNS로 질의, 보호 DNS에서 클라이언트로 응답"/>
    <div className="topology-step topology-step-client"><DiagramIcon name="client"/><span>03</span><strong>{nodes[2].name}</strong><small>{nodes[2].desc}</small></div>
   </div>
-  <p className="visual-caveat">{publicMode?"공공·ISP 운영 구상 · 도입 조건: 협약·이용자 동의·운영 검증":"정책 공급과 DNS 조회를 분리합니다. 다음 검증은 실제 LAN 장비입니다."}</p>
  </div>;
 }
 function GovernanceReview(){
  const steps=diagrams.governance;
  return <div className="evidence-stack">
-  <div className="evidence-header"><span>PROPOSED APPEAL & ROLLBACK · NOT DEPLOYED</span><h2>이의신청에서 복구 확인까지</h2></div>
+  <div className="evidence-header"><span>PROPOSED APPEAL & ROLLBACK</span><h2>이의신청에서 복구 확인까지</h2></div>
   {steps.map((step,i)=><article className="evidence-row" key={step.title}><span>0{i+1}</span><div><strong>{step.title}</strong><p>{step.detail}</p></div></article>)}
-  <p className="visual-caveat">심사 권한·처리 기한·복구 SLA는 운영 주체 간 합의와 실증이 필요합니다.</p>
  </div>;
 }
 function EvidenceVisual({slide}:{slide:DeckSlide}){

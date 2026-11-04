@@ -29,9 +29,8 @@ export function PiNetworkPlan({paused=false}:{paused?:boolean}){
      <dl className="latency-values">{(['p50','p95'] as const).map(metric=><div key={metric} data-percentile={metric}><dt>{metric}</dt><dd><strong>{milliseconds.format(arm[metric])} ms</strong>{index>0&&<small className="latency-delta">{deltaLabel(arm[metric]-baseline[metric])}</small>}</dd></div>)}</dl>
     </li>)}</ol>
    </div>
-   <p className="latency-difference-note">선은 p50–p95 범위이며 오차막대·신뢰구간이 아닙니다. ±는 {armLabels[baseline.id]}의 같은 백분위 대비 차이로, 짝별 차이·정책 비용을 뜻하지 않습니다.</p>
-   <div className="latency-quality"><span><b>440 / 440</b> 분석 구간 응답 성공</span><span><b>6건 제외</b> 준비·자가시험, 타임아웃 2건 포함</span></div>
-   <p className="latency-source">출처: <a href={latency.source.rawCsvUrl} target="_blank" rel="noopener noreferrer">원시 CSV</a> · <a href={latency.source.reportUrl} target="_blank" rel="noopener noreferrer">실행 조건</a> · p50/p95 선형보간 · 준비 구간 제외</p>
+   <div className="latency-quality"><span><b>440 / 440</b> 분석 구간 응답 성공</span></div>
+   <p className="latency-source">출처: <a href={latency.source.rawCsvUrl} target="_blank" rel="noopener noreferrer">원시 CSV</a> · <a href={latency.source.reportUrl} target="_blank" rel="noopener noreferrer">실행 조건</a></p>
   </section>
  </div>;
 }

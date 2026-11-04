@@ -1,8 +1,8 @@
 {
   "id": "bypass",
   "chapter": "03 · 검증",
-  "title": "실제 DNS 응답과\n격리 실험의 반례를 구분했습니다",
-  "subtitle": "2026.11.04 · 실제 질의 8건 · 루프백 합성 240건",
+  "title": "실제 DNS 질의와\n응답 기록을 확인했습니다",
+  "subtitle": "2026.11.04 · 실제 질의 8건 · 기본 및 사설 DNS",
   "seconds": 150,
   "kind": "limits",
   "status": "evidence-snapshot",
@@ -16,28 +16,27 @@
       "body": "google.com A는 UDP·TCP 모두 NOERROR·주소 6개"
     },
     {
-      "title": "격리 fixture 240/240",
-      "body": "합성 기대 응답 일치 · CNAME 공백·SUBTREE 과차단 포함"
+      "title": "경로 및 전송 비교",
+      "body": "로컬 stub 1개 vs 사설 DNS 6개 · UDP와 TCP 동일 응답"
     },
     {
       "title": "판정 경계",
       "body": "8/8은 정상 응답 관측 · 차단 성공률이나 현재 정책 확인이 아님"
     }
   ],
-  "notes": "[화면] 먼저 실제 DNS 질의의 기본·사설 DNS 경로와 응답을 비교한 다음, 별도의 합성 fixture 결과와 반례 탭을 확인합니다.\n\n[발표] 11월 4일 11시 42분 KST, 실험 호스트에서 google.com과 example.com A를 기본 DNS와 사설 DNS에 UDP와 TCP로 각각 질의했습니다. 여덟 건 모두 NOERROR와 주소를 반환했고, 사설 DNS의 google.com은 UDP와 TCP 모두 주소 여섯 개였습니다. 이때 해당 질의의 차단 응답은 관측되지 않았습니다. 여덟 건은 정상 응답 관측이지 보호 성공률이 아닙니다.\n\n기본 dig는 로컬 스텁에 질의합니다. 실제 후단 서버와 캐시 사용은 확인하지 않았습니다. 사설 경로는 @${PRIVATE_DNS}를 명시해 직접 질의했습니다. 명령, 응답 상태와 시간은 민감 정보를 제외한 공개 발췌본에서 확인할 수 있습니다. 이전 2026-11-04 02:27:45 UTC 서명 보고 sequence 235는 EXPIRED였지만 현재 상태는 재확인하지 않았고 이번 응답의 원인도 단정할 수 없습니다. 빈 출력만으로 차단을 판단하지 않습니다.\n\n별도로 11월 4일 루프백 fixture에서 세 번 반복한 합성 240건은 기대 응답이 모두 일치했고 변조 서명도 거부됐습니다. 여기에 CNAME 보호 공백 12건과 정상 자식에 대한 SUBTREE 과차단 12건이 포함됩니다. 이는 실제 악성 탐지율이나 운영 노드 차단·철회의 성공을 보여주지 않습니다.\n\nCNAME 반례는 alias.test가 blocked.test의 주소를 반환하는 것이고, SUBTREE 반례는 정상 child.blocked.test까지 NXDOMAIN이 되는 것입니다. 같은 호스트의 정상 /home과 악성 /phish도 DNS 이름만으로 구분할 수 없어 URL 수준의 보호와 사이트 복구가 필요합니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
+  "notes": "[화면] 실제 DNS 질의의 기본·사설 DNS 경로와 응답을 터미널 기록에서 확인합니다.\n\n[발표] 11월 4일 11시 42분 KST, 실험 호스트에서 google.com과 example.com A를 기본 DNS와 사설 DNS에 UDP와 TCP로 각각 질의했습니다. 여덟 건 모두 NOERROR와 주소를 반환했고, 사설 DNS의 google.com은 UDP와 TCP 모두 주소 여섯 개였습니다. 이때 해당 질의의 차단 응답은 관측되지 않았습니다. 여덟 건은 정상 응답 관측이지 보호 성공률이 아닙니다.\n\n기본 dig는 로컬 스텁에 질의합니다. 실제 후단 서버와 캐시 사용은 확인하지 않았습니다. 사설 경로는 @${PRIVATE_DNS}를 명시해 직접 질의했습니다. 명령, 응답 상태와 시간은 민감 정보를 제외한 공개 발췌본에서 확인할 수 있습니다. 이전 2026-11-04 02:27:45 UTC 서명 보고 sequence 235는 EXPIRED였지만 현재 상태는 재확인하지 않았고 이번 응답의 원인도 단정할 수 없습니다. 빈 출력만으로 차단을 판단하지 않습니다.\n\nCNAME 별칭이나 SUBTREE와 같은 구조적 한계와 정책 상태는 별도로 검토합니다. 같은 호스트의 정상 /home과 악성 /phish도 DNS 이름만으로 구분할 수 없어 URL 수준의 보호와 사이트 복구가 필요합니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
   "sources": [
     "dns-query-20261104",
-    "dns-fixture-20261104",
     "review-current",
     "dns-runtime-current",
     "validation"
   ],
   "mood": "concerned",
   "presentation": {
-    "title": "실제 DNS 응답과\n격리 실험의 반례를 구분했습니다",
-    "subtitle": "2026.11.04 · 실제 질의 8건 · 루프백 합성 240건",
-    "cue": "실제 DNS 질의와 합성 루프백 fixture의 범위를 분리해 설명합니다.",
-    "reviewNote": "2026-11-04 실험은 f1977cce 기반이며 최신 main 재실행이 아닙니다. 실측 8/8은 주소 응답 관측이고 보호 성공률이 아닙니다. 합성 240/240은 CNAME 공백 12건과 SUBTREE 과차단 12건을 포함합니다. 첫 20건 부분 실행은 신뢰키 권한 때문에 실패했고 fixture 권한 수정 후 별도 실행했습니다.",
+    "title": "실제 DNS 질의와\n응답 기록을 확인했습니다",
+    "subtitle": "2026.11.04 · 실제 질의 8건 · 기본 및 사설 DNS",
+    "cue": "실제 DNS 질의 기록과 기본·사설 DNS 응답 결과를 설명합니다.",
+    "reviewNote": "2026-11-04 실험 호스트에서 실제 질의 8건을 수행한 기록입니다. 실측 8/8은 주소 응답 관측이고 보호 성공률이 아닙니다.",
     "points": [
       {
         "title": "실제 DNS 질의 8건",
@@ -48,22 +47,22 @@
         "body": "google.com A는 UDP·TCP 모두 NOERROR·주소 6개"
       },
       {
-        "title": "격리 fixture 240/240",
-        "body": "합성 기대 응답 일치 · CNAME 공백·SUBTREE 과차단 포함"
+        "title": "경로 및 전송 비교",
+        "body": "로컬 stub 1개 vs 사설 DNS 6개 · UDP와 TCP 동일 응답"
       },
       {
         "title": "판정 경계",
         "body": "8/8은 정상 응답 관측 · 차단 성공률이나 현재 정책 확인이 아님"
       }
     ],
-    "compactTitle": "실제 DNS 질의와 합성 반례"
+    "compactTitle": "실제 DNS 질의 기록"
   },
   "reading": {
-    "title": "실제 DNS 질의와 별도 합성 실험",
+    "title": "실제 DNS 질의 관측 기록",
     "columns": [
-      "실험",
-      "관측",
-      "해석"
+      "질의 조건",
+      "관측 결과",
+      "해석 및 경계"
     ],
     "rows": [
       [
@@ -77,14 +76,14 @@
         "해당 시점 차단 응답 미관측"
       ],
       [
-        "루프백 합성 240건",
-        "기대 응답 240/240 · 변조 서명 거부",
-        "운영 노드 차단·철회 증거 아님"
+        "기본 로컬 stub vs 사설 DNS",
+        "기본 1개 주소 / 사설 6개 주소 응답",
+        "경로별 전달 동작 확인"
       ],
       [
-        "CNAME / SUBTREE",
-        "공백 12건 / 정상 하위 과차단 12건",
-        "두 반례도 기대 결과에 포함"
+        "UDP vs TCP 전송 방식",
+        "두 프로토콜 모두 동일한 주소 응답",
+        "전송 계층별 일관된 해석"
       ]
     ],
     "takeaway": "기본 스텁의 후단 서버·캐시와 현재 사설 DNS 정책은 확인하지 않았습니다. 빈 출력은 차단 판정이 아닙니다.",
@@ -92,34 +91,34 @@
     "sourceLabel": "2026.11.04 공개 발췌본 ↗"
   },
   "headline": {
-    "focus": "보호 DNS 경로",
-    "tone": "risk"
+    "focus": "실제 DNS 질의 기록",
+    "tone": "info"
   },
   "visual": {
     "type": "cname-chain",
-    "title": "CNAME 별칭에서의 보호 공백",
-    "sourceKey": "dns-fixture-20261104",
+    "title": "실제 DNS 질의 기록",
+    "sourceKey": "dns-query-20261104",
     "nodes": [
       {
-        "label": "요청된 별칭",
-        "value": "alias.test",
-        "state": "ALLOW"
+        "label": "질의 도메인",
+        "value": "google.com",
+        "state": "NOERROR"
       },
       {
-        "label": "체인 내 차단 대상",
-        "value": "blocked.test",
-        "state": "BLOCK"
+        "label": "사설 DNS 경로",
+        "value": "PRIVATE_DNS",
+        "state": "DIRECT"
       },
       {
-        "label": "반환된 주소",
-        "value": "192.0.2.20",
+        "label": "응답 주소",
+        "value": "6개 주소 반환",
         "state": "A"
       }
     ],
     "links": [
-      "CNAME",
-      "주소 응답"
+      "직접 질의",
+      "주소 반환"
     ],
-    "caveat": "11월 4일 비특권 루프백 fixture · AAAA 응답은 2001:db8::20. 실제 노드 결과가 아닙니다."
+    "caveat": "2026.11.04 02:42 UTC 실험 호스트 질의 기록 발췌 · 차단 응답 미관측"
   }
 }

@@ -42,7 +42,6 @@ export function Workspace({email}:{email:string}){
   <main className="workspace shell"><div className="workspace-heading"><span className="section-eyebrow">SERVER-VERIFIED SESSION</span><h1>오늘도 피라냥과<br/><em>근거를 찾아볼까요?</em></h1><p>연구실 접근 권한이 서버에서 확인되었습니다. 실습과 발표는 공개이지만 개인 정보는 인증 구간에서만 확인합니다.</p><small>인증된 계정 · {email}</small></div><div className="workspace-mascot"><img src="/assets/piranyang/poses/work.webp" alt="피라냥이 사이버 보안 연구를 하는 모습" width="448" height="432"/></div>
    <section className="workspace-links" aria-label="연구 메뉴"><a href="/dashboard"><span>00 / OPERATIONS CENTER</span><strong>DNS 관제센터</strong><p>정책 검토·배포와 서명된 노드 상태를 확인합니다.</p><b>↗</b></a><Link href="/fishing"><span>01 / SECURITY EXERCISE</span><strong>가상 사이트 검증 실습</strong><p>보기 좋은 사이트와 진짜 신뢰성의 차이를 검증합니다.</p><b>↗</b></Link><Link href="/capstone"><span>02 / PROJECT PRESENTATION</span><strong>Protective DNS 캡스톤</strong><p>정책·집행·증거·한계를 따라가는 발표입니다.</p><b>↗</b></Link></section>
    {state==="error"&&<p role="alert" className="danger-text">로그아웃 결과를 확인하지 못했습니다. 연결 상태를 확인한 뒤 다시 시도해 주세요.</p>}
-   <p className="workspace-footnote">인증은 접근 허가와 별개입니다. 이후 개인 자료 API를 추가할 때 서버 권한 검증과 RLS를 별도로 적용해야 합니다.</p>
   </main>
  </div>;
 }

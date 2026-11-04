@@ -5,7 +5,6 @@ import "./stage-introduction.css";
 import {useDiagramVisibility} from "./useDiagramVisibility";
 import type {DeckSlide,SourceRegistry} from "@/lib/deck";
 import {TermExplanation,TermTarget} from "./TermExplanation";
-import {CnameWalkthrough} from "./CnameWalkthrough";
 import {ServerDnsObservation} from "./ServerDnsObservation";
 import "./server-dns-observation.css";
 import "./editorial-visual.css";
@@ -41,7 +40,6 @@ export function IndependentTrends({visual,sources,paused=false}:{visual:Trend;so
 
    <div className="series-footer">{series.context===undefined&&<span>막대 범위 0–{format(series.max,series.unit)}</span>}{[series.sourceKey,...(series.additionalSourceKeys||[])].map(key=><a key={key} href={sources[key].url} rel="noopener noreferrer" target="_blank">{sources[key].label} ↗</a>)}</div>
   </section>)}</div>
-  <p className="trend-warning">{visual.caveat}</p>
  </figure>;
 }
 export function AdoptionCompare({paused=false}:{paused?:boolean}){
@@ -57,23 +55,10 @@ export function AdoptionCompare({paused=false}:{paused?:boolean}){
   {selected.condition&&<div className="adoption-role-detail" id="adoption-role-detail" role="status" aria-live="polite"><small>{selected.title} · 적용 조건</small><strong>{selected.condition}</strong><p>{selected.detail}</p></div>}
  </section></TermExplanation>;
 }
-export function DnsEvidenceDashboard({visual,paused=false}:{visual:Chain;paused?:boolean}){
- const [mode,setMode]=useState<"server"|"fixture">("server");
- const [caseName,setCaseName]=useState<"cname"|"subtree">("cname");
- return <TermExplanation term={mode==="fixture"&&caseName==="cname"?"cname":undefined} paused={paused}><section className="diagram-panel dns-evidence-dashboard" aria-label="실제 DNS 관측과 격리 실험">
-  <div className="dns-observation-modes" role="group" aria-label="검증 자료 선택">
-   <button type="button" data-scenario-step="true" data-evidence-mode="server" aria-pressed={mode==="server"} onClick={()=>setMode("server")}>실제 server 질의</button>
-   <button type="button" data-scenario-step="true" data-evidence-mode="fixture" aria-pressed={mode==="fixture"} onClick={()=>setMode("fixture")}>격리 fixture</button>
-  </div>
-  {mode==="server"?<ServerDnsObservation/>:<>
-   <div className="dns-evidence-top"><strong>240<span>/240</span></strong><div><b>11월 4일 · 합성 DNS 기대 응답 일치</b><small>3회 × 4상태 × 5이름 × A/AAAA × UDP/TCP</small><small>루프백 fixture · 실제 탐지율 아님 · 두 반례 포함</small></div></div>
-   <div className="dns-evidence-tabs" role="group" aria-label="반례 전환" data-flow-alternatives="true">
-    <button type="button" data-scenario-step="true" aria-pressed={caseName==="cname"} onClick={()=>setCaseName("cname")}>CNAME 보호 공백</button>
-    <button type="button" data-scenario-step="true" aria-pressed={caseName==="subtree"} onClick={()=>setCaseName("subtree")}>SUBTREE 과차단</button>
-   </div>
-   {caseName==="cname"?<CnameWalkthrough visual={visual} paused={paused}/>:<SubtreeIntroduction paused={paused}/>}
-  </>}
- </section></TermExplanation>;
+export function DnsEvidenceDashboard({visual,paused=false}:{visual?:Chain;paused?:boolean}={}){
+ return <section className="diagram-panel dns-evidence-dashboard" aria-label="실제 DNS 질의 기록">
+  <ServerDnsObservation/>
+ </section>;
 }
 
 const milestones=[
@@ -86,7 +71,6 @@ export function RoadmapVisual(){
  return <section className="diagram-panel editorial-roadmap" aria-label="추가 보호 효과와 운영 품질의 다음 검증">
 
   <ol>{milestones.map(m=><li key={m[0]}><span>{m[0]}</span><div><small>{m[3]}</small><h3>{m[1]}</h3><p>{m[2]}</p></div></li>)}</ol>
-  <p className="visual-caveat">KISA·NCSC 선례를 참고한 제안 · 가입자 선택·운영 책임·구제 절차 검토</p>
  </section>;
 }
 export function ThanksVisual(){
@@ -115,11 +99,4 @@ export function IntroArchitecture({paused=false}:{paused?:boolean}){
 }
 
 
-/** The counterexample has three causal stages, unlike static comparison cards. */
-function SubtreeIntroduction({paused}:{paused:boolean}){
- const playback=useStageIntroduction(3,paused);
- const state=(index:number)=>playback.reduced?'done':playback.step===index?'active':index<playback.step?'done':'pending';
- return <div ref={playback.ref} className="subtree-case stage-introduction" data-flow-cycle={playback.cycle} data-step={playback.step} data-playing={playback.playing} data-complete={playback.complete} role="img" aria-label="부모 blocked.test를 SUBTREE 차단하면 정상 자식 child.blocked.test도 NXDOMAIN이 되는 반례">
-  <small>정책 대상: BLOCK · SUBTREE</small><strong data-stage-state={state(0)}>blocked.test</strong><b className="stage-connector" data-stage-state={state(1)} aria-hidden="true">↓ 자식 이름에 적용 ↓</b><strong className="subtree-affected" data-stage-state={state(2)}>child.blocked.test · NXDOMAIN</strong><p>정상 하위 서비스까지 영향을 받는 과차단</p>
- </div>;
-}
+

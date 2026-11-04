@@ -42,7 +42,7 @@ def _wheel_reach(page,target,direction,context):
 
 def _check_natural_reachability(page,context):
     first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
-    last=page.locator('.server-dns-note a').last
+    last=page.locator('.dns-terminal-routes button').last
     _wheel_reach(page,last,1,context)
     page.screenshot(path=str(OUT/f'terminal-scroll-end-{context}.png'),full_page=True)
     _wheel_reach(page,first,-1,context)
@@ -52,7 +52,7 @@ def _check_natural_reachability(page,context):
         assert _visible_without_scrolling(focused),(context,'focused control clipped')
         if last.evaluate('el=>el===document.activeElement'):break
         page.keyboard.press('Tab')
-    else:raise AssertionError((context,'source link missing from Tab order'))
+    else:raise AssertionError((context,'terminal control missing from Tab order'))
 
 
 def _assert_terminal_visibility(page):
@@ -103,13 +103,6 @@ def check_dns_terminal(browser, origin):
             }''')
             _assert_terminal_visibility(page)
             _check_natural_reachability(page,f'{width}x{height}')
-            if (width,height)==(390,844):
-                first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
-                _wheel_reach(page,first,-1,'mode-cycle')
-                page.get_by_role('button',name='격리 fixture',exact=True).click()
-                expect(page.locator('.cname-walkthrough')).to_be_visible()
-                page.get_by_role('button',name='실제 server 질의',exact=True).click()
-                _check_natural_reachability(page,'390x844-server-fixture-server')
             for query in CAPTURE['queries']:
                 root=page.locator('.server-dns-observation')
                 root.get_by_role('group',name='저장된 질의 이름 선택',exact=True).get_by_role('button',name=query['domain'],exact=True).click()
@@ -128,7 +121,7 @@ def check_dns_terminal(browser, origin):
                 assert '\ufffd' not in root.inner_text()
                 assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',root.inner_text())
                 expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',query['timestamp'])
-                for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status','.server-dns-result','.server-dns-note'):
+                for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                     _assert_readable(root.locator(selector),(width,height,query['id'],selector))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 total+=1

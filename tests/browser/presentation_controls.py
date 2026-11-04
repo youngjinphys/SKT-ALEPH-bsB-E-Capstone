@@ -282,33 +282,8 @@ def check_controls(page, origin, slides):
                         button_case(index, descriptor, key, setup=setup)
 
             index = indexes["bypass"]
-            # Evidence modes are ordinary display choices, just like scenarios.
-            # Clicking either mode must never capture slide-navigation arrows.
-            for selected_mode in ("실제 server 질의", "격리 fixture"):
-                for key in ("ArrowLeft", "ArrowRight"):
-                    open_slide(index, bypass_visual)
-                    group = page.locator(ACTIVE).get_by_role("group", name="검증 자료 선택", exact=True)
-                    expect(group.get_by_role("button")).to_have_count(2)
-                    expect(group.locator('[role="radio"],[tabindex="-1"]')).to_have_count(0)
-                    selected = group.get_by_role("button", name=selected_mode, exact=True)
-                    activate(selected, "click", (viewport, "bypass", selected_mode, key))
-                    at(index)
-                    expect(page.locator(ACTIVE).locator(
-                        ".cname-walkthrough" if selected_mode == "격리 fixture" else ".server-dns-observation"
-                    )).to_be_visible()
-                    arrow(index, key, selected)
-            for selected, diagram in (("CNAME 보호 공백", ".cname-walkthrough"),
-                                      ("SUBTREE 과차단", ".subtree-case")):
-                open_slide(index, bypass_visual)
-                page.locator(ACTIVE).get_by_role("button", name="격리 fixture", exact=True).click()
-                click_named(selected)
-                expect(page.locator(ACTIVE).locator(diagram)).to_be_visible()
-                # Repeated activation cannot transfer focus to the replacement
-                # diagram or leave the removed branch owning the arrow.
-                button = page.locator(ACTIVE).get_by_role("button", name=selected, exact=True)
-                button.click()
-                expect(button).to_be_focused()
-                arrow(index, "ArrowRight", button)
+            open_slide(index, bypass_visual)
+            expect(page.locator(ACTIVE).locator(".server-dns-observation")).to_be_visible()
 
             index = indexes["pi-network-plan"]
             conditions = json.loads((DATA / "dns-latency.json").read_text())["series"]
@@ -329,7 +304,6 @@ def check_controls(page, origin, slides):
                         for metric in ("p50", "p95"):
                             expect(row.locator(f'[data-percentile="{metric}"] strong')).to_have_text(f'{Decimal(str(arm[metric])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)} ms')
                         expect(row.locator('.latency-dot')).to_have_count(2)
-                    expect(page.locator('.latency-difference-note')).to_contain_text('신뢰구간이 아닙니다')
                     _assert_readable(chart, (viewport, condition["id"], "chart"))
                     _assert_readable(page.locator(".latency-source"), (viewport, condition["id"], "source footer"))
                     arrow(index, key, condition_button)

@@ -26,6 +26,5 @@ export function CnameWalkthrough({visual,paused=false}:{visual:CnameVisual;pause
    {visual.nodes.map((node,i)=><span className="cname-progress-reserve" aria-hidden="true" key={i}>단계 {i+1} / {visual.nodes.length} · {node.label} · 모션 줄이기: 전체 경로 표시</span>)}
    <span className="cname-progress-current"><DiagramText value={labels[step]} values={labels} paused={paused}/></span>
   </p>
-  <p className="visual-caveat">{visual.caveat}</p>
  </section>;
 }

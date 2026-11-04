@@ -84,9 +84,6 @@ def check_motion(page, origin):
         assert abs(before['height'] - after['height']) < 1, selector
     open_slide('http')
     assert_fade('.protocol-stage strong')
-    open_slide('bypass')
-    page.get_by_role('button', name='격리 fixture', exact=True).click()
-    assert_fade('.cname-progress-current')
 
     # OS reduced motion and deck pause show current text immediately, never
     # retain a half-faded/blank layer. Controls remain usable without motion.
@@ -115,14 +112,11 @@ def check_motion(page, origin):
     assert page.locator('.restored-dns').evaluate('el => el.scrollWidth <= el.clientWidth + 1')
     for width, height in ((1366, 768), (390, 667)):
         page.set_viewport_size({"width": width, "height": height})
-        for slide in ('dns', 'architecture', 'policy-demo', 'http', 'topology-public', 'bypass'):
+        for slide in ('dns', 'architecture', 'policy-demo', 'http', 'topology-public'):
             open_slide(slide)
             visual_tab = page.get_by_role('button', name='도식', exact=True)
             if visual_tab.count() and visual_tab.is_visible():
                 visual_tab.click()
-            if slide == 'bypass':
-                page.get_by_role('button', name='격리 fixture', exact=True).click()
-                expect(page.locator('.slide-active .cname-progress-current')).to_be_visible()
             for text in page.locator('.slide-active .diagram-text-swap').all():
                 if not text.is_visible():
                     continue

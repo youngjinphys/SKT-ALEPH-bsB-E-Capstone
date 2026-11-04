@@ -82,22 +82,7 @@ def check_flow(browser, origin):
 
         # Internal causal stages loop, but paired demonstrations remain chosen.
         open_slide('bypass', '.dns-evidence-dashboard')
-        page.get_by_role('button', name='격리 fixture', exact=True).click()
-        page.locator('.chain-step').first.scroll_into_view_if_needed()
-        chain = page.locator('.cname-walkthrough')
-        loop(chain, 1)
-        old_packet = page.locator('.cname-packet').first.element_handle()
-        # Keep the scrolled diagram in view. Focusing the outer viewport can
-        # move it away and legitimately suspend its visibility-gated replay.
-        page.keyboard.press('r')
-        expect(chain).to_have_attribute('data-flow-cycle', '0')
-        old_packet.wait_for_element_state('hidden', timeout=5000)
-        assert old_packet.evaluate('el => !el.isConnected')
-        expect(page.get_by_role('button', name='CNAME 보호 공백', exact=True)).to_have_attribute('aria-pressed', 'true')
-        page.get_by_role('button', name='SUBTREE 과차단', exact=True).click()
-        subtree = page.locator('.subtree-case')
-        subtree.scroll_into_view_if_needed()
-        loop(subtree, 1)
+        expect(page.locator('.server-dns-observation')).to_be_visible()
         expect(page.get_by_role('button', name='SUBTREE 과차단', exact=True)).to_have_attribute('aria-pressed', 'true')
 
         open_slide('topology-public', '.dns-route-topology')

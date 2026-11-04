@@ -1,20 +1,6 @@
 @font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-400.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-700.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
-.deck-root .dns-observation-modes{font-family:"Aleph DNS UI","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-synthesis:none}
-.dns-observation-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dns-observation-modes button{font-family:inherit;background:#123247;color:#d1eefa;border:1px solid #598198;padding:8px 11px;border-radius:8px;min-height:36px;font-size:clamp(11px,.8vw,14px);font-weight:700}.dns-observation-modes button[aria-pressed=true]{background:#28516a;border-color:#a6d6eb}
 @media(max-height:800px){.server-dns-observation{gap:4px}.server-dns-commands>div{padding:4px 8px}.server-dns-observation .server-dns-result{padding:4px 8px}}
-/* Keep the separate fixture controls and all three CNAME nodes visible on narrow screens. */
-@media(max-width:780px){
- .deck-root .slide-bypass .dns-evidence-top{grid-template-columns:auto minmax(0,1fr);gap:8px}
- .deck-root .slide-bypass .dns-evidence-top>strong{font-size:32px}
- .deck-root .slide-bypass .dns-evidence-top>div b{font-size:12px;line-height:1.2}
- .deck-root .slide-bypass .dns-evidence-top>div small{font-size:10px;line-height:1.2}
- .deck-root .slide-bypass .cname-walkthrough .chain-step{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:1px 7px;padding:3px 7px;align-items:center}
- .deck-root .slide-bypass .cname-walkthrough .chain-step>span{grid-column:1;grid-row:1;font-size:11px;line-height:1.2}
- .deck-root .slide-bypass .cname-walkthrough .chain-step>b{grid-column:2;grid-row:1;font-size:11px;line-height:1.2}
- .deck-root .slide-bypass .cname-walkthrough .chain-step>strong{grid-column:1;grid-row:2;font-size:13px;line-height:1.2}
- .deck-root .slide-bypass .cname-walkthrough .cname-progress{margin-top:3px;font-size:11px}
-}
 
 /* Glass belongs to the window chrome. Transcript pixels stay dark, crisp and
    high contrast; backdrop blur never filters the foreground text. The build

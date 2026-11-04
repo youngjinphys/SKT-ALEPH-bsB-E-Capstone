@@ -23,7 +23,7 @@ export function ProtocolWalkthrough({paused=false,renderIcon}:{paused?:boolean;r
    <h3>{row.label}</h3><div ref={(mobile?row.id===protocol:row.id===diagrams.protocolRows[0].id)?playback.diagramRef:undefined} className="restored-protocol-path">{row.steps.map((item,i)=><Fragment key={item.title}>
     <article className="restored-node" data-active={playback.step===i} aria-current={playback.step===i?'step':undefined}>{renderIcon(item.icon)}<strong>{item.title}</strong><small>{item.detail}</small></article>
     {i<row.steps.length-1&&<span className="restored-protocol-arrow" data-active={playback.step===i+1} data-blocked={row.id==='https'&&i===1} aria-hidden="true"><b>{row.id==='https'&&i===1?'⊣':'→'}</b>{row.id==='http'&&<i className="protocol-packet"/>}</span>}
-   </Fragment>)}</div><p className="visual-caveat">{row.boundary}</p>
+   </Fragment>)}</div>
   </section>)}
   <div className="protocol-control-strip"><div className="protocol-stage" aria-live={playback.automatic?"off":"polite"} aria-atomic="true"><span>{playback.step+1} / 3</span><strong><DiagramText value={activeStages[playback.step]} values={activeStages} paused={paused}/></strong></div>
   </div>
