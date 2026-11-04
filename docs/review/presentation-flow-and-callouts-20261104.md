@@ -48,3 +48,5 @@ Exact CI on `81162b3` passed the complete flow/replay suite and all callout/conn
 ## Integrated evidence-mode navigation
 
 The new server/fixture evidence selector initially used a radio group with arrow-key interception. That contradicted the existing presentation requirement: after choosing an in-slide display, Left/Right must still navigate slides. Use native pressed buttons in a labeled group, with normal Tab order and no custom key handler. Keep genuine editable inputs and keyboard-operated widgets protected by the deck guard. The exhaustive audit now explicitly clicks each evidence mode and requires slide navigation in both directions, alongside the existing scenario checks.
+
+The next exact run (`be84b26`) passed the 390×844 control inventory after the policy layout correction. Its subsequent 390×720 assertion used raw viewport height instead of usable height. The 22px build footer correctly makes that viewport use the full scrolling layout. The test now computes the expected mode from actual viewport scale and resolved root padding, preserving the 700px capacity rule and all interaction checks.

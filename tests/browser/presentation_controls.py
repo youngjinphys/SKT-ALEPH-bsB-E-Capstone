@@ -137,7 +137,14 @@ def check_controls(page, origin, slides):
                 at(intermediate)
             page.evaluate("index => { window.location.hash = String(index); }", index)
         at(index)
-        expected = "desktop" if viewport[0] > 780 else "full" if viewport[1] < 700 else "panes|single"
+        # Capacity includes the actual safe-area/footer reservation. A 720px
+        # viewport with the 22px build footer correctly uses full view (698px).
+        expected = page.locator(".deck-root").evaluate("""root => {
+            const css = getComputedStyle(root), visual = window.visualViewport;
+            const usable = (visual?.height ?? innerHeight) - (parseFloat(css.paddingTop) || 0) - (parseFloat(css.paddingBottom) || 0);
+            if (usable < 700 || (visual?.scale ?? 1) > 1) return 'full';
+            return matchMedia('(max-width:780px)').matches ? 'panes|single' : 'desktop';
+        }""")
         expect(page.locator(ACTIVE)).to_have_attribute("data-mobile-layout", re.compile(rf"^(?:{expected})$"))
         if setup:
             setup()
