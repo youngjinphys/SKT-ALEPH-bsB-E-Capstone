@@ -32,10 +32,10 @@ test('current deck includes every active-slide citation and all manuscript Q&A, 
  assert.ok(!result.slideIndex.some(slide=>sequence.archived.includes(slide.id)));
  const bibliography=active.find(slide=>slide.id==='sources');
  assert.equal(active.at(-1).id,'sources');assert.equal(sequence.mainSlideCount,14);
- assert.equal(bibliography.sources.length,37);
+ assert.equal(bibliography.sources.length,38);
  const grouped=bibliography.referenceGroups.flatMap(group=>group.keys);
  assert.deepEqual(new Set(grouped),new Set(bibliography.sources));
- assert.equal(grouped.length,37);
+ assert.equal(grouped.length,38);
  assert.ok(!fs.existsSync(new URL('src/app/capstone/references/page.tsx',root)));
  const deckSource=fs.readFileSync(new URL('src/components/SlideDeck.tsx',root),'utf8');
  assert.ok(!deckSource.includes('/capstone/references'));
@@ -44,6 +44,7 @@ test('current deck includes every active-slide citation and all manuscript Q&A, 
  const expectedQuestions=text.split('# 발표자 참고 · 예상 질문과 답변')[1].match(/^## /gm).length;
  assert.equal(result.questions.length,expectedQuestions);
  for(const [i,slide] of active.entries())for(const key of slide.sources){
+  assert.ok(grouped.includes(key),`Bibliography omits ${slide.id}/${key}`);
   const url=new URL(registry[key].url);url.hash='';
   const entry=result.entries.find(entry=>{const u=new URL(entry.url);u.hash='';return u.href===url.href;});
   assert.ok(entry,`${slide.id}/${key}`);assert.ok(entry.slides.includes(i+1));

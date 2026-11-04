@@ -87,6 +87,8 @@ export function validateContent(){
  assert(sequence.slides.at(-1).id==="sources"&&reference.seconds===0,"References must follow the unchanged main presentation");
  const grouped=reference.referenceGroups.flatMap(group=>group.keys);
  assert(grouped.length===reference.sources.length&&new Set(grouped).size===grouped.length&&grouped.every(key=>reference.sources.includes(key)),"Reference groups must expose every source exactly once");
+ for(const {id} of sequence.slides)for(const key of byId.get(id).sources)
+  assert(grouped.includes(key),"Reference slide omits active citation: "+id+"/"+key);
  const seconds=sequence.slides.reduce((t,s)=>t+s.seconds,0);
  assert(seconds===1200,"20-minute presentation duration must total 1200 seconds");
  // Keep the written presenter script in the same order and 20-minute timeline.
