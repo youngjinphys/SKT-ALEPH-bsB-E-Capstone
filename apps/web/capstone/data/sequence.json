@@ -57,6 +57,10 @@
     {
       "id": "thanks",
       "seconds": 30
+    },
+    {
+      "id": "sources",
+      "seconds": 0
     }
   ],
   "archived": [
@@ -67,7 +71,6 @@
     "topology-lab",
     "metrics",
     "runbook",
-    "status",
-    "sources"
+    "status"
   ]
 }

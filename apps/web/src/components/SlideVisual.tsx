@@ -1,4 +1,5 @@
 "use client";
+import {ReferenceSlide} from "./ReferenceSlide";
 import {DiagramText} from "./DiagramText";
 import {DnsRouteTopology} from "./DnsRouteTopology";
 import {PiNetworkPlan} from "./PiNetworkPlan";
@@ -253,7 +254,7 @@ export function SlideVisual({slide,sources,motionPaused=false}:{slide:DeckSlide;
  if(slide.kind==="governance")return <GovernanceReview/>;
  if(["metrics","evidence"].includes(slide.kind))return <EvidenceTable slide={slide} paused={motionPaused}/>;
  if(slide.kind==="repro")return <EvidenceVisual slide={slide}/>;
- if(slide.kind==="sources")return <div className="diagram-panel source-overview"><p className="diagram-caption">REFERENCES · SOURCE TRACEABILITY</p><div className="source-overview-grid">{slide.sources.filter(k=>sources[k]).slice(0,8).map(k=><a key={k} href={sources[k].url} target="_blank" rel="noopener noreferrer"><strong>{sources[k].label}</strong><small>{sources[k].note||"원문 확인 ↗"}</small></a>)}</div><p className="source-navigation-hint">추가 출처와 검증 메모는 상단 노트에서 확인하세요.</p></div>;
+ if(slide.kind==="sources")return <ReferenceSlide slide={slide} sources={sources}/>;
  return <div className="diagram-panel abstract-panel"><span className="abstract-icon" aria-hidden="true">◇</span><h2>{slide.headline?.focus||slide.title.replaceAll("\n"," ")}</h2><p>확인된 조건, 경계와 책임을 분리합니다.</p><div className="abstract-trace"><i/><i/><i/><i/></div></div>;
 }
 

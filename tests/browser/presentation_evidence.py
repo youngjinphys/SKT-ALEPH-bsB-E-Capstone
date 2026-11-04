@@ -59,30 +59,44 @@ def check(page, width, height, reduced):
 def check_references(page, width, height):
     page.set_viewport_size({'width': width, 'height': height})
     page.emulate_media(reduced_motion='reduce')
-    page.goto(ORIGIN+'/capstone#friction')
+    page.goto(ORIGIN+'/capstone#sources')
     expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
-    page.get_by_role('link',name='전체 참조 페이지 보기').click()
-    expect(page.locator('.reference-page')).to_be_visible()
-    expect(page.locator('.build-timestamp')).to_have_css('position','static')
-    expect(page.locator('#slide-friction')).to_be_visible()
-    expect(page.locator('.reference-slide-list>li')).to_have_count(14)
-    expect(page.locator('.reference-questions details')).to_have_count(17)
-    assert page.locator('.reference-bibliography>li').count()>=35
+    root=page.locator('.slide-active .reference-slide')
+    expect(root).to_be_visible()
+    expect(page.locator('a[href*="/capstone/references"]')).to_have_count(0)
+    expect(root.locator('a')).to_have_count(37)
+    expect(root.locator('details')).to_have_count(5)
+    assert page.locator('.slide-active .slide-overline').inner_text().startswith('15 / 15')
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
-    question=page.locator('.reference-questions details').first
-    question.locator('summary').click();expect(question).to_have_attribute('open','')
-    question.locator('summary').click();expect(question).not_to_have_attribute('open','')
-    page.locator('#slide-friction h3 a').click()
+    page.screenshot(path=str(OUT/f'references-slide-{width}x{height}.png'),full_page=True)
+    for group in root.locator('details').all():
+        summary=group.locator('summary')
+        summary.click()
+        expect(group).to_have_attribute('open','')
+        for link in group.locator('a').all():
+            assert link.get_attribute('href').startswith('https://')
+            assert link.get_attribute('rel')=='noopener noreferrer'
+        last=group.locator('a').last
+        page.mouse.move(width/2,height/2)
+        for _ in range(32):
+            if last.evaluate('el=>{const r=el.getBoundingClientRect();const v=document.querySelector("#slide-area").getBoundingClientRect();return r.top>=v.top&&r.bottom<=v.bottom&&r.left>=0&&r.right<=innerWidth}'):break
+            page.mouse.wheel(0,350);page.wait_for_timeout(30)
+        else:raise AssertionError(('Last source unreachable with wheel',width,group.inner_text()))
+        summary.click();expect(group).not_to_have_attribute('open','')
+    page.goto(ORIGIN+'/capstone#sources')
     expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
-    expect(page.locator('.slide-active .series-statistic strong')).to_have_text('3,103,438개')
+    summary=page.locator('.reference-slide summary').first
+    summary.focus();page.keyboard.press('Enter')
+    expect(page.locator('.reference-slide details').first).to_have_attribute('open','')
+    page.keyboard.press('ArrowLeft');expect(page).to_have_url(ORIGIN+'/capstone#13')
+    page.keyboard.press('ArrowRight');expect(page).to_have_url(ORIGIN+'/capstone#14')
+    expect(page.locator('.reference-slide')).to_be_visible()
     page.goto(ORIGIN+'/capstone#architecture')
     expect(page.locator('.deck-root')).to_have_attribute('data-hydrated','true')
     label=page.locator('.slide-active .policy-flow-stage strong').nth(1)
     expect(label).to_have_text('정책기반 위험도 판정')
     assert label.evaluate('el=>{const r=el.getBoundingClientRect(),p=el.closest("button").getBoundingClientRect();return r.left>=p.left&&r.right<=p.right}')
-    page.goto(ORIGIN+'/capstone/references')
-    page.screenshot(path=str(OUT/f'references-{width}x{height}.png'),full_page=True)
-    return {'width':width,'height':height,'references':True,'pipelineLabel':True}
+    return {'width':width,'height':height,'referencesSlide':True,'sources':37,'pipelineLabel':True}
 
 
 def main():

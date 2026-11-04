@@ -1,6 +1,6 @@
 # SKT ALEPH E조 · Protective DNS 캡스톤
 
-검토한 위협정보를 승인 가능한 정책으로 만들고 DNS에서 집행·철회하는 흐름을 설명하는 Next.js·TypeScript 발표 사이트입니다. **표지 포함 14장·20분 단일 발표**입니다. 관리형 네트워크를 적용 대상으로 삼고, 기존 브라우저 보호에 더할 효과는 후속 비교 평가로 남깁니다.
+검토한 위협정보를 승인 가능한 정책으로 만들고 DNS에서 집행·철회하는 흐름을 설명하는 Next.js·TypeScript 발표 사이트입니다. **본편 14장·20분 + 참고문헌 부록 1장**입니다. 관리형 네트워크를 적용 대상으로 삼고, 기존 브라우저 보호에 더할 효과는 후속 비교 평가로 남깁니다.
 
 [최종 발표 시나리오](docs/presentation/final-20min-scenario.md)에는 화면별 발화·조작·전환 문장과 예상 질문 답변이 있습니다. [콘텐츠 검토 기록](docs/CAPSTONE-CONTENT-REVIEW.md)에서 수정 이유와 근거 범위를 확인할 수 있습니다.
 
@@ -15,22 +15,22 @@ npm run typecheck
 npm run build
 ```
 
-개발 서버는 `npm run dev`, 프로덕션은 `npm run start`입니다. 기존 CI는 콘텐츠 정합성·타입 검사·프로덕션 빌드를 수행합니다. 콘텐츠 검사는 14장 순서, 1,200초 배분, 발표자 노트와 최종 시나리오의 본문 일치를 검증합니다.
+개발 서버는 `npm run dev`, 프로덕션은 `npm run start`입니다. 기존 CI는 콘텐츠 정합성·타입 검사·프로덕션 빌드를 수행합니다. 콘텐츠 검사는 본편 14장과 참조 부록 순서, 1,200초 배분, 발표자 노트와 최종 시나리오의 본문 일치를 검증합니다.
 
 프로덕션 웹 화면 우측 하단의 `Updated at`은 빌드 서버가 `next build`를 시작할 때 한 번 기록한 시각입니다. UTC 원본은 컴파일 결과와 `<time datetime>`에 고정하고, 브라우저가 로드되면 방문자 기기의 시간대로 변환해 날짜·시각·GMT 오프셋을 표시합니다. 해당 빌드 날짜의 일광절약시간(DST)도 적용합니다. 서버 HTML과 첫 클라이언트 렌더는 UTC로 일치시키며, JavaScript나 시간대 기능을 사용할 수 없으면 UTC를 유지합니다. 현재 시각을 표시하는 타이머가 아니므로 새로고침·서버 재시작·기기 시계 변경으로 빌드 시점이 바뀌지 않습니다. 캐시된 빌드를 다시 배포하면 원래 빌드 시각을 유지하며, 실제 배포 완료 시각이나 Python 관제 서비스의 갱신 시각을 뜻하지 않습니다. 개발 모드·유효하지 않은 메타데이터에는 표시하지 않습니다. 회귀 검사는 저장소 루트에서 `node --test tests/browser/build_timestamp.test.mjs`와 프로덕션 빌드 후 `python3 -B tests/browser/build_timestamp.py`로 실행합니다.
 
 ## 페이지와 발표 조작
 
 - `/`: 프로젝트 홈
-- `/capstone`: 14장 발표·참조·발표자 노트
-- `/capstone/references`: 활성 화면의 전체 출처와 최종 원고의 Q&A를 연결한 별도 참조 페이지. 발표 순서·시간에는 추가하지 않습니다.
+- `/capstone`: 본편 14장 + 참고문헌 부록·발표자 노트
+- `/capstone#sources`: 발표 안의 참고문헌 슬라이드. 37개 원문 링크를 분류별로 확인합니다.
 - `/fishing`: 개인정보를 수집하지 않는 모의 사이트
 - `/app`: 서버에서 접근 권한을 검증하는 연구실
 - `/dashboard`: 같은 배포의 Python 클라우드 관제. 구성·권한은 [통합 운영 문서](../../docs/unified-vercel-dashboard.md) 참조
 
 좌우 방향키(`←/→`)·목차·장 선택·터치 스와이프·선택형 박수 제어로 이동합니다. 위아래 방향키와 PageUp/Down·Space·Home/End는 스크롤 등 브라우저 기본 동작을 유지하며, 이전·다음 화살표 버튼과 발표 타이머는 없습니다. 시나리오·단계·측정 조건·요점/도식·HTTP/HTTPS·EDE/SDE는 모두 선택 상태를 알리는 일반 버튼입니다. 클릭 또는 Enter/Space로 내용을 선택한 뒤에도 좌우 방향키로 슬라이드를 이동합니다. 버튼 간 이동은 Tab/Shift+Tab을 사용하며 포커스를 강제로 해제하지 않습니다. 입력란·탭·슬라이더처럼 방향키를 사용하는 위젯에 포커스가 있거나 목차·노트가 열려 있으면 슬라이드를 넘기지 않습니다. `O/N/F/M/R/D`는 목차·노트·전체 화면·모션·재생·사례 선택에 사용합니다.
 
-통합 CI는 기존 Python Playwright 환경에서 `python3 -B tests/browser/presentation_keyboard.py`로 좌우 이동·빠른 연속 입력·처음/끝 경계·히스토리·모달·입력란·모바일 보기 선택의 키보드 회귀를 검사합니다. 저장소 루트에서 실행하며 `apps/web`의 프로덕션 빌드가 먼저 필요합니다. 같은 실행에서 `presentation_controls.py`가 14장 전체의 실제 표시 선택, 클릭 후 좌우 이동, 선택 상태와 포커스, 데스크톱·모바일·전체 보기 조합을 검사합니다.
+통합 CI는 기존 Python Playwright 환경에서 `python3 -B tests/browser/presentation_keyboard.py`로 좌우 이동·빠른 연속 입력·처음/끝 경계·히스토리·모달·입력란·모바일 보기 선택의 키보드 회귀를 검사합니다. 저장소 루트에서 실행하며 `apps/web`의 프로덕션 빌드가 먼저 필요합니다. 같은 실행에서 `presentation_controls.py`가 15장 전체의 실제 표시 선택, 클릭 후 좌우 이동, 선택 상태와 포커스, 데스크톱·모바일·전체 보기 조합을 검사합니다.
 
 OAuth/보안 설정은 `.env.example`과 [보안 문서](docs/CAPSTONE-SECURITY.md)를 따릅니다.
 
@@ -38,8 +38,8 @@ OAuth/보안 설정은 `.env.example`과 [보안 문서](docs/CAPSTONE-SECURITY.
 
 | 위치 | 역할 |
 | --- | --- |
-| `capstone/data/slides/*.json` | 23개 저작 기록 중 14개 발표·9개 아카이브. `notes`가 화면별 대본의 정본 |
-| `capstone/data/sequence.json` | 14장 순서와 20분 시간 배분 |
+| `capstone/data/slides/*.json` | 23개 저작 기록 중 14개 본편·1개 참조 부록·8개 아카이브. `notes`가 화면별 대본의 정본 |
+| `capstone/data/sequence.json` | 본편 14장과 참조 부록 순서와 20분 시간 배분 |
 | `docs/presentation/final-20min-scenario.md` | 같은 노트를 포함한 최종 원고·리허설 계획·Q&A |
 | `capstone/data/diagrams.json` | 승인·집행·철회와 DNS·HTTP의 설명용 시각화 |
 | `capstone/data/dns-latency.json` | 원시 CSV에서 재계산한 분위수와 측정 조건 |

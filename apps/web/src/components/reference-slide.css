@@ -1,0 +1,22 @@
+.deck-root .slide-sources .slide-columns{justify-content:flex-start;gap:16px}
+.deck-root .slide-sources .slide-heading h1{font-size:clamp(28px,3vw,48px)}
+.deck-root .reference-slide{width:100%;min-width:0;color:#deebf2}
+.deck-root .reference-slide-scope,.deck-root .reference-slide-footnote{margin:0 0 16px;font-size:14px;line-height:1.55;color:#afc4d2}
+.deck-root .reference-slide-groups{display:grid;gap:10px}
+.deck-root .reference-slide-group{min-width:0;border:1px solid #527186;border-radius:10px;background:#0b2638}
+.deck-root .reference-slide-group summary{cursor:pointer;padding:16px 20px;font-size:clamp(16px,1.3vw,21px);line-height:1.45;font-weight:650;color:#dceef4;overflow-wrap:anywhere}
+.deck-root .reference-slide-count{float:right;margin-left:16px;font-size:13px;color:#9edccd;font-weight:400}
+.deck-root .reference-slide-group[open] summary{border-bottom:1px solid #527186;color:#baf6e9}
+.deck-root .reference-slide-group ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px;margin:0;padding:20px;list-style:none}
+.deck-root .reference-slide-group li{min-width:0}
+.deck-root .reference-slide-group a{display:block;color:#c8f4ed;font-size:16px;line-height:1.5;text-underline-offset:3px;overflow-wrap:anywhere;word-break:keep-all}
+.deck-root .reference-slide-group a small{display:block;margin-top:3px;font-size:12px;font-weight:400;color:#9bb7c9;overflow-wrap:anywhere;word-break:normal}
+.deck-root .reference-slide-group li p{margin:6px 0 0;font-size:13px;line-height:1.55;color:#b8cad7;overflow-wrap:anywhere;word-break:keep-all}
+.deck-root .reference-slide-group summary:focus-visible,.deck-root .reference-slide-group a:focus-visible{outline:3px solid #ffcf91;outline-offset:3px}
+.deck-root .reference-slide-footnote{margin:14px 0 0}
+/* A bibliography is a document: use the outer viewport's natural scroll flow. */
+.deck-root .deck-stage:has(>.slide-active .slide-sources){height:auto;min-height:100%;overflow:visible}
+.deck-root .deck-stage>.slide-active:has(.slide-sources){position:relative;height:auto;min-height:100%;overflow:visible}
+.deck-root .slide-sources{height:auto;min-height:100%}
+.deck-root .slide-sources .slide-visual-container{overflow:visible;max-height:none}
+@media(max-width:780px){.deck-root .reference-slide-group summary{padding:14px}.deck-root .reference-slide-group ul{grid-template-columns:1fr;padding:14px;gap:18px}.deck-root .reference-slide-count{float:none;display:block;margin:4px 0 0}.deck-root .reference-slide-scope{font-size:13px}}

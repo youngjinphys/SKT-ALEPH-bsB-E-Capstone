@@ -73,16 +73,20 @@ export function validateContent(){
   }
  }
  assert(sequence.mainSlideCount===14,"Expected 14 presentation slides");
- assert(Array.isArray(sequence.slides)&&sequence.slides.length===14,"Expected 14 slide records");
- assert(Array.isArray(sequence.archived)&&sequence.archived.length===9,"Expected 9 archived originals");
+ assert(Array.isArray(sequence.slides)&&sequence.slides.length===15,"Expected 14 main slides and one references appendix");
+ assert(Array.isArray(sequence.archived)&&sequence.archived.length===8,"Expected 8 archived originals");
  const presented=new Set(sequence.slides.map(s=>s.id));
  const archived=new Set(sequence.archived);
- assert(presented.size===14&&archived.size===9,"Duplicate presented or archived slides");
+ assert(presented.size===15&&archived.size===8,"Duplicate presented or archived slides");
  for(const id of presented)assert(byId.has(id)&&!archived.has(id),"Unknown/overlapping presented slide: "+id);
  for(const id of archived)assert(byId.has(id),"Unknown archived original: "+id);
  assert(presented.size+archived.size===records.length,"An authored source is missing from the deck and archive");
  for(const s of sequence.slides)
   assert(Number.isInteger(s.seconds)&&s.seconds>=0&&!Object.hasOwn(s,"compressedSeconds"),"Single-plan slide duration required");
+ const reference=byId.get("sources");
+ assert(sequence.slides.at(-1).id==="sources"&&reference.seconds===0,"References must follow the unchanged main presentation");
+ const grouped=reference.referenceGroups.flatMap(group=>group.keys);
+ assert(grouped.length===reference.sources.length&&new Set(grouped).size===grouped.length&&grouped.every(key=>reference.sources.includes(key)),"Reference groups must expose every source exactly once");
  const seconds=sequence.slides.reduce((t,s)=>t+s.seconds,0);
  assert(seconds===1200,"20-minute presentation duration must total 1200 seconds");
  // Keep the written presenter script in the same order and 20-minute timeline.

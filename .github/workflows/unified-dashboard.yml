@@ -47,7 +47,7 @@ jobs:
           retention-days: 7
       - run: npm ci --no-audit --no-fund && npm run check
         working-directory: apps/web
-      - name: Verify presentation evidence and references page
+      - name: Verify presentation evidence and references slide
         run: |
           python3 -B tests/browser/presentation_references_http.py
           ALEPH_SCREENSHOTS=/tmp/aleph-build-artifacts/evidence python3 -B tests/browser/presentation_evidence.py

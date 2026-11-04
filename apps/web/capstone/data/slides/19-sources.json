@@ -1,53 +1,115 @@
 {
   "id": "sources",
   "chapter": "부록",
-  "title": "근거와 원문",
-  "subtitle": "주장은 확인 가능한 출처에 연결합니다.",
+  "title": "참고문헌",
+  "subtitle": "본편과 최종 원고의 37개 출처 · 분류를 펼쳐 원문을 확인하세요.",
   "seconds": 0,
   "kind": "sources",
   "status": "reference",
-  "points": [
-    {
-      "title": "구현과 시험",
-      "body": "현재 코드 SHA · CI 실측 원문"
-    },
-    {
-      "title": "프로토콜",
-      "body": "IETF RFC 9525 · RFC 8484"
-    },
-    {
-      "title": "선행 서비스 및 사례",
-      "body": "KISA · NCSC · 2019년 방통위"
-    }
-  ],
-  "notes": "이전 구현 근거는 08f3880f이며 DNS CI 41028706421, 원격 정책 서버 CI 41028706396, 기준 구조 CI 41028706441의 성공을 확인했습니다. 283개 통과 수치는 이전 7c01910d의 2026-10-30 CI 40986807994 스냅샷입니다. 2019년 차단 설명은 해당 시점의 역사적 사례로 인용하며 최신 운영 현황은 별도로 확인합니다.",
+  "points": [],
+  "notes": "본편과 최종 발표 원고에 사용한 37개 출처입니다. 분류를 펼치면 원문 링크와 인용 범위를 확인할 수 있습니다. 외부 관측은 배경 자료이며 자체 실험은 기록된 커밋·조건의 관측입니다. 서로를 독립적인 탐지 성능 평가로 바꾸어 읽지 않습니다. 사설 DNS 실제 질의, 합성 fixture, Pi 지연 실험도 구분합니다. 질문과 답변은 최종 원고의 발표자 참고 절을 사용합니다.",
   "sources": [
-    "execution-current",
-    "review-current",
+    "interisle-2026",
+    "interisle-methodology",
+    "okta-v0",
+    "browser",
+    "oest-2020",
+    "oest-2020-paper",
+    "pdns",
+    "kisa",
+    "pdns-guide",
+    "dns-terminology",
+    "tls",
+    "ede-rfc-8914",
+    "sde-ietf",
+    "doh",
     "architecture",
     "policy-server",
     "policy-sync",
-    "policy-publish",
-    "validation",
-    "ci",
-    "ci-current",
+    "dns-runtime-current",
+    "console-current",
+    "cloud-console-current",
+    "risk-scoring-current",
+    "risk-cli-current",
+    "dns-expiry-current",
     "demo",
-    "tls",
-    "doh",
-    "kisa",
-    "pdns",
-    "pdns-guide",
-    "warning",
-    "browser",
-    "apwg-2025",
-    "ai-threat-2025",
-    "security-fatigue",
-    "smishing-national"
+    "candidate-promotion-current",
+    "execution-current",
+    "dns-latency-method",
+    "dns-query-20261104",
+    "dns-fixture-20261104",
+    "review-current",
+    "validation",
+    "dns-latency-log",
+    "dnsperf-method",
+    "openphish-feed",
+    "gsb-v5-method",
+    "gsb-terms",
+    "openphish-terms"
   ],
-  "mood": "focused",
-  "presentation": {
-    "title": "구현·프로토콜·계획의 원문",
-    "subtitle": "실험 원문·재현 조건·프로토콜·도입 근거를 확인할 수 있습니다.",
-    "reviewNote": "현재 재평가 기준은 397df3f4이며 구현·제안·자체 격리 재실행을 구분합니다. 아래 이전 CI 기록은 그 당시 커밋의 기록입니다. 새 보고서에는 ISC RPZ, Quad9 서비스, Google API 조건 등 비교 통제의 공식 근거를 추가했습니다."
-  }
+  "referenceGroups": [
+    {
+      "title": "배경 관측·선행 연구",
+      "keys": [
+        "interisle-2026",
+        "interisle-methodology",
+        "okta-v0",
+        "browser",
+        "oest-2020",
+        "oest-2020-paper",
+        "pdns",
+        "kisa",
+        "pdns-guide"
+      ]
+    },
+    {
+      "title": "표준·프로토콜",
+      "keys": [
+        "dns-terminology",
+        "tls",
+        "ede-rfc-8914",
+        "sde-ietf",
+        "doh"
+      ]
+    },
+    {
+      "title": "구현·정책·관제",
+      "keys": [
+        "architecture",
+        "policy-server",
+        "policy-sync",
+        "dns-runtime-current",
+        "console-current",
+        "cloud-console-current",
+        "risk-scoring-current",
+        "risk-cli-current",
+        "dns-expiry-current",
+        "demo",
+        "candidate-promotion-current"
+      ]
+    },
+    {
+      "title": "실험 원문·재현 조건",
+      "keys": [
+        "execution-current",
+        "dns-latency-method",
+        "dns-query-20261104",
+        "dns-fixture-20261104",
+        "review-current",
+        "validation",
+        "dns-latency-log",
+        "dnsperf-method"
+      ]
+    },
+    {
+      "title": "피드·API·이용 조건",
+      "keys": [
+        "openphish-feed",
+        "gsb-v5-method",
+        "gsb-terms",
+        "openphish-terms"
+      ]
+    }
+  ],
+  "mood": "focused"
 }

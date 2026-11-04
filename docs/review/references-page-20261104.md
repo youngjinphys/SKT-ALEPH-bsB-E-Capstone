@@ -1,3 +1,9 @@
+# References presentation correction · 2026-11-04
+
+The user clarified that references belong in a slide, not a separate page or header button. The separate route and links are removed. The sources slide is restored as slide 15 after the unchanged 14-slide, 20-minute presentation. All 37 repository/manuscript sources are grouped in the slide and remain available in its notes. The exact Discord attachment remains unverified.
+
+The following records describe the earlier, superseded page implementation, not the current requested layout.
+
 # References page · 2026-11-04
 
 ## Scope and provenance

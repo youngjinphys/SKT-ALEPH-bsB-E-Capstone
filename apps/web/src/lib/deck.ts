@@ -30,6 +30,7 @@ export type DeckSlide = {
   points: Point[];
   notes: string;
   sources: string[];
+  referenceGroups?: {title:string;keys:string[]}[];
   presentation?: { compactTitle?: string; title?: string; subtitle?: string; cue?: string; reviewNote?: string; points?: Point[] };
   headline?: { focus: string; tone: string };
   reading?: Reading;

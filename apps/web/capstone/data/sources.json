@@ -278,5 +278,15 @@
     "label": "Interisle · 집계 방법과 범위",
     "url": "https://interisle.net/research-methodology",
     "note": "피드 내·피드 간 도메인 중복 제거, 같은 등록 도메인의 여러 호스트·URL은 한 번 집계. 관측 피드가 전체 악용 사례를 포괄하지 않으며 공유호스팅 등록 도메인의 집계는 SUBTREE 차단 승인 근거와 다릅니다."
+  },
+  "candidate-promotion-current": {
+    "label": "후보 승격 코드 · 공급자 근거와 만료 확인",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/6bf8ccac6069771811ca0e75c9c1183e004c392c/apps/policy-server/src/policy_server/intel.py",
+    "note": "최종 원고에서 인용한 고정 커밋의 구현 기록입니다. 현재 운영 상태를 보증하지 않습니다."
+  },
+  "oest-2020-paper": {
+    "label": "Oest et al. · Sunrise to Sunset 논문 원문 (2020)",
+    "url": "https://www.usenix.org/system/files/sec20-oest-sunrise.pdf",
+    "note": "USENIX Security 2020 논문 원문입니다. 우리 시스템의 탐지 성능 평가가 아닙니다."
   }
 }

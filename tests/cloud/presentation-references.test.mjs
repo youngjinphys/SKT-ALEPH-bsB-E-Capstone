@@ -28,8 +28,18 @@ test('current deck includes every active-slide citation and all manuscript Q&A, 
  const active=sequence.slides.map(({id})=>records.find(slide=>slide.id===id));
  const text=fs.readFileSync(new URL('docs/presentation/final-20min-scenario.md',root),'utf8');
  const result=buildReferenceIndex(active,registry,text);
- assert.equal(result.slideIndex.length,14);assert.ok(result.entries.length>25);assert.ok(result.questions.length>10);
+ assert.equal(result.slideIndex.length,15);assert.ok(result.entries.length>25);assert.ok(result.questions.length>10);
  assert.ok(!result.slideIndex.some(slide=>sequence.archived.includes(slide.id)));
+ const bibliography=active.find(slide=>slide.id==='sources');
+ assert.equal(active.at(-1).id,'sources');assert.equal(sequence.mainSlideCount,14);
+ assert.equal(bibliography.sources.length,37);
+ const grouped=bibliography.referenceGroups.flatMap(group=>group.keys);
+ assert.deepEqual(new Set(grouped),new Set(bibliography.sources));
+ assert.equal(grouped.length,37);
+ assert.ok(!fs.existsSync(new URL('src/app/capstone/references/page.tsx',root)));
+ const deckSource=fs.readFileSync(new URL('src/components/SlideDeck.tsx',root),'utf8');
+ assert.ok(!deckSource.includes('/capstone/references'));
+ assert.ok(deckSource.includes('href="/dashboard"'));
  const expectedQuestions=text.split('# 발표자 참고 · 예상 질문과 답변')[1].match(/^## /gm).length;
  assert.equal(result.questions.length,expectedQuestions);
  for(const [i,slide] of active.entries())for(const key of slide.sources){

@@ -1,4 +1,4 @@
-/** Server-only JSON registry; the published fourteen-slide sequence excludes archived sources. */
+/** Server-only JSON registry; fourteen main slides and an in-deck references appendix. */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DeckSlide, SourceRegistry } from "./deck";
@@ -23,9 +23,9 @@ const records=index.map(filename=>{
 const byId=new Map(records.map(item=>[item.id,item]));
 if(byId.size!==records.length)throw Error("Duplicate source slide ID");
 const ids=new Set(sequence.slides.map(slide=>slide.id));
-if(ids.size!==14||sequence.mainSlideCount!==14||sequence.slides.length!==14)throw Error("Expected 14 presentation slides");
+if(ids.size!==15||sequence.mainSlideCount!==14||sequence.slides.length!==15)throw Error("Expected 14 main slides and a references appendix");
 const archived=new Set(sequence.archived);
-if(archived.size!==9||[...archived].some(id=>ids.has(id)||!byId.has(id))||ids.size+archived.size!==records.length)
+if(archived.size!==8||[...archived].some(id=>ids.has(id)||!byId.has(id))||ids.size+archived.size!==records.length)
  throw Error("Archived records must be retained but excluded from the published deck");
 export const slides:DeckSlide[]=sequence.slides.map(({id,seconds})=>{
  const entry=byId.get(id);
