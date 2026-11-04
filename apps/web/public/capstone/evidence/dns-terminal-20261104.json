@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "capturedDate": "2026-11-04",
+  "sourceSha256": "a3157ec2f8e70c55dda4223073be38b937850ed8bed4d6d0e89e58e96462e87b",
+  "sourceUrl": "/capstone/evidence/dns-query-20261104.txt",
+  "redaction": "Private endpoints and answer address values are replaced. Whitespace is normalized. Banner, EDNS and message-size lines are omitted. These are stored observations, not a live terminal.",
+  "queries": [
+    {
+      "id": "google.com-udp-system",
+      "timestamp": "2026-11-04T02:42:20.439826+00:00",
+      "domain": "google.com",
+      "transport": "UDP",
+      "route": "system",
+      "command": "dig google.com A +time=2 +tries=1",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 18295",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";google.com. IN A",
+      "answers": [
+        "google.com. 109 IN A [REDACTED]"
+      ],
+      "answerCount": 1,
+      "queryMs": 9,
+      "server": ";; SERVER: [SYSTEM_STUB]#53 (UDP)",
+      "exitCode": 0
+    },
+    {
+      "id": "google.com-udp-private",
+      "timestamp": "2026-11-04T02:42:20.959744+00:00",
+      "domain": "google.com",
+      "transport": "UDP",
+      "route": "private",
+      "command": "dig @${PRIVATE_DNS} google.com A +time=2 +tries=1",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 51986",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";google.com. IN A",
+      "answers": [
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]"
+      ],
+      "answerCount": 6,
+      "queryMs": 68,
+      "server": ";; SERVER: ${PRIVATE_DNS}#53 (UDP)",
+      "exitCode": 0
+    },
+    {
+      "id": "google.com-tcp-system",
+      "timestamp": "2026-11-04T02:42:21.544265+00:00",
+      "domain": "google.com",
+      "transport": "TCP",
+      "route": "system",
+      "command": "dig google.com A +time=2 +tries=1 +tcp",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42407",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";google.com. IN A",
+      "answers": [
+        "google.com. 107 IN A [REDACTED]"
+      ],
+      "answerCount": 1,
+      "queryMs": 1,
+      "server": ";; SERVER: [SYSTEM_STUB]#53 (TCP)",
+      "exitCode": 0
+    },
+    {
+      "id": "google.com-tcp-private",
+      "timestamp": "2026-11-04T02:42:22.054700+00:00",
+      "domain": "google.com",
+      "transport": "TCP",
+      "route": "private",
+      "command": "dig @${PRIVATE_DNS} google.com A +time=2 +tries=1 +tcp",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 31374",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";google.com. IN A",
+      "answers": [
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]",
+        "google.com. 300 IN A [REDACTED]"
+      ],
+      "answerCount": 6,
+      "queryMs": 70,
+      "server": ";; SERVER: ${PRIVATE_DNS}#53 (TCP)",
+      "exitCode": 0
+    },
+    {
+      "id": "example.com-udp-system",
+      "timestamp": "2026-11-04T02:42:22.635454+00:00",
+      "domain": "example.com",
+      "transport": "UDP",
+      "route": "system",
+      "command": "dig example.com A +time=2 +tries=1",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 17217",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";example.com. IN A",
+      "answers": [
+        "example.com. 96 IN A [REDACTED]",
+        "example.com. 96 IN A [REDACTED]"
+      ],
+      "answerCount": 2,
+      "queryMs": 8,
+      "server": ";; SERVER: [SYSTEM_STUB]#53 (UDP)",
+      "exitCode": 0
+    },
+    {
+      "id": "example.com-udp-private",
+      "timestamp": "2026-11-04T02:42:23.157933+00:00",
+      "domain": "example.com",
+      "transport": "UDP",
+      "route": "private",
+      "command": "dig @${PRIVATE_DNS} example.com A +time=2 +tries=1",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 57323",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";example.com. IN A",
+      "answers": [
+        "example.com. 212 IN A [REDACTED]",
+        "example.com. 212 IN A [REDACTED]"
+      ],
+      "answerCount": 2,
+      "queryMs": 41,
+      "server": ";; SERVER: ${PRIVATE_DNS}#53 (UDP)",
+      "exitCode": 0
+    },
+    {
+      "id": "example.com-tcp-system",
+      "timestamp": "2026-11-04T02:42:23.711291+00:00",
+      "domain": "example.com",
+      "transport": "TCP",
+      "route": "system",
+      "command": "dig example.com A +time=2 +tries=1 +tcp",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 34936",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";example.com. IN A",
+      "answers": [
+        "example.com. 94 IN A [REDACTED]",
+        "example.com. 94 IN A [REDACTED]"
+      ],
+      "answerCount": 2,
+      "queryMs": 1,
+      "server": ";; SERVER: [SYSTEM_STUB]#53 (TCP)",
+      "exitCode": 0
+    },
+    {
+      "id": "example.com-tcp-private",
+      "timestamp": "2026-11-04T02:42:24.221725+00:00",
+      "domain": "example.com",
+      "transport": "TCP",
+      "route": "private",
+      "command": "dig @${PRIVATE_DNS} example.com A +time=2 +tries=1 +tcp",
+      "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 46706",
+      "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1",
+      "question": ";example.com. IN A",
+      "answers": [
+        "example.com. 221 IN A [REDACTED]",
+        "example.com. 221 IN A [REDACTED]"
+      ],
+      "answerCount": 2,
+      "queryMs": 65,
+      "server": ";; SERVER: ${PRIVATE_DNS}#53 (TCP)",
+      "exitCode": 0
+    }
+  ]
+}

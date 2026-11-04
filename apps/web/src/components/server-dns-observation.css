@@ -1,12 +1,7 @@
-.server-dns-observation{display:grid;gap:8px;min-width:0;color:#d5e9f0}
-.server-dns-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
-.server-dns-heading strong{font-size:clamp(16px,1.2vw,21px);color:#eef7fb}
-.server-dns-heading span,.server-dns-observation>p,.server-dns-observation>a{font-size:clamp(11px,.84vw,14px);line-height:1.4;margin:0}
-.server-dns-observation .server-dns-result{border-left:3px solid #f2b46b;padding:7px 10px;background:#362f29;color:#ffead1}
-.server-dns-commands{display:grid;gap:6px}.server-dns-commands>div{display:grid;gap:3px;padding:7px 9px;border-radius:6px;background:#081e2d;border:1px solid #426276;min-width:0}
-.server-dns-commands code{font-size:clamp(10px,.77vw,13px);line-height:1.3;overflow-wrap:anywhere;color:#eef7fb}.server-dns-commands small,.server-dns-note{font-size:clamp(10px,.75vw,12px);line-height:1.35;color:#bed4dd}
-.server-dns-observation>a{color:#b3dff4;text-decoration:underline;text-underline-offset:3px;width:fit-content}
-.dns-observation-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dns-observation-modes button{background:#123247;color:#d1eefa;border:1px solid #598198;padding:8px 11px;border-radius:8px;min-height:36px;font-size:clamp(11px,.8vw,14px);font-weight:770}.dns-observation-modes button[aria-pressed=true]{background:#28516a;border-color:#a6d6eb}
+@font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-400.woff") format("woff");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Aleph DNS UI";src:url("/fonts/dns-ui/aleph-dns-ui-700.woff") format("woff");font-weight:700;font-style:normal;font-display:swap}
+.deck-root .dns-observation-modes{font-family:"Aleph DNS UI","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;font-synthesis:none}
+.dns-observation-modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dns-observation-modes button{font-family:inherit;background:#123247;color:#d1eefa;border:1px solid #598198;padding:8px 11px;border-radius:8px;min-height:36px;font-size:clamp(11px,.8vw,14px);font-weight:700}.dns-observation-modes button[aria-pressed=true]{background:#28516a;border-color:#a6d6eb}
 @media(max-height:800px){.server-dns-observation{gap:4px}.server-dns-commands>div{padding:4px 8px}.server-dns-observation .server-dns-result{padding:4px 8px}}
 /* Keep the separate fixture controls and all three CNAME nodes visible on narrow screens. */
 @media(max-width:780px){
@@ -20,3 +15,36 @@
  .deck-root .slide-bypass .cname-walkthrough .chain-step>strong{grid-column:1;grid-row:2;font-size:13px;line-height:1.2}
  .deck-root .slide-bypass .cname-walkthrough .cname-progress{margin-top:3px;font-size:11px}
 }
+
+/* Captured terminal: opaque pixels, normal text flow, no blur or text transforms. */
+.deck-root .server-dns-observation{display:grid;gap:9px;min-width:0;color:#e7eef6;font-family:"Aleph DNS UI","Noto Sans KR","Noto Sans CJK KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;letter-spacing:0;text-shadow:none;font-synthesis:none}
+.server-dns-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.server-dns-heading .server-dns-kicker{display:block;color:#9dafc3;font-size:10px;font-weight:600;letter-spacing:.08em}
+.server-dns-heading h3{margin:3px 0 0;font-size:20px;line-height:1.3;font-weight:700;color:#f3f7fc}
+.server-dns-heading>time{font-size:11px;line-height:1.45;color:#abbcd0;text-align:right;font-variant-numeric:tabular-nums}
+.server-dns-selectors{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.server-dns-selectors>[role=group]{display:flex;gap:4px}
+.server-dns-selectors button,.dns-terminal-routes button{font:inherit;font-size:12px;line-height:1.35;font-weight:500;letter-spacing:0;min-width:0;min-height:32px;cursor:pointer;color:#b8c9da;background:#152535;border:1px solid #43586c;border-radius:6px;padding:5px 9px}
+.server-dns-selectors button[aria-pressed=true]{color:#e8fff5;background:#153e36;border-color:#75c9ae}
+.deck-root .server-dns-observation button:focus-visible{outline:3px solid #e6f6ff;outline-offset:2px}
+.deck-root .dns-terminal{min-width:0;margin:0;background:#0b111b;border:1px solid #546579;border-radius:10px;overflow:hidden;box-shadow:0 7px 18px #0003;backdrop-filter:none;-webkit-backdrop-filter:none;color:#d7e2ef}
+.dns-terminal-titlebar{display:flex;align-items:center;gap:10px;padding:7px 10px;background:#202c3a;color:#b9c8d9;font-size:11px;line-height:1.3;border-bottom:1px solid #435164}
+.dns-terminal-titlebar>span:last-child{margin-left:auto;font-size:9px;letter-spacing:.08em;color:#91a8bb}
+.dns-terminal-lights{display:flex;gap:5px}.dns-terminal-lights i{width:7px;height:7px;border-radius:50%;background:#e49a93}.dns-terminal-lights i:nth-child(2){background:#d7be83}.dns-terminal-lights i:nth-child(3){background:#79baa5}
+.dns-terminal-routes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-bottom:1px solid #38485a}
+.dns-terminal-routes button{display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;border-radius:0;background:#101d2a;padding:7px 10px;font-size:11px}
+.dns-terminal-routes button+button{border-left:1px solid #38485a}.dns-terminal-routes b{font-weight:600;white-space:nowrap;color:#c0d2df}
+.dns-terminal-routes button[aria-pressed=true]{color:#edfff7;background:#203b37;box-shadow:inset 0 -2px #83d8b9}
+.dns-terminal-routes button[aria-pressed=true] b{color:#b5f1d7}
+.dns-terminal-body{padding:10px 12px;min-width:0}
+.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-family:ui-monospace,"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:12px;font-weight:400;line-height:1.45;letter-spacing:0;font-variant-ligatures:none;text-shadow:none;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;tab-size:2;margin:0}
+.dns-terminal-command{color:#edf5fc}.dns-terminal-command>span{color:#8ee4ba;font-weight:700}
+.dns-terminal-command code,.dns-terminal-output code{font:inherit;color:inherit}
+.deck-root .dns-terminal-output{color:#b7c7da;margin-top:8px;min-height:calc(12px * 1.45 * 13)}
+.dns-terminal-status{display:flex;justify-content:space-between;gap:8px;margin-top:8px;padding-top:7px;border-top:1px solid #2e3c4e;font-size:10px;line-height:1.4;font-variant-numeric:tabular-nums}.dns-terminal-status>span{color:#9adfbb}.dns-terminal-status>time{color:#93a9bf}
+.deck-root .server-dns-result{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 9px;padding:6px 9px;margin:0;border:1px solid #775f41;border-left:3px solid #d5b16d;border-radius:4px;background:#2c271e;color:#f4dfbc;font-size:12px;line-height:1.4}
+.server-dns-result b{font-weight:700}.server-dns-result span{font-size:11px}
+.deck-root .server-dns-note{font-size:11px;line-height:1.45;color:#acbdd0}.deck-root .server-dns-note p{font:inherit;color:inherit;margin:0}.server-dns-note a{color:#b7dcef;text-decoration:underline;text-underline-offset:3px}
+@media(min-width:781px) and (max-height:800px){.deck-root .server-dns-observation{gap:6px}.server-dns-heading h3{font-size:18px}.dns-terminal-body{padding:7px 10px}.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-size:11.5px;line-height:1.4}.deck-root .dns-terminal-output{min-height:calc(11.5px * 1.4 * 13);margin-top:5px}.dns-terminal-status{margin-top:5px;padding-top:5px}}
+@media(max-width:780px){.deck-root .server-dns-observation{gap:6px}.server-dns-heading h3{font-size:17px}.server-dns-heading .server-dns-kicker{font-size:9px}.server-dns-heading>time{font-size:10px}.server-dns-selectors{gap:5px}.server-dns-selectors button{padding:5px 7px;font-size:11px;min-height:36px}.dns-terminal-routes button{display:block;text-align:left;font-size:10px;padding:6px 8px}.dns-terminal-routes b{display:block;font-size:10px;margin-top:2px}.dns-terminal-body{padding:8px}.deck-root .dns-terminal-command,.deck-root .dns-terminal-output{font-size:11.5px;line-height:1.4}.deck-root .dns-terminal-output{min-height:calc(11.5px * 1.4 * 13)}.dns-terminal-status{font-size:10px}.deck-root .server-dns-result{font-size:11px}.server-dns-result span{font-size:10px}.deck-root .server-dns-note{font-size:11px}}
+@media(forced-colors:active){.deck-root .dns-terminal,.dns-terminal-titlebar,.dns-terminal-routes button,.server-dns-selectors button,.deck-root .server-dns-result{background:Canvas;color:CanvasText;border-color:CanvasText}.dns-terminal-routes button[aria-pressed=true],.server-dns-selectors button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.dns-terminal-lights{visibility:hidden}}

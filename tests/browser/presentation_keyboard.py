@@ -18,6 +18,7 @@ from presentation_flow import check_flow
 from presentation_term_callouts import check_term_callouts
 from presentation_controls import check_controls
 from presentation_build_timestamp import check_build_timestamp
+from presentation_dns_terminal import check_dns_terminal
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "apps/web"
@@ -218,7 +219,7 @@ def check_keyboard(page):
 
 
 def main():
-    subprocess.run(["node", "--test", "tests/browser/flow-timing.test.mjs", "tests/browser/term-leader-geometry.test.mjs"], cwd=ROOT, check=True)
+    subprocess.run(["node", "--test", "tests/browser/flow-timing.test.mjs", "tests/browser/term-leader-geometry.test.mjs", "tests/browser/dns_terminal.test.mjs"], cwd=ROOT, check=True)
     with tempfile.TemporaryFile(mode="w+") as log:
         server = subprocess.Popen(
             ["npm", "run", "start", "--", "--hostname", "127.0.0.1", "--port", str(PORT)],
@@ -249,6 +250,7 @@ def main():
                     page.set_default_timeout(5000)
                     check_build_timestamp(browser, ORIGIN)
                     check_keyboard(page)
+                    check_dns_terminal(browser, ORIGIN)
                     check_motion(page, ORIGIN)
                     check_term_callouts(browser, ORIGIN)
                     check_flow(browser, ORIGIN)
