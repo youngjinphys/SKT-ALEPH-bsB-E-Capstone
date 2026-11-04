@@ -34,8 +34,6 @@ export function ServerDnsObservation(){
      <p className="dns-terminal-excerpt">ISOLATED LOOPBACK · BLOCK 적용 · A / UDP</p>
      <p className="dns-terminal-command" data-command-display="recorded"><span aria-hidden="true">$ </span><code>{blockedQuery.command.join(" ")}</code></p>
      <pre className="dns-terminal-output"><code>{blockedQuery.stdout}</code></pre>
-     <p className="dns-fixture-summary">적용 전 NOERROR · BLOCK 적용 NXDOMAIN · 철회 후 NOERROR<br/>A·AAAA / UDP·TCP, 12/12 기대 응답 일치</p>
-     <p className="dns-fixture-boundary">통제된 로컬 DNS 실험 · 운영 DNS 적용 증거 아님</p>
      <div className="dns-terminal-status"><span>exit {blockedQuery.exit_code} · {blockedQuery.rcode}</span><time dateTime={blockedQuery.started_at}>{blockedQuery.started_at.slice(11,19)} UTC</time><a href="/capstone/evidence/block-test-loopback-20261104.json" target="_blank" rel="noopener noreferrer">실험 기록 ↗</a></div>
     </>}
    </div>

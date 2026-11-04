@@ -61,6 +61,4 @@
 
 .dns-terminal-pending a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px;font-size:13px}
 
-.deck-root .dns-fixture-summary,.deck-root .dns-fixture-boundary{margin:12px 0 0;color:#f5d8a5;font-size:13px;line-height:1.55;word-break:keep-all}
-@media(forced-colors:active){.deck-root .dns-fixture-summary,.deck-root .dns-fixture-boundary{color:CanvasText}}
 .deck-root .server-dns-observation[data-evidence-state=fixture] .dns-terminal-output{min-height:0}

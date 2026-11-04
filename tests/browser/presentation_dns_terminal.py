@@ -153,15 +153,13 @@ def check_dns_terminal(browser, origin):
                     expect(root.locator('.dns-terminal-command code')).to_have_text(' '.join(recorded['command']))
                     assert root.locator('.dns-terminal-output code').text_content()==recorded['stdout']
                     expect(root.locator('.dns-terminal-excerpt')).to_have_text('ISOLATED LOOPBACK · BLOCK 적용 · A / UDP')
-                    expect(root.locator('.dns-fixture-summary')).to_contain_text('적용 전 NOERROR · BLOCK 적용 NXDOMAIN · 철회 후 NOERROR')
-                    expect(root.locator('.dns-fixture-summary')).to_contain_text('A·AAAA / UDP·TCP, 12/12 기대 응답 일치')
-                    expect(root.locator('.dns-fixture-boundary')).to_have_text('통제된 로컬 DNS 실험 · 운영 DNS 적용 증거 아님')
+                    expect(root.locator('.dns-fixture-summary,.dns-fixture-boundary')).to_have_count(0)
                     expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',recorded['started_at'])
                     link=root.get_by_role('link',name='실험 기록 ↗',exact=True)
                     expect(link).to_have_attribute('href','/capstone/evidence/block-test-loopback-20261104.json')
                     _assert_terminal_visibility(page)
                     _check_natural_reachability(page,f'{width}x{height}-fixture')
-                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-fixture-summary','.dns-fixture-boundary','.dns-terminal-status'):
+                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)

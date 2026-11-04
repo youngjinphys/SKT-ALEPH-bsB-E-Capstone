@@ -58,7 +58,8 @@ test('the displayed block.test result is a bounded recorded loopback experiment'
  assert.ok(source.includes('data-command-display="summary"'));
  assert.ok(source.includes('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략'));
  assert.doesNotMatch(source,/SERVER ·|server \/ dig/);
- assert.ok(source.includes('통제된 로컬 DNS 실험 · 운영 DNS 적용 증거 아님'));
+ assert.ok(source.includes('ISOLATED LOOPBACK · BLOCK 적용 · A / UDP'));
+ assert.doesNotMatch(source,/dns-fixture-summary|dns-fixture-boundary/);
  assert.ok(source.includes('block-test-loopback-20261104.json'));
  assert.ok(source.includes('blockedQuery.command.join(" ")'));
  assert.ok(source.includes('{blockedQuery.stdout}'));
