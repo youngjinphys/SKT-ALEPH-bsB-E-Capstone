@@ -19,7 +19,7 @@ HTML = r'''<section class="observatory surface" id="observatory" aria-labelledby
     <figure class="obs-chart-card"><figcaption><div><h3>인터페이스 송수신량</h3><span>DNS 전용 트래픽이나 회선 최대속도가 아닌 NIC 전체 관측</span></div><div class="obs-legend"><span class="obs-key udp">RX</span><span class="obs-key tcp">TX</span></div></figcaption><div id="obs-traffic-chart" class="obs-chart"></div></figure>
     <figure class="obs-chart-card"><figcaption><div><h3>일반 DNS 응답 품질</h3><span>example.org A 양성 응답 · --quality-probes 선택 수집</span></div><select id="obs-quality-target" aria-label="DNS 품질 측정 대상"><option value="local">로컬 DNS</option><option value="upstream">상위 DNS</option></select></figcaption><div id="obs-quality-chart" class="obs-chart"></div></figure>
   </div>
-  <details class="obs-table-wrap"><summary>자원·네트워크 관측 수치</summary><p>첫 보고에서는 CPU 및 트래픽 변화율을 계산하지 않습니다. NIC 교체·재부팅·150초 초과 공백 뒤의 차분은 표시하지 않습니다. 드롭 카운터는 종단 간 패킷 손실률이 아닙니다. 일반 DNS 검사는 정책 적용 여부와 별개이며, 검사 도메인이 차단되면 실패로 집계될 수 있습니다.</p><div class="obs-table-scroll"><table><caption>선택된 노드의 자원 및 DNS 품질 표본</caption><thead><tr><th>시각</th><th>CPU %</th><th>RX KiB/s</th><th>TX KiB/s</th><th>로컬 UDP ms</th><th>로컬 TCP ms</th><th>상위 UDP ms</th><th>검사 실패/전체</th></tr></thead><tbody id="obs-resource-table"></tbody></table></div></details>
+  <details class="obs-table-wrap"><summary>자원·네트워크 관측 수치</summary><p>첫 보고에서는 CPU 및 트래픽 변화율을 계산하지 않습니다. NIC 교체·재부팅·150초 초과 공백 뒤의 차분은 표시하지 않습니다. 드롭 카운터는 종단 간 패킷 손실률이 아닙니다. 일반 DNS 검사는 정책 적용 여부와 별개이며, 검사 도메인이 차단되면 실패로 집계될 수 있습니다.</p><div class="obs-table-scroll"><table><caption>선택된 노드의 자원 및 DNS 품질 표본</caption><thead><tr><th>시각</th><th>CPU %</th><th>메모리 %</th><th>디스크 %</th><th>RX KiB/s</th><th>TX KiB/s</th><th>로컬 UDP ms</th><th>로컬 TCP ms</th><th>상위 UDP ms</th><th>상위 TCP ms</th><th>오류/s</th><th>드롭/s</th><th>검사 실패/전체</th></tr></thead><tbody id="obs-resource-table"></tbody></table></div></details>
   <div class="obs-details"><div><span>메모리 사용</span><meter id="obs-memory-meter" min="0" max="100" value="0" hidden aria-label="메모리 사용률"></meter><strong id="obs-memory">—</strong></div><div><span>저장 영역 사용</span><meter id="obs-disk-meter" min="0" max="100" value="0" hidden aria-label="저장 영역 사용률"></meter><strong id="obs-disk">—</strong></div><div><span>가동 시간</span><strong id="obs-uptime">—</strong></div><div><span>정책 유효기간</span><strong id="obs-policy-ttl">—</strong></div></div>
   <div class="obs-footer"><span id="obs-samples">관측 0건</span><span>개인별 질의·방문 도메인 수집 안 함</span><span>공백은 보간하지 않습니다</span></div>
   <details class="obs-table-wrap"><summary>관측 수치 및 수집 범위</summary><p>최신 48건과 시간별 마지막 관측 최대 24건을 보관합니다. 시간별 점은 평균이 아니며, 과거에 보고가 없던 구간은 비어 있습니다. 캐시 통계는 선택 수집이며 검사 질의도 포함할 수 있습니다. 서명 확인은 노드의 보고 출처 확인이지 LAN 전체 보호의 증명이 아닙니다.</p><div class="obs-table-scroll"><table><caption>선택된 노드와 시간 구간의 집계 관측</caption><thead><tr><th>보고 시각</th><th>UDP ms</th><th>TCP ms</th><th>캐시 /s</th><th>적중 %</th><th>메모리 %</th><th>검사 오류</th></tr></thead><tbody id="obs-table"></tbody></table></div></details>
@@ -94,7 +94,8 @@ function renderAnalytics(){
 }
 function renderResourceMetrics(points, selected){
   const last=selected?.points.at(-1),system=selected?.metrics?.system;
-  showText('obs-resource-note',!selected?'장치를 등록한 뒤 노드의 서명 보고를 연결하세요.':!system?'v4 수집기로 갱신하면 CPU·인터페이스·일반 DNS 검사 그래프가 채워집니다.':selected.history_error?'관측 이력 검증 실패 · 최근 수치를 추측하지 않습니다.':'현재 표시는 해당 노드의 실제 관측입니다. 회선 전체·LAN 클라이언트 전체를 측정한 결과는 아닙니다.');
+  renderQualitySummary(points,selected);
+  showText('obs-resource-note',!selected?'장치를 등록한 뒤 노드의 서명 보고를 연결하세요.':!system?'현재 보고 format '+(selected.report_format??'미확인')+'에는 서버 자원 지표가 없습니다. 노드의 설치 코드를 v4 수집기로 갱신하세요. 기존 키와 등록은 유지해야 합니다.':selected.history_error?'관측 이력 검증 실패 · 최근 수치를 추측하지 않습니다.':'현재 표시는 해당 노드의 실제 관측입니다. 회선 전체·LAN 클라이언트 전체를 측정한 결과는 아닙니다.');
   showText('obs-interface',system?.interface?system.interface+' · ifindex '+(system.ifindex??'미확인'):'NIC 미선택');
   obsSet('obs-cpu',obsFinite(last?.cpu_used_pct)?obsValue(last.cpu_used_pct)+'%':'—');
   obsSet('obs-traffic',obsFinite(last?.rx_bytes_per_s)&&obsFinite(last?.tx_bytes_per_s)?obsValue(last.rx_bytes_per_s/1024)+' / '+obsValue(last.tx_bytes_per_s/1024):'—');
@@ -110,7 +111,7 @@ function renderResourceMetrics(points, selected){
   const body=$('obs-resource-table');body.replaceChildren();
   for(const p of points.slice().reverse()){
     const row=node('tr','');
-    const values=[new Date(p.at).toLocaleString('ko-KR'),obsValue(p.cpu_used_pct),obsValue(obsFinite(p.rx_bytes_per_s)?p.rx_bytes_per_s/1024:null),obsValue(obsFinite(p.tx_bytes_per_s)?p.tx_bytes_per_s/1024:null),obsValue(p.local_dns_udp_ms),obsValue(p.local_dns_tcp_ms),obsValue(p.upstream_dns_udp_ms),p.dns_attempts?p.dns_failures+' / '+p.dns_attempts:'미실시'];
+    const values=[new Date(p.at).toLocaleString('ko-KR'),obsValue(p.cpu_used_pct),obsValue(p.memory_used_pct),obsValue(p.disk_used_pct),obsValue(obsFinite(p.rx_bytes_per_s)?p.rx_bytes_per_s/1024:null),obsValue(obsFinite(p.tx_bytes_per_s)?p.tx_bytes_per_s/1024:null),obsValue(p.local_dns_udp_ms),obsValue(p.local_dns_tcp_ms),obsValue(p.upstream_dns_udp_ms),obsValue(p.upstream_dns_tcp_ms),obsValue(p.nic_errors_per_s,3),obsValue(p.nic_drops_per_s,3),p.dns_attempts?p.dns_failures+' / '+p.dns_attempts:'미실시'];
     for(const v of values)row.append(node('td','',v));body.append(row);
   }
 }
@@ -145,3 +146,8 @@ $('obs-export').addEventListener('click',()=>{
 });
 document.addEventListener('ops:locked',()=>{obsRequest++;obsData=null;obsLastRender='';obsLastFetch=0;$('obs-device').replaceChildren(node('option','','인증 후 조회'));delete $('obs-device').dataset.options;renderAnalytics();showText('obs-live','인증 후 조회');showText('obs-age','인증 후 조회');});
 '''
+
+from .console_quality import HTML as QUALITY_HTML, CSS as QUALITY_CSS, JS as QUALITY_JS
+HTML = HTML.replace('<details class="obs-table-wrap">', QUALITY_HTML + '<details class="obs-table-wrap">', 1)
+CSS += QUALITY_CSS
+JS += QUALITY_JS

@@ -159,6 +159,12 @@ async def control(path:str,request:Request):
         raise HTTPException(404,'Unknown operation')
     return await run_in_threadpool(transact,write,path not in ('evaluate','cloud/evidence/preview','cloud/publish/preview','cloud/trust/preview','cloud/enroll/preview'),actor=email,action=path)
 
+@app.get('/v1/nodes/report')
+def receiver_health():
+    # Public, bounded and stateless: never expose enrollment/state or call DB.
+    from aleph_policy_sync.receiver import health_payload
+    return health_payload()
+
 @app.post('/v1/nodes/report')
 async def receive_report(request:Request):
     if request.headers.get('origin') or request.headers.get('authorization'):raise HTTPException(403,'Only signed machine reports are accepted')

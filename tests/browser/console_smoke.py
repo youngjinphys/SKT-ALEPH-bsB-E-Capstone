@@ -67,11 +67,16 @@ def main():
                 page.locator('#obs-device').select_option('edge-69')
                 page.locator('#obs-window').select_option('60')
                 page.wait_for_function("document.querySelector('#obs-cpu')?.textContent.includes('60')")
-                for chart in ('obs-cpu-chart','obs-host-chart','obs-traffic-chart','obs-quality-chart'):
+                for chart in ('obs-cpu-chart','obs-host-chart','obs-traffic-chart','obs-quality-chart','obs-failures-chart','obs-nic-health-chart'):
                     assert page.locator('#'+chart+' svg').count()==1, mode+': missing '+chart
                 assert 'eth0' in page.locator('#obs-interface').inner_text()
+                assert page.locator('#obs-collector-version').inner_text()=='수집기 format 4'
+                assert page.locator('#obs-quality-window-fail').inner_text()=='0%'
+                assert '성공 36개' in page.locator('#obs-quality-udp-count').inner_text()
                 page.locator('#obs-quality-target').select_option('upstream')
                 assert page.locator('#obs-quality-chart circle').count()>0
+                assert page.locator('#obs-quality-udp-quantiles').inner_text()=='16 / 18'
+                assert '상위 DNS RTT' in page.locator('#obs-quality-scope').inner_text()
                 page.locator('#obs-quality-target').select_option('local')
                 assert page.locator('#obs-resource-table tr').count()>0
                 assertions.append(mode+': CPU/network rates and independent quality charts')

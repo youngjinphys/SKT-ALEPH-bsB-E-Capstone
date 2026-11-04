@@ -22,6 +22,7 @@ for component in ('dns-agent','policy-sync'):
 from aleph_policy_sync.snapshot import load_private_key,public_key_id,device_id
 from aleph_policy_sync.telemetry import private_ipv4,probe_upstream_ipv4
 from aleph_policy_sync.system_metrics import interface_name
+from aleph_policy_sync.receiver import check_receiver
 from aleph_policy_sync.enrollment import make_enrollment
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
@@ -53,11 +54,27 @@ def atomic(path,data,mode=0o600):
     finally:
         if os.path.exists(tmp):os.unlink(tmp)
 
+def resolve_interface(addresses, address, configured=None):
+    """Infer from this machine's kernel assignment, never its default route."""
+    interface_name(configured)
+    matches = {device.get('ifname') for device in addresses
+               if any(info.get('local') == address for info in device.get('addr_info', []))}
+    if configured:
+        if configured not in matches:
+            raise ValueError('The supplied address is not assigned to the supplied interface')
+        return configured
+    if len(matches) != 1:
+        raise ValueError('Cannot infer a unique local interface; supply --interface explicitly')
+    name=next(iter(matches))
+    if name is None:raise ValueError('Local interface name is missing')
+    return interface_name(name)
+
+
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--device-id',required=True)
     p.add_argument('--listen-ip',required=True)
-    p.add_argument('--interface',required=True)
+    p.add_argument('--interface',help='Infer only from a unique local assignment of --listen-ip when omitted')
     p.add_argument('--label',default='ALEPH DNS node')
     p.add_argument('--probe-upstream')
     p.add_argument('--apply',action='store_true')
@@ -71,9 +88,10 @@ def main(argv=None):
     checks=secure_directory(BASE)
     checks.verify_runtime(ROOT,BASE,role='dns')
     ip='/usr/sbin/ip' if Path('/usr/sbin/ip').exists() else '/usr/bin/ip'
-    addresses=json.loads(command([ip,'-j','-4','address','show','dev',a.interface],capture_output=True).stdout)
-    if not any(info.get('local')==a.listen_ip for dev in addresses for info in dev.get('addr_info',[])):
-        raise ValueError('The supplied address is not assigned to the supplied local interface')
+    args=[ip,'-j','-4','address','show']
+    if a.interface:args+=['dev',a.interface]
+    addresses=json.loads(command(args,capture_output=True).stdout)
+    a.interface=resolve_interface(addresses,a.listen_ip,a.interface)
     installed=Path('/etc/systemd/system/aleph-ops-collect.service').is_file()
     if installed:
         units=command(['/usr/bin/systemctl','cat','aleph-ops-collect.service','aleph-ops-send.service'],capture_output=True).stdout
@@ -82,8 +100,14 @@ def main(argv=None):
             existing=re.findall(r'--'+flag+r'\s+([^\s]+)',units)
             if not existing or any(x!=wanted for x in existing):
                 raise ValueError('Existing device identity differs; do not silently replace registered identity')
+        if a.probe_upstream is None:
+            prior=re.findall(r'--probe-upstream\s+([^\s]+)',units)
+            if prior:a.probe_upstream=probe_upstream_ipv4(prior[-1],a.listen_ip)
         if not Path('/etc/aleph-ops/status.pem').is_file():
             raise ValueError('Existing telemetry key is missing; do not regenerate or reset counters')
+    # Network/time failure occurs before stopping timers or writing any key.
+    receiver=check_receiver(URL)
+    print('Receiver routing/TLS verified; DB and enrollment are not checked. Clock offset:',receiver['clock_skew_s'],'s')
     print('Device:',a.device_id,'DNS:',a.listen_ip,'NIC:',a.interface)
     print('Report endpoint:',URL)
     print('Metrics: host counters + selected NIC; fixed example.org UDP/TCP quality probes')

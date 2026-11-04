@@ -263,7 +263,7 @@ class Nodes:
                     history_error = True
             nodes.append({k: current[k] for k in ('device_id', 'label', 'state', 'report_at', 'received_at', 'dns_applied')} |
                          {'points': points if not history_error else [], 'history_error': history_error,
-                          'metrics': current['metrics'], 'lan_verified': False})
+                          'metrics': current['metrics'], 'report_format': current['report_format'], 'lan_verified': False})
         return {'observed_at': now.isoformat(), 'retention_hours': 24,
                 'recent_limit': 48, 'hourly_limit': 24, 'poll_seconds': 10,
                 'collection_seconds': 60, 'source': 'verified-node-receipts',
@@ -279,7 +279,7 @@ class Nodes:
                        "policy_sequence": None, "policy_sha256": None,
                        "published_sequence": None, "published_sha256": None,
                        "attestation": None, "probe": None,
-                       "dns_applied": None, "lan_verified": False, "metrics": None}
+                       "dns_applied": None, "lan_verified": False, "metrics": None, "report_format": None}
             state = None
             try:
                 state = _owned_file(self._path(item["device_id"]), MAX_RECEIPT_BYTES)
@@ -298,7 +298,7 @@ class Nodes:
                                policy_sequence=reported["policy_sequence"],
                                policy_sha256=reported["policy_sha256"],
                                attestation=reported["attestation"], probe=reported["probe"],
-                               metrics=reported.get("metrics"))
+                               metrics=reported.get("metrics"), report_format=reported["format"])
                 report_at = timestamp(reported["reported_at"], "reported_at")
                 if received > instant + timedelta(seconds=60) or report_at > instant + timedelta(seconds=60):
                     # Local clock regressions must not keep a future-dated report healthy.

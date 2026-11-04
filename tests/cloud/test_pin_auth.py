@@ -38,7 +38,7 @@ class PinAuth(unittest.TestCase):
                            ('CAPSTONE_TEST_PIN_STARTS_AT',str(self.now+1)),
                            ('CAPSTONE_TEST_PIN_STARTS_AT',str(self.now-15*86400)),
                            ('CAPSTONE_TEST_PIN_EXPIRES_AT',str(self.now-1))]:
-            with self.subTest(key=key), patch.dict(os.environ, {key:value}):
+            with self.subTest(key=key), patch.dict(os.environ, {key:value}), patch.object(pin.time, 'time', return_value=self.now):
                 self.assertIsNone(pin.config())
 
     def test_attempt_reserved_before_verification_and_failure(self):

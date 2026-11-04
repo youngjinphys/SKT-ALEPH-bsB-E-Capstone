@@ -103,6 +103,9 @@ def collect_system(*,proc=Path('/proc'),net=Path('/sys/class/net'),interface=Non
             counters={key:int(_read(folder/'statistics'/key,32).strip()) for key in NET_FIELDS}
             if any(not 0<=x<=MAX_COUNTER for x in counters.values()):
                 raise ValueError('Invalid network counter')
+            # A hotplug during the multi-file read must not mix two devices.
+            if int(_read(folder/'ifindex',32).strip()) != index:
+                raise ValueError('Interface changed during observation')
             value.update(ifindex=index,**counters)
         except (OSError,ValueError,UnicodeError):
             pass
