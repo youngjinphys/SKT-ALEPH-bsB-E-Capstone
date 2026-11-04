@@ -8,6 +8,7 @@ viewport resets deck-wide state without hundreds of redundant asset reloads.
 """
 from pathlib import Path
 import json
+from decimal import Decimal, ROUND_HALF_UP
 import re
 
 from playwright.sync_api import expect
@@ -302,22 +303,26 @@ def check_controls(page, origin, slides):
             index = indexes["pi-network-plan"]
             conditions = json.loads((DATA / "dns-latency.json").read_text())["series"]
             for condition in conditions:
-                for metric, label in (("p50", "p50 · 중앙값"), ("p95", "p95 · 상위 지연")):
-                    for key in ("ArrowLeft", "ArrowRight"):
-                        open_slide(index)
-                        group = page.locator(ACTIVE).get_by_role("group", name="측정 조건", exact=True)
-                        expect(group.get_by_role("button")).to_have_count(len(conditions))
-                        condition_button = group.get_by_role("button", name=condition["label"], exact=True)
-                        condition_button.click()
-                        expect(condition_button).to_have_attribute("aria-pressed", "true")
-                        metric_button = page.locator(ACTIVE).get_by_role("button", name=label, exact=True)
-                        activate(metric_button, "click", (viewport, condition["id"], metric))
-                        expect(page.locator("#latency-chart")).to_have_attribute("data-metric", metric)
-                        expect(page.locator("#latency-chart").locator(".latency-arm")).to_have_count(len(condition["arms"]))
-                        expect(page.locator("#latency-chart")).to_have_attribute("aria-label", re.compile(rf"^{metric} 비교"))
-                        _assert_readable(page.locator("#latency-chart"), (viewport, condition["id"], "chart"))
-                        _assert_readable(page.locator(".latency-source"), (viewport, condition["id"], "source footer"))
-                        arrow(index, key, metric_button)
+                for key in ("ArrowLeft", "ArrowRight"):
+                    open_slide(index)
+                    group = page.locator(ACTIVE).get_by_role("group", name="측정 조건", exact=True)
+                    expect(group.get_by_role("button")).to_have_count(len(conditions))
+                    condition_button = group.get_by_role("button", name=condition["label"], exact=True)
+                    activate(condition_button, "click", (viewport, condition["id"], "combined"))
+                    expect(condition_button).to_have_attribute("aria-pressed", "true")
+                    chart = page.locator("#latency-chart")
+                    expect(chart).to_have_attribute("data-metric", "combined")
+                    expect(chart.locator(".latency-arm")).to_have_count(len(condition["arms"]))
+                    expect(chart).to_have_attribute("aria-label", re.compile(r"^p50·p95 함께 비교"))
+                    for arm in condition["arms"]:
+                        row = chart.locator(f'[data-arm="{arm["id"]}"]')
+                        for metric in ("p50", "p95"):
+                            expect(row.locator(f'[data-percentile="{metric}"] strong')).to_have_text(f'{Decimal(str(arm[metric])).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)} ms')
+                        expect(row.locator('.latency-dot')).to_have_count(2)
+                    expect(page.locator('.latency-difference-note')).to_contain_text('신뢰구간이 아닙니다')
+                    _assert_readable(chart, (viewport, condition["id"], "chart"))
+                    _assert_readable(page.locator(".latency-source"), (viewport, condition["id"], "source footer"))
+                    arrow(index, key, condition_button)
 
             index = indexes["http"]
             for protocol in (("HTTP", "HTTPS") if viewport[0] <= 780 else (None,)):
