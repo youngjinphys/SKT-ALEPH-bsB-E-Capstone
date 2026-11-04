@@ -40,13 +40,6 @@ body {
   background: linear-gradient(172deg, #0b2436, #081a2a 63%, #071625);
   border-right-color: rgba(167, 219, 239, .15);
 }
-.brand-mark {
-  border-color: rgba(112, 228, 236, .8);
-  background: linear-gradient(140deg, rgba(97, 215, 235, .19),
-              rgba(24, 86, 115, .06));
-  box-shadow: 0 0 28px rgba(57, 181, 221, .11),
-              inset 0 1px 0 rgba(255, 255, 255, .16);
-}
 .brand strong { letter-spacing: .10em; }
 .brand-asterisk { color: var(--amber); }
 .side-caption, .overline, .eyebrow { color: #91b7c8; }
@@ -574,7 +567,6 @@ textarea { line-height: 1.65; resize: vertical; }
   background: radial-gradient(ellipse at 25% 7%, rgba(87, 212, 231, .10), transparent 70%);
 }
 .brand { position: relative; margin-bottom: 52px; }
-.brand-mark { width: 43px; height: 43px; border-radius: 13px; }
 .brand strong { font-weight: 850; letter-spacing: .12em; }
 .brand small { color: #9bb8c6; }
 .side-caption { color: #8aabba; letter-spacing: .17em; }
@@ -847,7 +839,6 @@ textarea { line-height: 1.65; resize: vertical; }
   }
   .sidebar::before { height: 85px; }
   .brand { margin: 0 0 11px; padding: 0 2px; }
-  .brand-mark { width: 29px; height: 29px; border-radius: 9px; }
   .brand strong { font-size: 17px; }
   .brand small { font-size: 8px; }
   .side-nav { gap: 7px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; padding: 0 0 5px; scroll-snap-type: x proximity; }

@@ -18,7 +18,7 @@ HTML = r"""<!doctype html>
 <a class="skip-link" href="#main-content">본문으로 바로가기</a>
 <div class="shell">
   <aside class="sidebar" aria-label="관제 탐색">
-    <div class="brand"><div class="brand-mark"><span class="brand-orbit"></span><span class="brand-core"></span></div><div><strong>ALEPH<span class="brand-asterisk">✳</span></strong><small>PROTECTIVE DNS</small></div></div>
+    <div class="brand"><div><strong>ALEPH<span class="brand-asterisk">✳</span></strong><small>PROTECTIVE DNS</small></div></div>
     <div class="side-caption">WORKSPACE</div>
     <nav class="side-nav" aria-label="주요 메뉴">
       <button class="nav-item active" data-view="overview"><span class="nav-icon">◫</span>운영 개요</button>

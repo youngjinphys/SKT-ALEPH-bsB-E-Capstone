@@ -76,6 +76,9 @@ def main():
                 page.add_script_tag(content=NAV+'\n'+GUIDE_JS)
                 assert page.locator('#cloud-guide').is_hidden()
                 assert page.locator('a.brand').get_attribute('href')=='/'
+                assert page.locator('.brand-mark,.brand-orbit,.brand-core').count()==0
+                home=page.get_by_role('link',name='홈으로 이동',exact=True)
+                assert home.is_visible() and home.get_attribute('href')=='/'
                 assert page.locator('.main-column>.bottom-bar').evaluate("el=>parseFloat(getComputedStyle(el).paddingBottom)")>=88
                 page.locator('#cloud-guide-open').focus();page.keyboard.press('Enter')
                 assert page.locator('#cloud-guide').is_visible()
@@ -138,6 +141,11 @@ def main():
                 page.emulate_media(reduced_motion='reduce',forced_colors='active')
                 page.screenshot(path=str(OUT/f'{"connected" if connected else "locked"}-forced-colors.png'))
                 page.keyboard.press('Escape')
+                home.focus();page.keyboard.press('Enter')
+                page.wait_for_url(ORIGIN+'/')
+                assert page.locator('h1').inner_text()=='Root landing fixture'
+                page.go_back(wait_until='domcontentloaded');page.wait_for_url(ORIGIN+'/dashboard')
+                assert page.locator('#cloud-guide').is_hidden()
                 page.locator('a.brand').focus();page.keyboard.press('Enter')
                 page.wait_for_url(ORIGIN+'/')
                 assert page.locator('h1').inner_text()=='Root landing fixture'

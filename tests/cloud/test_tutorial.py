@@ -26,6 +26,28 @@ class TutorialAssets(unittest.TestCase):
         self.assertIn('ALEPH',attrs['aria-label'])
         self.assertIn('PROTECTIVE DNS',html)
 
+    def test_decorative_symbol_markup_and_styles_are_removed(self):
+        html,css,_=assets()
+        for symbol in ('brand-mark','brand-orbit','brand-core'):
+            self.assertNotIn(symbol,html+css+LOCAL_HTML+LOCAL_CSS)
+        self.assertIn('brand-asterisk',html)
+        self.assertIn('ALEPH',LOCAL_HTML)
+
+    def test_dashboard_has_visible_accessible_native_home_link(self):
+        html,css,_=assets()
+        tags=Tags(html).tags
+        homes=[(tag,a) for tag,a in tags if 'dashboard-home' in a.get('class','').split()]
+        self.assertEqual(len(homes),1)
+        tag,attrs=homes[0]
+        self.assertEqual((tag,attrs['href'],attrs['aria-label']),('a','/','홈으로 이동'))
+        for forbidden in ('target','onclick','data-view','data-go'):
+            self.assertNotIn(forbidden,attrs)
+        self.assertIn('<span class="dashboard-home-label">홈</span>',html)
+        icon=next(a for tag,a in tags if tag=='svg' and a.get('class')=='dashboard-home-icon')
+        self.assertEqual((icon['aria-hidden'],icon['focusable']),('true','false'))
+        self.assertNotIn('dashboard-home',LOCAL_HTML+LOCAL_CSS)
+        self.assertIn('.dashboard-home-icon{flex:0 0 18px',css)
+
     def test_only_cloud_assets_include_guide(self):
         html,css,js=assets()
         self.assertEqual(html.count('id="cloud-guide"'),1)

@@ -34,7 +34,8 @@ def check_header(page, mode, state, width):
       const header = box(document.querySelector('.topbar'));
       const controls = [...document.querySelectorAll('.topbar-actions>a,.topbar-actions>button')].filter(visible).map(el => {
         const rect = box(el), range = document.createRange();
-        range.selectNodeContents(el);
+        // Measure the label independently of an adjacent decorative SVG.
+        range.selectNodeContents(el.querySelector('.dashboard-home-label') || el);
         const text = range.getBoundingClientRect();
         return {id:el.id,label:el.textContent,box:rect.toJSON(),inside:inside(rect,header),textInside:inside(text,rect),
           offset:Math.abs((rect.top+rect.bottom-text.top-text.bottom)/2),
@@ -59,6 +60,16 @@ def check_header(page, mode, state, width):
     }''')
     prefix = f'{mode}/{state}/{width}'
     assert not geometry['overflow'], (prefix, 'horizontal overflow', geometry)
+    assert page.locator('.brand-mark,.brand-orbit,.brand-core').count() == 0, (prefix, 'removed symbol returned')
+    if mode == 'cloud':
+        home = page.get_by_role('link', name='홈으로 이동', exact=True)
+        assert home.is_visible() and home.get_attribute('href') == '/', (prefix, 'home link missing')
+        assert home.inner_text() == '홈', (prefix, 'home label hidden')
+        assert home.bounding_box()['width'] >= 44, (prefix, 'home target too narrow')
+        icon = home.locator('svg').bounding_box()
+        target = home.bounding_box()
+        assert icon['width'] == 18 and icon['height'] == 18, (prefix, 'home icon distorted')
+        assert target['x'] <= icon['x'] and icon['x']+icon['width'] <= target['x']+target['width'], (prefix, 'home icon clipped')
     assert geometry['lockVisible'] == STATES[state][1], (prefix, 'hidden lock leaked')
     expected_controls = (4 if mode == 'cloud' else 1) + int(STATES[state][1])
     assert len(geometry['controls']) == expected_controls, (prefix, 'missing header action', geometry)
