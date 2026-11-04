@@ -44,10 +44,12 @@ class PresentationLatencyTests(unittest.TestCase):
         self.assertNotIn('반례', json.dumps(slide,ensure_ascii=False))
         self.assertEqual(slide['reading']['rows'][2][1],'정책 승인·서명·집행·철회')
         # Slide #9 now shows recorded terminal output, not the old scenario UI.
-        # Preserve the explicit boundary between observed and unexecuted queries.
+        # Preserve the distinct public record and labelled, unexecuted simulation.
         bypass=json.loads((WEB/'capstone/data/slides/09-bypass.json').read_text())
-        self.assertIn('block.test는 실제 질의를 실행하지 못했으므로',bypass['notes'])
-        self.assertIn('합성 차단 결과로 대체하지 않았습니다',bypass['notes'])
+        self.assertIn('공개 리졸버 1.1.1.1로 별도 질의',bypass['notes'])
+        self.assertIn('기존 사설 DNS 실험과 별개',bypass['notes'])
+        self.assertIn('block.test 화면의 NXDOMAIN 차단은 동작을 설명하기 위한 모의',bypass['notes'])
+        self.assertIn('실제 질의를 실행하거나 차단 성공을 확인한 결과가 아닙니다',bypass['notes'])
         self.assertIn('현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다',bypass['notes'])
 
 if __name__ == '__main__':unittest.main()

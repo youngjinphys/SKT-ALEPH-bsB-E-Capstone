@@ -127,7 +127,9 @@ def check_dns_terminal(browser, origin):
                     expect(root).to_have_attribute('data-query-id',google['id'])
                     expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
                     expect(root.locator('.dns-terminal-command code')).to_have_text('dig @1.1.1.1 google.com A')
-                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('PUBLIC DNS 1.1.1.1 · SEPARATE OBSERVATION')
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략')
+                    expect(root.locator('.server-dns-heading h3')).to_have_text('공개 DNS 질의 기록')
+                    assert 'SERVER ·' not in text and 'server / dig' not in text
                     assert root.locator('.dns-terminal-output').inner_text()==expected
                     expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',google['timestamp'])
                     expect(root.locator('.dns-terminal-pending')).to_have_count(0)
