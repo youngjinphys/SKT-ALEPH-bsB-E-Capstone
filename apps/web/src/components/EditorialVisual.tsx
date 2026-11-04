@@ -56,7 +56,7 @@ export function AdoptionCompare({paused=false}:{paused?:boolean}){
  </section></TermExplanation>;
 }
 export function DnsEvidenceDashboard({visual,paused=false}:{visual?:Chain;paused?:boolean}={}){
- return <section className="diagram-panel dns-evidence-dashboard" aria-label="실제 DNS 질의 기록">
+ return <section className="diagram-panel dns-evidence-dashboard" aria-label="DNS 질의 기록과 예시">
   <ServerDnsObservation/>
  </section>;
 }

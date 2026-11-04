@@ -32,10 +32,11 @@ test('current deck includes every active-slide citation and all manuscript Q&A, 
  assert.ok(!result.slideIndex.some(slide=>sequence.archived.includes(slide.id)));
  const bibliography=active.find(slide=>slide.id==='sources');
  assert.equal(active.at(-1).id,'sources');assert.equal(sequence.mainSlideCount,14);
- assert.equal(bibliography.sources.length,39);
+ assert.equal(bibliography.sources.length,38);
  const grouped=bibliography.referenceGroups.flatMap(group=>group.keys);
  assert.deepEqual(new Set(grouped),new Set(bibliography.sources));
- assert.equal(grouped.length,39);
+ assert.equal(grouped.length,38);
+ assert.ok(!grouped.includes("block-test-loopback-20261104"));
  assert.ok(!fs.existsSync(new URL('src/app/capstone/references/page.tsx',root)));
  const deckSource=fs.readFileSync(new URL('src/components/SlideDeck.tsx',root),'utf8');
  assert.ok(!deckSource.includes('/capstone/references'));

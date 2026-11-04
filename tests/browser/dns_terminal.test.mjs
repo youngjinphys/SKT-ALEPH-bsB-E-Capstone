@@ -51,36 +51,33 @@ test('stored terminal choices use native buttons without capturing arrow keys',(
 });
 
 
-test('the displayed block.test result is a bounded recorded loopback experiment',()=>{
+test('the Pi DNS example is explicit and disconnected from captured experiments',()=>{
  const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
- const style=fs.readFileSync(path.join(web,'src/components/server-dns-observation.css'),'utf8');
  const slide=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8'));
- const fixture=JSON.parse(fs.readFileSync(path.join(web,'public/capstone/evidence/block-test-loopback-20261104.json'),'utf8'));
- assert.ok(source.includes('data-command-display="summary"'));
  assert.ok(source.includes('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략'));
- assert.doesNotMatch(source,/SERVER ·|server \/ dig/);
- assert.doesNotMatch(source,/dns-fixture-summary|dns-fixture-boundary/);
- assert.ok(source.includes('block-test-loopback-20261104.json'));
- assert.ok(source.includes('<code>dig block.test A</code>'));
- assert.ok(source.includes('<Transcript text={blockedOutput}/>'));
- assert.ok(source.includes('격리 DNS 실험 · 명령·응답 일부 생략'));
- assert.equal((source.match(/data-command-display="summary"/g)||[]).length,2);
- assert.doesNotMatch(source,/blockedQuery\.command\.join|data-command-display="recorded"/);
- assert.ok(source.includes('publicDns?"captured":"fixture"'));
- assert.doesNotMatch(source,/type Transport|type Route|setTransport|setRoute|record\.server|google\.server|dns-terminal-routes/);
- assert.doesNotMatch(style,/dns-terminal-routes/);
- assert.deepEqual(fixture.phases.map(p=>p.name),['before','blocked','withdrawn']);
- for(const phase of fixture.phases){
-  assert.equal(phase.queries.length,4);
-  assert.deepEqual(new Set(phase.queries.map(q=>`${q.qtype}/${q.transport}`)),new Set(['A/UDP','A/TCP','AAAA/UDP','AAAA/TCP']));
-  for(const q of phase.queries){assert.equal(q.exit_code,0);assert.equal(q.rcode,phase.name==='blocked'?'NXDOMAIN':'NOERROR')}
- }
+ assert.ok(source.includes('PI DNS · ILLUSTRATION'));
+ const wrapper=fs.readFileSync(path.join(web,'src/components/EditorialVisual.tsx'),'utf8');
+ assert.ok(wrapper.includes('className="diagram-panel dns-evidence-dashboard" aria-label="DNS 질의 기록과 예시"'));
+ assert.ok(source.includes('예시 · 미실행'));
+ assert.ok(source.includes('Pi DNS 차단 예시 · 미실행'));
+ assert.ok(source.includes('data-command-display="illustration"'));
+ assert.ok(source.includes('dig @${PI_DNS} block.test A'));
+ assert.ok(source.includes('<Transcript text={exampleOutput}/>'));
+ assert.ok(source.includes('publicDns?"captured":"illustration"'));
+ assert.ok(source.includes('NXDOMAIN (expected)'));
+ assert.doesNotMatch(source,/block-test-loopback|blockedQuery|block\.phases|ISOLATED LOOPBACK|CAPTURED|type Transport|type Route|setTransport|setRoute|onKeyDown/);
  const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
- assert.ok(visible.includes('격리'));
- assert.ok(visible.includes('운영 DNS 적용'));
- assert.doesNotMatch(visible,/\b(?:TCP|UDP)\b/);
- const sources=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/sources.json'),'utf8'));
- assert.equal(sources['block-test-loopback-20261104'].url,'https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9040affdaa823b7f3a999a65de71738b990d5b15/apps/web/public/capstone/evidence/block-test-loopback-20261104.json');
+ assert.ok(visible.includes('미실행'));
+ assert.doesNotMatch(visible,/\b(?:TCP|UDP)\b|격리 차단 검증|12개 질의/);
+ assert.ok(!slide.sources.includes('block-test-loopback-20261104'));
+ const manuscript=fs.readFileSync(path.join(web,'docs/presentation/final-20min-scenario.md'),'utf8');
+ const schedule=manuscript.split('\n').find(line=>line.startsWith('| 09 |'));
+ assert.ok(schedule.includes('Pi DNS 미실행 예시'));
+ assert.ok(schedule.includes(slide.title.replace('\n',' ')));
+ assert.doesNotMatch(manuscript,/block\.test[^\n]*격리 차단 실험/);
+ assert.doesNotMatch(manuscript,/07:37 UTC|12개 질의가 기대 응답과 일치/);
+ const registry=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/sources.json'),'utf8'));
+ assert.ok(registry['block-test-loopback-20261104']); // Historical evidence remains intact.
 });
 
 test('Google answer display preserves the separate stored public IPv4 record',()=>{

@@ -1,4 +1,4 @@
-"""The terminal shows recorded, separate public DNS and isolated loopback observations."""
+"""The terminal distinguishes a stored public record from an unexecuted Pi DNS example."""
 from pathlib import Path
 import json
 import re
@@ -7,7 +7,6 @@ from presentation_controls import _assert_readable
 
 ROOT = Path(__file__).resolve().parents[2]
 CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/google-dns-observation.json').read_text())
-FIXTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/block-test-loopback-20261104.json').read_text())
 OUT = Path('/tmp/aleph-build-artifacts/dns-terminal')
 
 
@@ -47,17 +46,18 @@ def _wheel_reach(page,target,direction,context):
         raise AssertionError((context,'unreachable with wheel',geometry))
 
 
-def _check_natural_reachability(page,context,last_selector='.dns-terminal-status a'):
+def _check_natural_reachability(page,context,last_selector='.dns-terminal-status a',last_focus_selector=None):
     first=page.get_by_role('group',name='질의 이름 선택',exact=True).get_by_role('button').first
     last=page.locator(last_selector)
     _wheel_reach(page,last,1,context)
     page.screenshot(path=str(OUT/f'terminal-scroll-end-{context}.png'),full_page=True)
     _wheel_reach(page,first,-1,context)
+    focus_target=page.locator(last_focus_selector) if last_focus_selector else last
     first.focus()
     for _ in range(24):
         focused=page.locator(':focus')
         assert _visible_without_scrolling(focused),(context,'focused control clipped')
-        if last.evaluate('el=>el===document.activeElement'):break
+        if focus_target.evaluate('el=>el===document.activeElement'):break
         page.keyboard.press('Tab')
     else:raise AssertionError((context,'terminal control missing from Tab order'))
 
@@ -147,28 +147,23 @@ def check_dns_terminal(browser, origin):
                     for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 else:
-                    expect(root).to_have_attribute('data-evidence-state','fixture')
-                    expect(root).to_have_attribute('data-query-id','block-test-loopback')
-                    expect(root.locator('.server-dns-heading time')).to_have_attribute('datetime',FIXTURE['started_at'])
-                    blocked=next(phase for phase in FIXTURE['phases'] if phase['name']=='blocked')
-                    recorded=next(query for query in blocked['queries'] if query['qtype']=='A' and query['transport']=='UDP')
-                    for phase in FIXTURE['phases']:
-                        expected_rcode='NXDOMAIN' if phase['name']=='blocked' else 'NOERROR'
-                        assert len(phase['queries'])==4
-                        assert {(q['qtype'],q['transport']) for q in phase['queries']}=={('A','UDP'),('A','TCP'),('AAAA','UDP'),('AAAA','TCP')}
-                        assert all(q['exit_code']==0 and q['rcode']==expected_rcode for q in phase['queries'])
-                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
-                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig block.test A')
-                    excerpt='\n'.join(line for line in recorded['stdout'].split('\n') if not line.startswith((';; OPT PSEUDOSECTION:','; EDNS:')))
-                    assert root.locator('.dns-terminal-output code').text_content()==excerpt
-                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('격리 DNS 실험 · 명령·응답 일부 생략')
-                    expect(root.locator('.dns-fixture-summary,.dns-fixture-boundary')).to_have_count(0)
-                    expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',recorded['started_at'])
-                    link=root.get_by_role('link',name='실험 기록 ↗',exact=True)
-                    expect(link).to_have_attribute('href','/capstone/evidence/block-test-loopback-20261104.json')
+                    expect(root).to_have_attribute('data-evidence-state','illustration')
+                    expect(root).to_have_attribute('data-query-id','block-test-illustration')
+                    expect(root.locator('.dns-example-badge')).to_have_text('예시 · 미실행')
+                    expect(root.locator('.server-dns-heading h3')).to_have_text('Pi DNS 차단 흐름 예시')
+                    expect(root.locator('time,a')).to_have_count(0)
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','illustration')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig @${PI_DNS} block.test A')
+                    assert root.locator('.dns-terminal-output code').text_content()=='QUERY    block.test A\nPOLICY   BLOCK (example)\nRESULT   NXDOMAIN (expected)\nANSWER: 0 (expected)'
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('Pi DNS 차단 예시 · 미실행')
+                    expect(root.locator('.dns-terminal-titlebar')).to_contain_text('NOT RUN')
+                    expect(root.locator('.dns-terminal-status')).to_contain_text('예상 응답')
+                    expect(root.locator('.dns-terminal-status')).to_contain_text('설명용 출력')
+                    for absent in ('exit 0','msec','07:37','12/12','실험 기록 ↗',';;'):
+                        assert absent not in text,(width,height,absent)
                     _assert_terminal_visibility(page)
-                    _check_natural_reachability(page,f'{width}x{height}-fixture')
-                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
+                    _check_natural_reachability(page,f'{width}x{height}-illustration','.dns-terminal-status','.server-dns-selectors button:last-child')
+                    for selector in ('.dns-example-badge','.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
@@ -225,4 +220,4 @@ def check_dns_terminal(browser, origin):
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors,errors
         finally:context.close()
-    print(f'DNS terminal: {total} captured/fixture states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')
+    print(f'DNS terminal: {total} captured/illustration states, 20 domain-to-arrow cases, stored excerpts and unexecuted example, fonts, glass, wheel/Tab and text stress verified')
