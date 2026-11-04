@@ -9,7 +9,7 @@
   "points": [
     {
       "title": "google.com 정상 반환",
-      "body": "저장된 실제 질의: NOERROR · A 주소 6개"
+      "body": "공개 DNS 1.1.1.1 별도 질의 · NOERROR · A 주소 6개"
     },
     {
       "title": "block.test 차단 모의",
@@ -17,30 +17,31 @@
     },
     {
       "title": "명령과 응답은 발췌",
-      "body": "옵션·서버 정보는 화면에서 생략 · 원문 기록 보존"
+      "body": "명령 옵션은 화면에서 생략 · 전체 공개 기록 제공"
     },
     {
       "title": "판정 경계",
       "body": "일반 NXDOMAIN만으로 필터 차단을 입증할 수 없음"
     }
   ],
-  "notes": "[화면] google.com은 확인된 저장 응답을, block.test는 실제 질의가 아닌 차단 모의를 표시합니다.\n\n[발표] google.com 화면은 2026-11-04 02:42:22.054700 UTC에 실험 호스트에서 관측한 실제 기록입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 표시 명령은 읽기 쉽게 축약했고, 응답의 서버 정보도 생략했습니다. 원래 명령과 조건을 포함한 기록은 수정하지 않았습니다.\n\nblock.test 화면의 NXDOMAIN 차단은 동작을 설명하기 위한 모의입니다. 실제 질의를 실행하거나 차단 성공을 확인한 결과가 아닙니다. 일반 NXDOMAIN만으로 보호 정책에 의한 차단을 증명할 수 없으며, 현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다.\n\n확인된 주소 반환은 해당 시점의 관측이며 현재 정책이나 차단 성공률을 뜻하지 않습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
+  "notes": "[화면] google.com은 확인된 저장 응답을, block.test는 실제 질의가 아닌 차단 모의를 표시합니다.\n\n[발표] google.com 화면은 2026-11-04 07:23:23 UTC에 공개 리졸버 1.1.1.1로 별도 질의한 실제 응답입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 이 기록은 기존 사설 DNS 실험과 별개이며, 그 실험의 가려진 주소를 복원한 것이 아닙니다. 주소는 시점과 리졸버에 따라 바뀔 수 있습니다.\n\nblock.test 화면의 NXDOMAIN 차단은 동작을 설명하기 위한 모의입니다. 실제 질의를 실행하거나 차단 성공을 확인한 결과가 아닙니다. 일반 NXDOMAIN만으로 보호 정책에 의한 차단을 증명할 수 없으며, 현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다.\n\n확인된 주소 반환은 해당 시점의 관측이며 현재 정책이나 차단 성공률을 뜻하지 않습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
   "sources": [
     "dns-query-20261104",
     "review-current",
     "dns-runtime-current",
-    "validation"
+    "validation",
+    "dns-google-public-20261104"
   ],
   "mood": "concerned",
   "presentation": {
     "title": "확인한 DNS 응답과\n차단 검증 상태를 구분합니다",
     "subtitle": "google.com 응답 기록 · block.test 차단 모의",
     "cue": "확인된 google.com 응답과 모의 block.test 차단을 구분합니다.",
-    "reviewNote": "google.com은 저장 응답, block.test는 실제 질의가 아닌 차단 모의입니다.",
+    "reviewNote": "google.com은 공개 DNS 별도 질의의 저장 응답, block.test는 실제 질의가 아닌 차단 모의입니다.",
     "points": [
       {
         "title": "google.com 정상 반환",
-        "body": "저장된 실제 질의: NOERROR · A 주소 6개"
+        "body": "공개 DNS 1.1.1.1 별도 질의 · NOERROR · A 주소 6개"
       },
       {
         "title": "block.test 차단 모의",
@@ -48,7 +49,7 @@
       },
       {
         "title": "명령과 응답은 발췌",
-        "body": "옵션·서버 정보는 화면에서 생략 · 원문 기록 보존"
+        "body": "명령 옵션은 화면에서 생략 · 전체 공개 기록 제공"
       },
       {
         "title": "판정 경계",
@@ -67,8 +68,8 @@
     "rows": [
       [
         "google.com",
-        "저장된 실제 응답: NOERROR · 주소 6개",
-        "2026-11-04 02:42 UTC 관측"
+        "공개 DNS 1.1.1.1 별도 질의: NOERROR · 주소 6개",
+        "2026-11-04 07:23:23 UTC 관측 · 사설 DNS와 별개"
       ],
       [
         "block.test",
@@ -87,8 +88,8 @@
       ]
     ],
     "takeaway": "google.com의 주소 반환은 관측했습니다. block.test의 차단은 모의이며 실제 차단 여부는 확인하지 못했습니다.",
-    "source": "https://skt-aleph-capstone.vercel.app/capstone/evidence/dns-query-20261104.txt",
-    "sourceLabel": "2026.11.04 공개 발췌본 ↗"
+    "source": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/main/apps/web/public/capstone/evidence/google-dns-observation.json",
+    "sourceLabel": "2026.11.04 공개 DNS 질의 기록 ↗"
   },
   "headline": {
     "focus": "응답과 미검증 구분",
@@ -97,7 +98,7 @@
   "visual": {
     "type": "cname-chain",
     "title": "DNS 응답과 검증 상태",
-    "sourceKey": "dns-query-20261104",
+    "sourceKey": "dns-google-public-20261104",
     "nodes": [
       {
         "label": "확인된 질의",
@@ -119,6 +120,6 @@
       "주소 반환",
       "모의 차단"
     ],
-    "caveat": "google.com은 저장된 실측 기록 · block.test는 실제 질의 없는 모의 차단"
+    "caveat": "google.com은 공개 DNS 별도 관측 · block.test는 실제 질의 없는 모의 차단"
   }
 }

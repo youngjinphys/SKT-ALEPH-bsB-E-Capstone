@@ -288,5 +288,10 @@
     "label": "Oest et al. · Sunrise to Sunset 논문 원문 (2020)",
     "url": "https://www.usenix.org/system/files/sec20-oest-sunrise.pdf",
     "note": "USENIX Security 2020 논문 원문입니다. 우리 시스템의 탐지 성능 평가가 아닙니다."
+  },
+  "dns-google-public-20261104": {
+    "label": "2026.11.04 · 공개 DNS 1.1.1.1 별도 질의",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/main/apps/web/public/capstone/evidence/google-dns-observation.json",
+    "note": "2026-11-04 07:23:23 UTC 별도 TCP 질의. 공개 리졸버의 응답이며 기존 사설 DNS 실험과 무관합니다."
   }
 }

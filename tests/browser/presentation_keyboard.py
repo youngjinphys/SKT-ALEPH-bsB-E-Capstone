@@ -23,6 +23,7 @@ from presentation_dns_terminal import check_dns_terminal
 from presentation_header import check_header_navigation
 from presentation_dns_decision import check_dns_decision
 from presentation_protocol_edges import check_protocol_edges
+from presentation_route_arrows import check_route_arrows
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "apps/web"
@@ -256,6 +257,7 @@ def main():
                     check_header_navigation(browser, ORIGIN)
                     check_dns_decision(browser, ORIGIN)
                     check_protocol_edges(browser, ORIGIN)
+                    check_route_arrows(browser, ORIGIN)
                     # Geometry suites own their pages, so verify them before
                     # unrelated terminal stress can obscure layout diagnostics.
                     check_term_callouts(browser, ORIGIN)

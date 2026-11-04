@@ -55,7 +55,7 @@ test('the display keeps the Google capture and labels the block.test rejection a
  const style=fs.readFileSync(path.join(web,'src/components/server-dns-observation.css'),'utf8');
  const slide=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8'));
  assert.ok(source.includes('data-command-display="summary"'));
- assert.ok(source.includes('명령·응답 일부 생략'));
+ assert.ok(source.includes('PUBLIC DNS 1.1.1.1'));
  assert.ok(source.includes('모의 · 실제 질의 미실행'));
  assert.ok(source.includes('NXDOMAIN'));
  assert.ok(source.includes('recorded?"captured":"simulated"'));
@@ -63,6 +63,19 @@ test('the display keeps the Google capture and labels the block.test rejection a
  assert.doesNotMatch(style,/dns-terminal-routes/);
  assert.equal(capture.queries.filter(q=>q.domain==='block.test').length,0);
  const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
- assert.doesNotMatch(visible,/example\.com|기본 DNS|사설 DNS|UDP|TCP/);
+ assert.doesNotMatch(visible,/example\.com|기본 DNS|UDP|TCP/);
  assert.ok(visible.includes('모의'));
+});
+
+test('Google answer display includes an independently captured public IPv4 response',()=>{
+ const capturePath=path.join(web,'public/capstone/evidence/google-dns-observation.json');
+ const observed=JSON.parse(fs.readFileSync(capturePath,'utf8'));
+ assert.equal(observed.domain,'google.com');
+ assert.equal(observed.resolver,'1.1.1.1');
+ assert.equal(observed.status,'NOERROR');
+ assert.ok(observed.answers.length>0);
+ assert.ok(observed.answers.every(line=>/^google\.com\. \d+ IN A (?:\d{1,3}\.){3}\d{1,3}$/.test(line)));
+ const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
+ assert.ok(source.includes('google-dns-observation.json'));
+ assert.ok(source.includes('PUBLIC DNS 1.1.1.1'));
 });

@@ -73,7 +73,6 @@ def check_motion(page, origin):
     for slide, selector, button in (
         ('architecture', '.policy-flow-detail strong', '.policy-flow-stage'),
         ('policy-demo', '.policy-timeline-result p', '.policy-timeline-stage button'),
-        ('topology-public', '.dns-route-explanation', '.dns-route-stages button'),
     ):
         open_slide(slide)
         assert_fade(selector)

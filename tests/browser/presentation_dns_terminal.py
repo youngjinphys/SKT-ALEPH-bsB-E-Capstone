@@ -6,7 +6,7 @@ from playwright.sync_api import expect
 from presentation_controls import _assert_readable
 
 ROOT = Path(__file__).resolve().parents[2]
-CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/dns-terminal-20261104.json').read_text())
+CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/google-dns-observation.json').read_text())
 OUT = Path('/tmp/aleph-build-artifacts/dns-terminal')
 
 
@@ -85,7 +85,7 @@ def _assert_terminal_visibility(page):
 
 def check_dns_terminal(browser, origin):
     OUT.mkdir(parents=True, exist_ok=True)
-    google=next(q for q in CAPTURE['queries'] if q['domain']=='google.com' and q['route']=='private' and q['transport']=='TCP')
+    google=CAPTURE
     expected='\n'.join([google['header'],google['flags'],';; QUESTION SECTION:',google['question'],';; ANSWER SECTION:',*google['answers'],f";; Query time: {google['queryMs']} msec"])
     total=0
     for width,height in ((1440,900),(1366,768),(390,844),(390,720),(320,667)):
@@ -117,16 +117,17 @@ def check_dns_terminal(browser, origin):
             for domain in ('google.com','block.test'):
                 choices.get_by_role('button',name=domain,exact=True).click()
                 text=root.inner_text()
-                for removed in ('example.com','기본 DNS','사설 DNS','TCP','UDP','SERVER:','+time','+tries','+tcp'):
+                for removed in ('example.com','기본 DNS','TCP','UDP','SERVER:','+time','+tries','+tcp'):
                     assert removed not in text,(width,height,domain,removed)
                 assert '\ufffd' not in text
-                assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',text)
+                if domain=='google.com': assert '1.1.1.1' in text and all(line.split()[-1] in text for line in google['answers'])
+                else: assert not re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b',text)
                 if domain=='google.com':
                     expect(root).to_have_attribute('data-evidence-state','captured')
                     expect(root).to_have_attribute('data-query-id',google['id'])
                     expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
-                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig google.com A')
-                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('명령·응답 일부 생략')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig @1.1.1.1 google.com A')
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('PUBLIC DNS 1.1.1.1 · SEPARATE OBSERVATION')
                     assert root.locator('.dns-terminal-output').inner_text()==expected
                     expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',google['timestamp'])
                     expect(root.locator('.dns-terminal-pending')).to_have_count(0)

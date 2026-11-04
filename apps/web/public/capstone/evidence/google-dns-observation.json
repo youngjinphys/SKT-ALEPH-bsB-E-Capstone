@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "timestamp": "2026-11-04T07:23:23Z",
+  "domain": "google.com",
+  "resolver": "1.1.1.1",
+  "transport": "TCP",
+  "command": "dig @1.1.1.1 google.com A +time=3 +tries=1 +tcp",
+  "status": "NOERROR",
+  "header": ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 36622",
+  "flags": ";; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: 1",
+  "question": ";google.com. IN A",
+  "answers": [
+    "google.com. 241 IN A 172.217.209.100",
+    "google.com. 241 IN A 172.217.209.138",
+    "google.com. 241 IN A 172.217.209.102",
+    "google.com. 241 IN A 172.217.209.139",
+    "google.com. 241 IN A 172.217.209.101",
+    "google.com. 241 IN A 172.217.209.113"
+  ],
+  "answerCount": 6,
+  "queryMs": 9,
+  "exitCode": 0,
+  "note": "Separate public resolver observation; not the private DNS capture.",
+  "id": "google.com-tcp-public-1.1.1.1"
+}
