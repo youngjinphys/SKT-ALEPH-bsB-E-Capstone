@@ -81,7 +81,10 @@ class ResourceMetrics(unittest.TestCase):
         self.assertNotIn('packet_loss',s)
 
     def test_hourly_last_observation_retains_ingest_rates(self):
-        now=datetime.now(timezone.utc)-timedelta(hours=4)
+        # Align to an hour so the first retained bucket has multiple samples.
+        # A wall-clock start at minute 59 can retain only the initial unknown
+        # rate; that valid startup case is covered separately above.
+        now=datetime(2026,1,1,tzinfo=timezone.utc)
         history=None
         for i in range(180):
             m=metrics.blank_metrics(extended=True)
