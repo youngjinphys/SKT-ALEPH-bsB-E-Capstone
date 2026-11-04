@@ -46,7 +46,7 @@
  .deck-root .deck-slide.slide-bypass[data-mobile-layout=desktop] .slide-visual-container>.dns-evidence-dashboard{flex:none;height:auto;max-height:none;overflow:visible;justify-content:flex-start}
 }
 
-/* One captured response and one unverified request; neither is executable. */
+/* One captured response and one simulated rejection; neither is executable. */
 .server-dns-unverified{color:#f5d8a5;font-size:12px}
 .deck-root .dns-terminal-excerpt{margin:0 0 9px;color:#c6d9ea;font-size:12px;line-height:1.5}
 .dns-terminal-status a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px}
@@ -54,5 +54,5 @@
 .dns-terminal-pending>span{font:12px ui-monospace,Consolas,monospace;letter-spacing:.08em;border:1px solid #b39765;border-radius:5px;padding:5px 8px}
 .dns-terminal-pending h4{margin:0;font:700 24px ui-monospace,Consolas,monospace;color:#f2f7ff;overflow-wrap:anywhere}
 .deck-root .dns-terminal-pending p{margin:0;font-size:14px;line-height:1.6;color:#f5d8a5}
-.server-dns-observation[data-evidence-state=unverified] .server-dns-selectors button[aria-pressed=true]{background:#493b21;border-color:#efd39b;box-shadow:inset 0 0 0 1px #efd39b;color:#fff0cf}
-@media(forced-colors:active){.dns-terminal-pending,.dns-terminal-pending h4,.deck-root .dns-terminal-pending p,.deck-root .dns-terminal-excerpt,.server-dns-unverified,.dns-terminal-status a{color:CanvasText}.server-dns-observation[data-evidence-state=unverified] .server-dns-selectors button[aria-pressed=true]{background:Canvas;color:CanvasText}}
+.server-dns-observation[data-evidence-state=simulated] .server-dns-selectors button[aria-pressed=true]{background:#493b21;border-color:#efd39b;box-shadow:inset 0 0 0 1px #efd39b;color:#fff0cf}
+@media(forced-colors:active){.dns-terminal-pending,.dns-terminal-pending h4,.deck-root .dns-terminal-pending p,.deck-root .dns-terminal-excerpt,.server-dns-unverified,.dns-terminal-status a{color:CanvasText}.server-dns-observation[data-evidence-state=simulated] .server-dns-selectors button[aria-pressed=true]{background:Canvas;color:CanvasText}}

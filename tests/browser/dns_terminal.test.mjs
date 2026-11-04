@@ -50,18 +50,19 @@ test('stored terminal choices use native buttons without capturing arrow keys',(
 });
 
 
-test('the simplified display keeps the Google capture and never fabricates block.test output',()=>{
+test('the display keeps the Google capture and labels the block.test rejection as simulated',()=>{
  const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
  const style=fs.readFileSync(path.join(web,'src/components/server-dns-observation.css'),'utf8');
  const slide=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8'));
  assert.ok(source.includes('data-command-display="summary"'));
  assert.ok(source.includes('명령·응답 일부 생략'));
- assert.ok(source.includes('질의 미실행 · 차단 미확인'));
- assert.ok(source.includes('recorded?"captured":"unverified"'));
+ assert.ok(source.includes('모의 · 실제 질의 미실행'));
+ assert.ok(source.includes('NXDOMAIN'));
+ assert.ok(source.includes('recorded?"captured":"simulated"'));
  assert.doesNotMatch(source,/type Transport|type Route|setTransport|setRoute|record\.server|google\.server|dns-terminal-routes/);
  assert.doesNotMatch(style,/dns-terminal-routes/);
  assert.equal(capture.queries.filter(q=>q.domain==='block.test').length,0);
  const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
  assert.doesNotMatch(visible,/example\.com|기본 DNS|사설 DNS|UDP|TCP/);
- assert.ok(visible.includes('미검증'));
+ assert.ok(visible.includes('모의'));
 });

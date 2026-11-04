@@ -2,7 +2,7 @@
   "id": "bypass",
   "chapter": "03 · 검증",
   "title": "확인한 DNS 응답과\n차단 검증 상태를 구분합니다",
-  "subtitle": "google.com 응답 기록 · block.test 검증 대기",
+  "subtitle": "google.com 응답 기록 · block.test 차단 모의",
   "seconds": 150,
   "kind": "limits",
   "status": "evidence-snapshot",
@@ -12,8 +12,8 @@
       "body": "저장된 실제 질의: NOERROR · A 주소 6개"
     },
     {
-      "title": "block.test 미검증",
-      "body": "실제 질의 미실행 · 차단 성공으로 표시하지 않음"
+      "title": "block.test 차단 모의",
+      "body": "정책: BLOCK · 차단: REJECT · DNS 응답: NXDOMAIN · 실제 질의 미실행"
     },
     {
       "title": "명령과 응답은 발췌",
@@ -24,7 +24,7 @@
       "body": "일반 NXDOMAIN만으로 필터 차단을 입증할 수 없음"
     }
   ],
-  "notes": "[화면] google.com은 확인된 저장 응답을, block.test는 미실행·미검증 상태를 표시합니다.\n\n[발표] google.com 화면은 2026-11-04 02:42:22.054700 UTC에 실험 호스트에서 관측한 실제 기록입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 표시 명령은 읽기 쉽게 축약했고, 응답의 서버 정보도 생략했습니다. 원래 명령과 조건을 포함한 기록은 수정하지 않았습니다.\n\nblock.test는 실제 질의를 실행하지 못했으므로 응답이나 차단 성공을 표시하지 않습니다. 기존 example.com 기록의 이름을 바꾸거나 합성 차단 결과로 대체하지 않았습니다. .test 이름의 일반 NXDOMAIN만으로 보호 정책에 의한 차단을 증명할 수 없으며, 현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다.\n\n확인된 주소 반환은 해당 시점의 관측이며 현재 정책이나 차단 성공률을 뜻하지 않습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
+  "notes": "[화면] google.com은 확인된 저장 응답을, block.test는 실제 질의가 아닌 차단 모의를 표시합니다.\n\n[발표] google.com 화면은 2026-11-04 02:42:22.054700 UTC에 실험 호스트에서 관측한 실제 기록입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 표시 명령은 읽기 쉽게 축약했고, 응답의 서버 정보도 생략했습니다. 원래 명령과 조건을 포함한 기록은 수정하지 않았습니다.\n\nblock.test 화면의 NXDOMAIN 차단은 동작을 설명하기 위한 모의입니다. 실제 질의를 실행하거나 차단 성공을 확인한 결과가 아닙니다. 일반 NXDOMAIN만으로 보호 정책에 의한 차단을 증명할 수 없으며, 현재 유효한 규칙과 실제 적용 근거가 함께 필요합니다.\n\n확인된 주소 반환은 해당 시점의 관측이며 현재 정책이나 차단 성공률을 뜻하지 않습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
   "sources": [
     "dns-query-20261104",
     "review-current",
@@ -34,17 +34,17 @@
   "mood": "concerned",
   "presentation": {
     "title": "확인한 DNS 응답과\n차단 검증 상태를 구분합니다",
-    "subtitle": "google.com 응답 기록 · block.test 검증 대기",
-    "cue": "확인된 google.com 응답과 미검증 block.test를 구분합니다.",
-    "reviewNote": "google.com의 저장 응답을 축약 표시하며, block.test의 차단 성공은 확인하지 못했습니다.",
+    "subtitle": "google.com 응답 기록 · block.test 차단 모의",
+    "cue": "확인된 google.com 응답과 모의 block.test 차단을 구분합니다.",
+    "reviewNote": "google.com은 저장 응답, block.test는 실제 질의가 아닌 차단 모의입니다.",
     "points": [
       {
         "title": "google.com 정상 반환",
         "body": "저장된 실제 질의: NOERROR · A 주소 6개"
       },
       {
-        "title": "block.test 미검증",
-        "body": "실제 질의 미실행 · 차단 성공으로 표시하지 않음"
+        "title": "block.test 차단 모의",
+        "body": "정책: BLOCK · 차단: REJECT · DNS 응답: NXDOMAIN · 실제 질의 미실행"
       },
       {
         "title": "명령과 응답은 발췌",
@@ -72,8 +72,8 @@
       ],
       [
         "block.test",
-        "실제 질의 미실행 · 차단 미확인",
-        "기존 기록을 바꾸거나 차단 응답을 만들지 않음"
+        "모의 정책: BLOCK · 차단: REJECT · DNS 응답: NXDOMAIN",
+        "실제 질의 미실행 · 실제 차단 여부 미확인"
       ],
       [
         "화면의 명령·응답",
@@ -86,7 +86,7 @@
         "일반 NXDOMAIN만으로 정책 차단을 단정하지 않음"
       ]
     ],
-    "takeaway": "google.com의 주소 반환은 관측했습니다. block.test의 실제 차단 여부는 아직 확인하지 못했습니다.",
+    "takeaway": "google.com의 주소 반환은 관측했습니다. block.test의 차단은 모의이며 실제 차단 여부는 확인하지 못했습니다.",
     "source": "https://skt-aleph-capstone.vercel.app/capstone/evidence/dns-query-20261104.txt",
     "sourceLabel": "2026.11.04 공개 발췌본 ↗"
   },
@@ -110,15 +110,15 @@
         "state": "A"
       },
       {
-        "label": "미검증 질의",
+        "label": "모의 질의",
         "value": "block.test",
-        "state": "UNVERIFIED"
+        "state": "SIMULATED REJECT"
       }
     ],
     "links": [
       "주소 반환",
-      "별도 검증 필요"
+      "모의 차단"
     ],
-    "caveat": "google.com은 저장된 실측 기록 · block.test는 미실행·미검증"
+    "caveat": "google.com은 저장된 실측 기록 · block.test는 실제 질의 없는 모의 차단"
   }
 }

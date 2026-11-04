@@ -1,4 +1,4 @@
-"""The terminal is a stored capture, never an executable shell or live DNS test."""
+"""The terminal shows a stored capture and labelled simulation, never an executable shell or live DNS test."""
 from pathlib import Path
 import json
 import re
@@ -133,13 +133,14 @@ def check_dns_terminal(browser, origin):
                     for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 else:
-                    expect(root).to_have_attribute('data-evidence-state','unverified')
+                    expect(root).to_have_attribute('data-evidence-state','simulated')
                     assert root.get_attribute('data-query-id') is None
-                    expect(root.locator('.dns-terminal-pending')).to_contain_text('질의 미실행 · 차단 미확인')
+                    expect(root.locator('.dns-terminal-pending')).to_contain_text('정책: BLOCK · 차단: REJECT · DNS 응답: NXDOMAIN')
+                    expect(root.locator('.dns-terminal-pending')).to_contain_text('모의 · 실제 질의 미실행')
                     expect(root.locator('.dns-terminal-command,.dns-terminal-output,.dns-terminal-status,time')).to_have_count(0)
-                    for false_evidence in ('NOERROR','NXDOMAIN','exit ','Query time:','[REDACTED]','02:42'):
+                    for false_evidence in ('NOERROR','exit ','Query time:','[REDACTED]','02:42'):
                         assert false_evidence not in text,(domain,false_evidence)
-                    _wheel_reach(page,root.locator('.dns-terminal-pending p'),1,f'{width}x{height}-pending')
+                    _wheel_reach(page,root.locator('.dns-terminal-pending p').last,1,f'{width}x{height}-pending')
                     _assert_readable(root.locator('.dns-terminal-pending'),(width,height,domain))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
@@ -188,4 +189,4 @@ def check_dns_terminal(browser, origin):
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors,errors
         finally:context.close()
-    print(f'DNS terminal: {total} captured/unverified states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')
+    print(f'DNS terminal: {total} captured/simulated states, 20 domain-to-arrow cases, truthful excerpts, fonts, glass, wheel/Tab and text stress verified')
