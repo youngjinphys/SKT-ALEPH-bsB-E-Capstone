@@ -102,4 +102,14 @@ class MetricsTests(unittest.TestCase):
             if version==1:legacy['probe'].pop('baseline')
             validate_payload(legacy)
 
+class ChartEmptyCopyTests(unittest.TestCase):
+    def test_empty_series_names_the_missing_measurement(self):
+        text=(ROOT/'apps/policy-server/src/policy_server/console_observability.py').read_text()
+        self.assertIn('function obsEmpty(series)', text)
+        self.assertNotIn('미수집·구형 에이전트·관측 공백', text)
+        self.assertIn("only(['udp_ms','tcp_ms'])", text)
+        self.assertIn("only(['cache_lookups_per_s','cache_hit_pct'])", text)
+        self.assertIn('value="memory_used_pct" selected', text)
+        self.assertIn('obsEmpty(series)', text)
+
 if __name__=='__main__':unittest.main()

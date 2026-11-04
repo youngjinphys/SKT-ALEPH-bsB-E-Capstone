@@ -10,7 +10,7 @@ HTML = r'''<section class="observatory surface" id="observatory" aria-labelledby
     <div><span>캐시 조회율</span><strong id="obs-rate">—</strong><small>hits + misses 증가분 / s</small></div>
   </div>
   <div class="obs-chart-grid"><figure class="obs-chart-card"><figcaption><div><h3>DNS 응답 지연 추이</h3><span>승인된 차단 canary · 사용자 전체 트래픽 아님</span></div><div class="obs-legend"><span class="obs-key udp">UDP</span><span class="obs-key tcp">TCP</span></div></figcaption><div id="obs-latency-chart" class="obs-chart" aria-live="off"></div></figure>
-    <figure class="obs-chart-card"><figcaption><div><h3>운영 상태 추이</h3><span id="obs-metric-description">캐시 조회 증가율 · 재시작/공백 구간 제외</span></div><select id="obs-metric" aria-label="운영 상태 그래프 지표"><option value="cache_lookups_per_s">캐시 조회 / s</option><option value="cache_hit_pct">캐시 적중 %</option><option value="cpu_used_pct">CPU 사용률 %</option><option value="dns_failure_pct">능동 DNS 검사 실패 %</option><option value="nic_drops_per_s">NIC 드롭 / s</option><option value="memory_used_pct">메모리 %</option><option value="load_1m">1분 load</option><option value="report_delay_s">전송 시차 s</option></select></figcaption><div id="obs-metric-chart" class="obs-chart" aria-live="off"></div></figure></div>
+    <figure class="obs-chart-card"><figcaption><div><h3>운영 상태 추이</h3><span id="obs-metric-description">MemAvailable 기반 메모리 사용률</span></div><select id="obs-metric" aria-label="운영 상태 그래프 지표"><option value="cache_lookups_per_s">캐시 조회 / s</option><option value="cache_hit_pct">캐시 적중 %</option><option value="cpu_used_pct">CPU 사용률 %</option><option value="dns_failure_pct">능동 DNS 검사 실패 %</option><option value="nic_drops_per_s">NIC 드롭 / s</option><option value="memory_used_pct" selected>메모리 %</option><option value="load_1m">1분 load</option><option value="report_delay_s">전송 시차 s</option></select></figcaption><div id="obs-metric-chart" class="obs-chart" aria-live="off"></div></figure></div>
   <div class="obs-resource-heading"><div><div class="overline">HOST RESOURCES / NETWORK QUALITY</div><h3>DNS 서버 자원과 연결 품질</h3><p id="obs-resource-note">v4 수집기의 실제 관측을 기다립니다. 비어 있는 값은 0이 아닙니다.</p></div><span id="obs-interface" class="pill muted">NIC 미선택</span></div>
   <div class="obs-kpis obs-resource-kpis"><div><span>CPU 사용률</span><strong id="obs-cpu">—</strong><small>동일 부팅의 인접 CPU tick 차분</small></div><div><span>수신 / 송신</span><strong class="obs-compact-value" id="obs-traffic">—</strong><small>선택한 NIC 전체 · KiB/s</small></div><div><span>DNS 검사 실패</span><strong id="obs-quality-fail">—</strong><small id="obs-quality-count">능동 검사 표본 · 회선 손실률 아님</small></div><div><span>NIC 오류 / 드롭</span><strong class="obs-compact-value" id="obs-link-errors">—</strong><small>커널 카운터 증가율 / s</small></div></div>
   <div class="obs-chart-grid obs-resources-grid">
@@ -43,9 +43,19 @@ function obsPoints(){const now=obsData?Date.parse(obsData.observed_at):Date.now(
 function obsSet(id,value){const e=$(id);if(e.textContent!==value){e.textContent=value;e.classList.remove('obs-changed');if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){void e.offsetWidth;e.classList.add('obs-changed');}}}
 function obsSvg(tag,attrs={},text){const e=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));if(text!==undefined)e.textContent=text;return e;}
 function obsSegments(points,key){const groups=[];let current=[];for(const p of points){if(!obsFinite(p[key])||p.gap||p.hourly_sample){if(current.length)groups.push(current);current=[];}if(obsFinite(p[key])){current.push(p);if(p.hourly_sample){groups.push(current);current=[];}}}if(current.length)groups.push(current);return groups;}
+function obsEmpty(series){
+  const selected=obsSelected();
+  if(!selected)return '등록한 DNS 노드의 보고가 도착하면 그래프가 표시됩니다.';
+  const keys=series.map(s=>s.key);
+  const only=names=>keys.length>0&&keys.every(key=>names.includes(key));
+  if(!selected.metrics)return '이 구간에 측정된 값이 없습니다.\n확장 지표가 없는 보고입니다. 없는 값을 0으로 표시하지 않습니다.';
+  if(only(['udp_ms','tcp_ms']))return '차단 canary는 서명된 정책이 유효할 때만 측정합니다.\n이번 구간에는 측정값이 없으며 0으로 채우지 않습니다.';
+  if(only(['cache_lookups_per_s','cache_hit_pct']))return '캐시 통계는 선택 수집입니다.\n이번 보고에는 캐시 카운터가 없으며 0으로 채우지 않습니다.';
+  return '이 구간에 측정된 값이 없습니다.\n공백은 연결하거나 0으로 채우지 않습니다.';
+}
 function obsChart(id,points,series,unit,ceiling){
   const root=$(id);root.replaceChildren();const values=points.flatMap(p=>series.map(s=>p[s.key])).filter(obsFinite);
-  if(!values.length){root.append(node('div','obs-empty',obsSelected()?'이 구간에 측정된 값이 없습니다.\n미수집·구형 에이전트·관측 공백을 0으로 표시하지 않습니다.':'등록한 DNS 노드의 보고가 도착하면 그래프가 표시됩니다.'));return;}
+  if(!values.length){root.append(node('div','obs-empty',obsEmpty(series)));return;}
   const W=560,H=230,L=55,R=15,T=22,B=37,end=Date.parse(obsData.observed_at),start=end-obsWindowMs();
   const ymin=Math.min(0,...values),ymax=ceiling||Math.max(1,...values)*1.12,x=t=>L+(t-start)/(end-start)*(W-L-R),y=v=>H-B-(Math.min(ymax,Math.max(ymin,v))-ymin)/(ymax-ymin)*(H-T-B);
   const svg=obsSvg('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':unit+' 시계열. 누락 구간은 연결하지 않습니다. 상세 값은 아래 관측 표에 있습니다.'});
