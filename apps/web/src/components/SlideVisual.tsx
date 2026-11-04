@@ -2,7 +2,7 @@
 import {DiagramText} from "./DiagramText";
 import {DnsRouteTopology} from "./DnsRouteTopology";
 import {PiNetworkPlan} from "./PiNetworkPlan";
-import {TermExplanation} from "./TermExplanation";
+import {TermExplanation,TermDefinition} from "./TermExplanation";
 import {useId,useState,useRef,useLayoutEffect} from "react";
 import "./restored-diagrams.css";
 import "./dns-flow-motion.css";
@@ -162,7 +162,7 @@ function DnsLab({paused=false}:{paused?:boolean}){
  const webLabel=scenario==='block'?'이번 새 이름 조회에 의존한 웹 연결 중단':'클라이언트에서 웹 서버로 직접 연결';
  const choose=(key:keyof typeof diagrams.dnsFlow)=>{setScenario(key);playback.restart(11)};
  return <TermExplanation term="dnsmasq" paused={paused}><section tabIndex={0} className="diagram-panel restored-diagram restored-dns" data-scenario={scenario} data-intro-step={introStep} data-intro-state={introStates[introStep]} data-complete={complete} data-flow-cycle={playback.cycle} data-flow-resting={playback.resting} data-playback={flowRunning?'running':'paused'} data-step={step} data-playback-epoch={playbackEpoch} aria-label="일반 DNS 조회에서 보호 DNS 계층을 추가하는 과정과 두 가지 DNS 응답 사례">
-  <p className="diagram-caption dns-implementation-caption">동작 설명 · <span data-term-target="dnsmasq">dnsmasq</span> · 실시간 질의 아님</p>
+  <p className="diagram-caption dns-implementation-caption">동작 설명 · <span data-term-target="dnsmasq">dnsmasq</span> · 실시간 질의 아님</p><TermDefinition term="dnsmasq"/>
   <div className="restored-controls" role="group" data-flow-cue={playback.hint} aria-label="DNS 시나리오 선택">{(Object.keys(diagrams.dnsFlow) as (keyof typeof diagrams.dnsFlow)[]).map(key=><button type="button" key={key} data-scenario-step="true" aria-pressed={scenario===key} onClick={()=>choose(key)}>{diagrams.dnsFlow[key].label}</button>)}</div>
   <p className="dns-intro-status" aria-live={playback.automatic?"off":"polite"} aria-atomic="true"><DiagramText value={status} values={statuses} paused={textPaused}/></p>
   <div className="restored-dns-map" ref={mapRef}>
@@ -197,7 +197,7 @@ function PolicyLifecycle({paused=false}:{paused?:boolean}){
    </div>)}
   </div>
   <div className="policy-timeline-result" aria-live="polite" aria-atomic="true"><span><DiagramText value={`선택한 시점 · ${current.phase}`} values={policyTimeline.map(state=>`선택한 시점 · ${state.phase}`)} paused={paused}/></span><strong><DiagramText value={current.response} values={policyTimeline.map(state=>state.response)} paused={paused}/></strong><p><DiagramText value={current.note} values={policyTimeline.map(state=>state.note)} paused={paused}/></p></div>
-  <p className="visual-caveat">서버 응답 복원과 단말의 양성·음성 캐시를 구분 · <span data-term-target="ttl">TTL</span></p>
+  <p className="visual-caveat">서버 응답 복원과 단말의 양성·음성 캐시를 구분 · <span data-term-target="ttl">TTL</span></p><TermDefinition term="ttl"/>
  </div></TermExplanation>;
 }
 function Topology({publicMode:initialPublic,comparison=true}:{publicMode:boolean;comparison?:boolean}){

@@ -103,3 +103,13 @@ export function routeTermLeader({targets,text,controls=[],note,anchor,width,heig
 export function relativeLeaderRect(rect:LeaderRect,scene:Pick<LeaderRect,"left"|"top">):LeaderRect {
  return {left:rect.left-scene.left,top:rect.top-scene.top,right:rect.right-scene.left,bottom:rect.bottom-scene.top};
 }
+
+/** Nearest horizontal position in the definition's own, reserved layout row.
+ * Input and output are rendered coordinates; caller converts once to CSS pixels.
+ * Keeping the whole box inside this row makes overlap impossible by construction.
+ */
+export function nearestTermNoteOffset(target:LeaderRect,slot:LeaderRect,noteWidth:number):number {
+ const available=Math.max(0,slot.right-slot.left);
+ if(!Number.isFinite(noteWidth)||noteWidth<=0||available<=0)return 0;
+ return clamp((target.left+target.right)/2-slot.left-noteWidth/2,0,Math.max(0,available-noteWidth));
+}

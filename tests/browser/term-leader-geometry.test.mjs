@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {LEADER_TEXT_GAP,LEADER_MARKER_RADIUS,leaderSegmentIntersectsRect,relativeLeaderRect,routeTermLeader} from '../../apps/web/src/components/term-leader-geometry.ts';
+import {LEADER_TEXT_GAP,LEADER_MARKER_RADIUS,leaderSegmentIntersectsRect,relativeLeaderRect,routeTermLeader,nearestTermNoteOffset} from '../../apps/web/src/components/term-leader-geometry.ts';
 
 const rect=(left,top,right,bottom)=>({left,top,right,bottom});
 const expand=(r,n)=>rect(r.left-n,r.top-n,r.right+n,r.bottom+n);
@@ -85,5 +85,19 @@ test('dense 100/200-fragment layouts stay clear while neighboring nodes move',()
    const moving=text.map((r,i)=>i%5===4?{...r,left:r.left+frame,right:r.right+frame}:r);
    safe({width:720,height:1400,targets:[target],text:[target,...moving],note:rect(160,20,680,130),anchor:rect(16,170,704,1350)});
   }
+ }
+});
+
+
+test('local note chooses the nearest safe horizontal position without leaving its row',()=>{
+ const slot=rect(20,100,620,250);
+ assert.equal(nearestTermNoteOffset(rect(35,70,75,90),slot,300),0);
+ assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,300),150);
+ assert.equal(nearestTermNoteOffset(rect(580,70,610,90),slot,300),300);
+ assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,600),0);
+ assert.equal(nearestTermNoteOffset(rect(300,70,340,90),slot,0),0);
+ for(const scale of [.65,1,1.25,2]){
+  const scaled=r=>Object.fromEntries(Object.entries(r).map(([key,value])=>[key,value*scale]));
+  assert.equal(nearestTermNoteOffset(scaled(rect(300,70,340,90)),scaled(slot),300*scale)/scale,150);
  }
 });

@@ -3,6 +3,9 @@
 Imported by presentation_keyboard.py; does not create its own browser/server.
 The pure routing tests are in term-leader-geometry.test.mjs.
 """
+from pathlib import Path
+import os
+
 from playwright.sync_api import expect
 
 TERMS = (('dns', 'dnsmasq'), ('bypass', 'cname'),
@@ -69,6 +72,42 @@ def _assert_clear(scene, required=False):
     return result
 
 
+def _assert_near_word(scene):
+    """The definition reserves a local row and never covers existing content."""
+    result = scene.evaluate("""root => {
+        const note=root.querySelector('.term-note'), dock=note.parentElement;
+        const target=root.querySelector('[data-term-target]');
+        const slot=dock.getBoundingClientRect(), box=note.getBoundingClientRect(), word=target.getBoundingClientRect();
+        const scale=slot.width/dock.offsetWidth || 1;
+        const before=dock.previousElementSibling;
+        const adjacent=before===target || before?.contains(target);
+        const ids=[...document.querySelectorAll('[id]')].filter(el=>el.id===note.id).length;
+        const failures=[];
+        if(!adjacent)failures.push('definition is not immediately after its word/caption');
+        if(box.left<slot.left-1 || box.right>slot.right+1 || box.top<slot.top-1 || box.bottom>slot.bottom+1)failures.push('definition leaves reserved row');
+        const gap=(box.top-word.bottom)/scale;
+        if(gap<0 || gap>72)failures.push(`definition is too far from word: ${gap}px`);
+        if((word.left+word.right)/2<box.left-1 || (word.left+word.right)/2>box.right+1)failures.push('definition does not align toward word');
+        if(note.scrollWidth>note.clientWidth+1 || note.scrollHeight>note.clientHeight+1)failures.push('definition text clips');
+        const overlaps=r=>Math.min(box.right,r.right)-Math.max(box.left,r.left)>1 && Math.min(box.bottom,r.bottom)-Math.max(box.top,r.top)>1;
+        const walker=document.createTreeWalker(root.querySelector('.term-anchor'),NodeFilter.SHOW_TEXT),range=document.createRange();
+        let node;
+        while((node=walker.nextNode())){
+            if(!node.textContent.trim() || note.contains(node))continue;
+            const parent=node.parentElement,css=getComputedStyle(parent);
+            if(css.visibility==='hidden'||css.visibility==='collapse'||parent.closest('[hidden],svg,script,style'))continue;
+            range.selectNodeContents(node);
+            for(const r of range.getClientRects())if(r.width&&r.height&&overlaps(r))failures.push('definition covers neighboring text');
+        }
+        for(const control of root.querySelectorAll('button,input,select,textarea,.chain-step,.cname-arrow'))
+            if(control.getClientRects().length && overlaps(control.getBoundingClientRect()))failures.push('definition covers control/card/arrow');
+        return {failures,gap,ids,term:root.dataset.term};
+    }""")
+    assert not result['failures'], result
+    assert result['ids'] == 1, result
+    return result
+
+
 def _assert_chain_connectors(scene):
     result = scene.locator('.chain-nodes').evaluate("""root => {
         const cards = [...root.querySelectorAll(':scope > .chain-step')];
@@ -99,7 +138,7 @@ def check_term_callouts(browser, origin):
         expect(page.locator('.deck-root')).to_have_attribute('data-hydrated', 'true')
         expect(page.locator('.slide-active .term-note')).to_have_count(0)
         expect(page.locator('.slide-active [data-term-target="sni"]')).to_have_count(0)
-        for width, height in ((1440, 900), (1366, 768), (390, 844), (390, 667), (768, 1024)):
+        for width, height in ((1440, 900), (1366, 768), (390, 844), (390, 667), (768, 1024), (320, 740)):
             page.set_viewport_size({'width': width, 'height': height})
             for slide, term in TERMS:
                 print(f'Callout {term}: {width}x{height}', flush=True)
@@ -116,12 +155,19 @@ def check_term_callouts(browser, origin):
                     _assert_chain_connectors(scene)
                 baseline = (width, height) == (1440, 900)
                 result = _assert_clear(scene, required=baseline)
+                _assert_near_word(scene)
+                if width in (1440, 390, 320) and height != 667:
+                    screenshots = Path(os.environ.get('ALEPH_CALLOUT_SCREENSHOTS', '/tmp/aleph-build-artifacts/callouts'))
+                    screenshots.mkdir(parents=True, exist_ok=True)
+                    scene.locator('.term-note').scroll_into_view_if_needed()
+                    page.screenshot(path=str(screenshots / f'{term}-{width}x{height}.png'))
                 if term == 'dnsmasq' and baseline:
-                    assert result['side'] == 'top', result
+                    assert result['side'] == 'bottom', result
                 # Reflow at fractional browser zoom, then nested slide scrolling.
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = '1.25'; }")
                 scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                 _assert_clear(scene)
+                _assert_near_word(scene)
                 if term == 'cname':
                     _assert_chain_connectors(scene)
                 page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
@@ -131,6 +177,13 @@ def check_term_callouts(browser, origin):
                     page.get_by_role('button', name='CNAME 보호 공백', exact=True).click()
                     scene.locator('[data-term-target]').first.scroll_into_view_if_needed()
                     _assert_clear(scene)
+                    _assert_near_word(scene)
+                # Large zoom must reflow the same local row, not revive a remote HUD.
+                page.locator('.deck-root').evaluate("el => { el.style.zoom = '2'; }")
+                scene.locator('.term-note').scroll_into_view_if_needed()
+                _assert_clear(scene)
+                _assert_near_word(scene)
+                page.locator('.deck-root').evaluate("el => { el.style.zoom = ''; }")
         assert not errors, errors
     finally:
         page.close()
