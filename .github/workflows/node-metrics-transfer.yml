@@ -16,17 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 61ab9aca102c3be8854e04e2d7ee478fd686d56e
+          ref: e2fe417d825be881a3ebd2d33c75a5a1c53a0680
           persist-credentials: false
       - name: Verify exact reviewed patch and resulting tree
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --silent --show-error --max-time 30 --proto '=https' 'https://sb-61bglkcehcxu.vercel.run/904e143ad81d7900/node-observability.patch' -o /tmp/reviewed.patch
-          echo '904e143ad81d7900d530377a289803948863f6b65fa231b12df6f074117007d1  /tmp/reviewed.patch' | sha256sum -c -
+          echo 'e1f9bb4fcdb13ffe1bf2a14c203b5935cfd8bb709469b5fd01e86424c48f3f7d  /tmp/reviewed.patch' | sha256sum -c -
           git apply --check /tmp/reviewed.patch
           git apply --index /tmp/reviewed.patch
-          test "$(git write-tree)" = '9c56ec0b9af6d7df9325ca3be53283639d3cc3bb'
+          test "$(git write-tree)" = '11c94c9f5658a34bb22d123caf7c8dfaa86431b3'
           git diff --cached --check
       - name: Verify cloud and browser calculation contracts
         shell: bash
