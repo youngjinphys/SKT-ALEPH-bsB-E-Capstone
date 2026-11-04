@@ -253,8 +253,7 @@
   "introductionStages": [
     {
       "title": "후보 수집·조회·검토",
-      "system": "OpenPhish 후보 → Safe Browsing 조회",
-      "detail": "조회 근거와 도메인 범위를 사람이 검토·승인"
+      "system": "OpenPhish 후보 → Safe Browsing 조회"
     },
     {
       "title": "정책 서버",
