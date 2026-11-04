@@ -69,6 +69,7 @@ def check_references(page, width, height):
     expect(root.locator('details')).to_have_count(5)
     expect(page.get_by_role('button',name='부록 장으로 이동',exact=True)).to_have_count(0)
     assert page.locator('.slide-active .slide-overline').inner_text().startswith('15 / 15')
+    assert page.locator('.slide-active .slide-overline').inner_text().count('부록') == 1
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
     page.screenshot(path=str(OUT/f'references-slide-{width}x{height}.png'),full_page=True)
     for group in root.locator('details').all():

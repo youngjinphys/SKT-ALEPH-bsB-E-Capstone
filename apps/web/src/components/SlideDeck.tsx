@@ -14,15 +14,6 @@ const statusLabels:Record<string,string>={
  "evidence-snapshot":"실험 기록","scope-limit":"적용 경계","known-limit":"확인된 한계",
  "evaluation-plan":"향후 평가","planned-not-measured":"실측 계획 · 미실행","experimental":"실측 기록","conclusion":"결론",reference:"참고 자료",
 };
-const INLINE=new Set<string>(); // Source tables remain available in the presenter notes.
-function EvidenceStrip({slide}:{slide:DeckSlide}){
- const evidence=slide.reading;
- if(!evidence||!INLINE.has(slide.id))return null;
- return <section className="slide-evidence-strip" aria-label={evidence.title}>
-  <header><h2>{evidence.title}</h2><a href={evidence.source} target="_blank" rel="noopener noreferrer">근거 자료 ↗</a></header>
-  <div className="slide-evidence-grid">{evidence.rows.slice(0,3).map((row,i)=><article key={i}><strong>{row[0]}</strong><p>{row[1]}</p><small>{row[2]}</small></article>)}</div>
- </section>;
-}
 function TitleLines({value}:{value:string}){
  return <>{value.split("\n").map((segment,i)=><span className="title-line" key={i}>{segment}</span>)}</>;
 }
@@ -64,7 +55,7 @@ function SlideItem({
   tabIndex={isLeaving?-1:undefined}
   inert={isLeaving?true:undefined}
  >
-  <div className="slide-overline"><span>{String(index+1).padStart(2,"0")} / {String(totalSlides).padStart(2,"0")}</span><span>{slide.chapter} · {index<mainSlideCount?"본편":"부록"}</span></div>
+  <div className="slide-overline"><span>{String(index+1).padStart(2,"0")} / {String(totalSlides).padStart(2,"0")}</span><span>{slide.chapter}{index<mainSlideCount?" · 본편":""}</span></div>
   <div className="slide-columns">
     <div className="slide-narrative" style={{touchAction:"pan-y pinch-zoom"}}>
      <div className="slide-heading">
@@ -83,7 +74,6 @@ function SlideItem({
     </div>
     <div className="slide-visual-container" id={`${mobileId}-visual`} role={mobile.layout==='panes'?'region':undefined} aria-labelledby={mobile.layout==='panes'?`${mobileId}-visual-tab`:undefined} hidden={mobile.visualHidden} inert={mobile.visualHidden} aria-hidden={mobile.visualHidden||undefined}><SlideVisual slide={slide} sources={sources} motionPaused={motionPaused||Boolean(isLeaving)}/></div>
   </div>
-  <EvidenceStrip slide={slide}/>
  </section>;
 }
 
@@ -274,7 +264,7 @@ export function SlideDeck({deck,sources,mainSlideCount}:{deck:DeckSlide[];source
   window.addEventListener("pagehide",cancel);
   return()=>{document.removeEventListener("pointerdown",cancelSecondary);document.removeEventListener("visibilitychange",cancel);window.removeEventListener("pagehide",cancel);};
  },[]);
- const swipeExcluded=(target:EventTarget|null)=>!(target instanceof Element)||Boolean(target.closest("a,button,input,select,textarea,summary,[contenteditable]:not([contenteditable='false']),[role='button'],[role='slider'],[role='dialog'],.slide-visual-container,.slide-evidence-strip,.slide-details"));
+ const swipeExcluded=(target:EventTarget|null)=>!(target instanceof Element)||Boolean(target.closest("a,button,input,select,textarea,summary,[contenteditable]:not([contenteditable='false']),[role='button'],[role='slider'],[role='dialog'],.slide-visual-container,.slide-details"));
  const hasSelection=()=>Boolean(window.getSelection()?.toString().trim());
  const startSwipe=(event:React.PointerEvent<HTMLElement>)=>{
   swipeRef.current=null;

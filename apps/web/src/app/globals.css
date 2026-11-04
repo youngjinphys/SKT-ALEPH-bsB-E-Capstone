@@ -303,7 +303,6 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var
 }
 
 /* 16:9 presentation: allocate QHD/4K space to legible source-backed content. */
-.slide-evidence-strip{display:none}
 .visual-source{display:inline-block;align-self:start;color:var(--cyan);font-size:clamp(12px,.72vw,22px)}
 .source-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(9px,1vw,26px)}
 .source-overview-grid a{display:flex;flex-direction:column;gap:8px;min-width:0;padding:clamp(12px,1vw,29px);border:1px solid var(--line);border-radius:10px;background:#0a2333;text-decoration:none}
@@ -337,22 +336,10 @@ button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var
  .evidence-row{flex:1;align-items:center;padding:clamp(15px,1.25vh,31px) 0}
  .evidence-row strong{font-size:clamp(19px,1.07vw,40px)}
  .evidence-row p{font-size:clamp(15px,.87vw,30px);line-height:1.5}
- .slide-evidence-strip{display:grid;grid-template-columns:minmax(185px,.18fr) minmax(0,.82fr);gap:clamp(20px,1.8vw,59px);padding:clamp(11px,1.1vh,25px) 0;border-top:1px solid var(--line);min-width:0}
- .slide-evidence-strip header{display:flex;flex-direction:column;justify-content:center;gap:7px}
- .slide-evidence-strip h2{font-size:clamp(16px,.87vw,32px);line-height:1.31;margin:0}
- .slide-evidence-strip header a{font-size:clamp(11px,.69vw,24px);color:var(--cyan)}
- .slide-evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.1vw,34px)}
- .slide-evidence-grid article{display:flex;flex-direction:column;justify-content:center;gap:6px;border-left:2px solid #6ed0dc77;padding:4px 0 4px clamp(12px,.85vw,30px);min-width:0}
- .slide-evidence-grid strong{font-size:clamp(13px,.79vw,29px);line-height:1.34}
- .slide-evidence-grid p{font-size:clamp(12px,.71vw,25px);line-height:1.39;color:var(--muted);margin:0;word-break:keep-all}
- .slide-evidence-grid small{font-size:clamp(10px,.61vw,21px);line-height:1.34;color:var(--dim);word-break:keep-all}
 }
 @media(min-width:1500px) and (max-height:1050px){
  .slide-heading h1{font-size:clamp(41px,2.8vw,62px)}
  .slide-point{padding:10px 0}
- .slide-evidence-strip{padding:7px 0}
- .slide-evidence-grid p{font-size:clamp(11px,.66vw,18px)}
- .slide-evidence-grid small{font-size:clamp(10px,.57vw,15px)}
  .slide-visual-container>.diagram-panel,.slide-visual-container>.chart-card,.slide-visual-container>.evidence-stack{padding:clamp(18px,1.35vw,34px)}
  .topology-step{min-height:140px}
 }

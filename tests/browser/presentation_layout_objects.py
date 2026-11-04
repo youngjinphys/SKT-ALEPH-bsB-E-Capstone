@@ -8,7 +8,7 @@ import os
 import re
 from playwright.sync_api import expect
 
-VIEWPORTS = ((1440, 900), (1180, 757), (1024, 768), (768, 1024), (390, 844), (320, 568))
+VIEWPORTS = ((1440, 900), (1180, 757), (1024, 768), (768, 1024), (390, 844), (320, 568), (393, 252))
 
 
 def _assert_objects(slide, context):
@@ -42,6 +42,14 @@ def _assert_objects(slide, context):
             const x=a.getBoundingClientRect(),y=b.getBoundingClientRect();
             if(Math.min(x.right,y.right)-Math.max(x.left,y.left)>2&&Math.min(x.bottom,y.bottom)-Math.max(x.top,y.top)>2)
                 failures.push(`Objects overlap: ${describe(a)} / ${describe(b)}`);
+        }
+        if(root.classList.contains('slide-opening'))for(const point of root.querySelectorAll('.slide-point')){
+            const index=point.querySelector('.point-index');if(!index||!visible(index))continue;
+            const marker=getComputedStyle(point,'::before'),style=getComputedStyle(point);
+            const box=point.getBoundingClientRect(),scale=box.width/point.offsetWidth||1;
+            const right=box.left+(parseFloat(style.borderLeftWidth)+parseFloat(marker.left)+parseFloat(marker.width))*scale;
+            if(marker.content!=='none'&&right>index.getBoundingClientRect().left-3)
+                failures.push('Cover timeline marker overlaps its number');
         }
         // Measure glyph ranges, not scrollWidth (decorative shadows/pseudo-elements
         // can enlarge the scrollable area without clipping a single letter).

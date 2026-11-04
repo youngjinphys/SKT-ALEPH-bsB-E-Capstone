@@ -21,7 +21,9 @@ def check_motion(page, origin):
         assert layers.count() >= 2, selector
         assert layers.evaluate_all("""els => els.every(el => {
             const css = getComputedStyle(el);
-            return css.transitionProperty === 'opacity' && parseFloat(css.transitionDuration) > 0;
+            return el.getAttribute('aria-hidden') === 'true'
+                ? css.visibility === 'hidden' && css.opacity === '0' && css.transitionDuration === '0s'
+                : css.transitionProperty === 'opacity' && parseFloat(css.transitionDuration) > 0;
         })"""), selector
         expect(page.locator(selector + ' .diagram-text-layer[aria-hidden="false"]')).to_have_count(1)
 
@@ -41,13 +43,15 @@ def check_motion(page, origin):
             const layers=[...el.querySelectorAll('.diagram-text-layer')];
             const active=layers.find(layer=>layer.getAttribute('aria-hidden')==='false');
             const opacity=layers.map(layer=>Number(getComputedStyle(layer).opacity));
+            const visible=layers.filter(layer=>getComputedStyle(layer).visibility!=='hidden'&&Number(getComputedStyle(layer).opacity)>0);
+            const overlap=visible.length>1;
             const intermediate=active?.textContent==='업스트림 DNS' && opacity.some(value=>value>0&&value<1);
-            if(intermediate || performance.now()>=deadline){resolve({intermediate,opacity,active:active?.textContent,visibility:document.visibilityState,phase:el.closest('.restored-dns')?.dataset.introStep});return;}
+            if(overlap || intermediate || performance.now()>=deadline){resolve({intermediate,overlap,opacity,active:active?.textContent,visibility:document.visibilityState,phase:el.closest('.restored-dns')?.dataset.introStep});return;}
             requestAnimationFrame(sample);
         };
         requestAnimationFrame(sample);
     })""")
-    assert handoff['intermediate'], handoff
+    assert handoff['intermediate'] and not handoff['overlap'], handoff
     expect(title.locator('[aria-hidden="false"]')).to_have_text('업스트림 DNS')
     expect(title.locator('[aria-hidden="false"]')).to_have_css('opacity', '1')
     expect(title.locator('[aria-hidden="true"]')).to_have_css('opacity', '0')
@@ -79,6 +83,26 @@ def check_motion(page, origin):
         detail = page.locator(selector)
         before = detail.bounding_box()
         page.locator(button).last.click()
+        # Inspect the full transition, including rapid reversals, not only its end.
+        for target in (page.locator(button).first, page.locator(button).last):
+            target.click()
+            page.locator(button).first.click()
+            target.click()
+            sampled = detail.evaluate("""el => new Promise(resolve => {
+                const until=performance.now()+400, samples=[];
+                const sample=()=>{
+                    const layers=[...el.querySelectorAll('.diagram-text-layer')];
+                    const visible=layers.filter(layer=>getComputedStyle(layer).visibility!=='hidden'&&Number(getComputedStyle(layer).opacity)>0);
+                    const current=layers.find(layer=>layer.getAttribute('aria-hidden')==='false');
+                    samples.push({visible:visible.length,stale:visible.some(layer=>layer!==current)});
+                    if(performance.now()>=until){resolve(samples);return;}
+                    requestAnimationFrame(sample);
+                };
+                sample();
+            })""")
+            assert sampled and all(frame['visible'] <= 1 and not frame['stale'] for frame in sampled), (slide, sampled)
+            assert sampled[-1]['visible'] == 1, (slide, sampled)
+            expect(detail.locator('[aria-hidden="false"]')).to_have_css('opacity', '1')
         after = detail.bounding_box()
         assert abs(before['height'] - after['height']) < 1, selector
     open_slide('http')
