@@ -4,6 +4,7 @@ import "./reference-links.css";
 import {useCallback,useEffect,useLayoutEffect,useRef,useState} from "react";
 import {ClapControl} from "@/components/ClapControl";
 import {SlideVisual} from "@/components/SlideVisual";
+import {DnsDecisionPoints} from "@/components/DnsDecisionPoints";
 import {useMobilePresentation} from "@/components/useMobilePresentation";
 import {clampSlideIndex,slideIndexFromHash} from "@/lib/deck";
 import type {DeckSlide,SourceRegistry} from "@/lib/deck";
@@ -78,7 +79,7 @@ function SlideItem({
       </div>}
       <button type="button" className="mobile-full-view" aria-pressed={mobile.full} onClick={mobile.toggleFull}>{mobile.full?'한 화면 보기':'전체 보기'}</button>
      </div>}
-     {!tableLayout&&slide.kind!=="thanks"&&<div className="slide-points" id={`${mobileId}-points`} role={mobile.layout==='panes'?'region':undefined} aria-labelledby={mobile.layout==='panes'?`${mobileId}-points-tab`:undefined} hidden={mobile.pointsHidden} inert={mobile.pointsHidden} aria-hidden={mobile.pointsHidden||undefined}>{slide.points.slice(0,4).map((p,i)=><article className="slide-point" key={i}><span className="point-index">{slide.id==="dns"&&i>=2?(i===2?"A":"B"):`0${i+1}`}</span><div><h2>{p.title}</h2><p>{p.body}</p></div></article>)}</div>}
+     {!tableLayout&&slide.kind!=="thanks"&&<div className="slide-points" id={`${mobileId}-points`} role={mobile.layout==='panes'?'region':undefined} aria-labelledby={mobile.layout==='panes'?`${mobileId}-points-tab`:undefined} hidden={mobile.pointsHidden} inert={mobile.pointsHidden} aria-hidden={mobile.pointsHidden||undefined}>{slide.id==="dns"?<DnsDecisionPoints points={slide.points}/>:slide.points.slice(0,4).map((p,i)=><article className="slide-point" key={i}><span className="point-index">{`0${i+1}`}</span><div><h2>{p.title}</h2><p>{p.body}</p></div></article>)}</div>}
     </div>
     <div className="slide-visual-container" id={`${mobileId}-visual`} role={mobile.layout==='panes'?'region':undefined} aria-labelledby={mobile.layout==='panes'?`${mobileId}-visual-tab`:undefined} hidden={mobile.visualHidden} inert={mobile.visualHidden} aria-hidden={mobile.visualHidden||undefined}><SlideVisual slide={slide} sources={sources} motionPaused={motionPaused||Boolean(isLeaving)}/></div>
   </div>

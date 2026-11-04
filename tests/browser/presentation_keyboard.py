@@ -20,6 +20,7 @@ from presentation_controls import check_controls
 from presentation_build_timestamp import check_build_timestamp
 from presentation_dns_terminal import check_dns_terminal
 from presentation_header import check_header_navigation
+from presentation_dns_decision import check_dns_decision
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "apps/web"
@@ -252,6 +253,7 @@ def main():
                     check_build_timestamp(browser, ORIGIN)
                     check_keyboard(page)
                     check_header_navigation(browser, ORIGIN)
+                    check_dns_decision(browser, ORIGIN)
                     check_dns_terminal(browser, ORIGIN)
                     check_motion(page, ORIGIN)
                     check_term_callouts(browser, ORIGIN)
