@@ -201,8 +201,8 @@
 .deck-root .deck-slide[data-mobile-layout=full] .slide-visual-container>.chart-card{margin:0;min-width:0;max-width:100%}
 
 /* Short Safari viewport: preserve the entire CNAME chain, using two rows per
-   node (label + policy, then address + downward relationship) rather than three.
-   Each relationship remains owned by the node preceding its destination. */
+   node (label + policy, then address). Relationships occupy separate centered
+   rows between the source and destination cards. */
 @media(max-width:780px){
  .deck-root .deck-slide[data-mobile-budget=short] .dns-evidence-top{grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center}
  .deck-root .deck-slide[data-mobile-budget=short] .dns-evidence-top>div small{font-size:12px;line-height:1.3}
@@ -244,4 +244,15 @@
  .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .slide-overline{margin-bottom:4px}
  .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .slide-columns{gap:6px}
  .deck-root .deck-slide[data-mobile-budget=short][data-mobile-layout=panes] .mobile-pane-controls{margin-bottom:2px}
+}
+
+/* A narrow phone cannot fit three DNS response tokens side by side. Keep each
+   response intact in a full-width row, with direction in the gap between rows. */
+@media(max-width:540px){
+ .deck-root .policy-lifecycle .policy-timeline{grid-template-columns:minmax(0,1fr);gap:22px}
+ .deck-root .policy-lifecycle .policy-timeline-stage button{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);min-height:66px;padding:9px 11px;gap:4px 10px;align-items:center}
+ .deck-root .policy-lifecycle .policy-timeline-stage button>span{grid-column:1;grid-row:1 / span 2;min-width:0;font-size:13px;line-height:1.3}
+ .deck-root .policy-lifecycle .policy-timeline-stage button>strong{grid-column:2;grid-row:1;min-width:0;overflow-wrap:anywhere;font-size:12px;line-height:1.4}
+ .deck-root .policy-lifecycle .policy-timeline-stage button>small{grid-column:2;grid-row:2;min-width:0;overflow-wrap:anywhere;font-size:12px;line-height:1.4}
+ .deck-root .policy-lifecycle .policy-timeline-arrow{left:50%;top:100%;width:22px;height:22px;transform:translateX(-50%) rotate(90deg)}
 }
