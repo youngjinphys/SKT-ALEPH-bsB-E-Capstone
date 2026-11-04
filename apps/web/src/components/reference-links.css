@@ -4,10 +4,9 @@
 .deck-root .details-reference-page{display:block;margin:4px 0 22px;padding:12px 14px;border:1px solid #578c8e;border-radius:7px;color:#a7efde;font-size:14px;line-height:1.5;text-underline-offset:3px}
 @media(max-width:780px){.deck-root .deck-header-actions>.deck-reference-link{padding:8px 9px}.deck-root .deck-header-actions{gap:4px}.deck-root .deck-header-actions>button{padding-inline:8px}}
 
-/* Keep every action reachable when the dashboard link or microphone indicator
-   makes the header wider. Mobile header height is already content-driven. */
-.deck-root .deck-chapters{min-width:0;flex:1 1 auto}
-@media(max-width:780px){
- .deck-root .deck-topbar{flex-wrap:wrap;row-gap:4px}
- .deck-root .deck-header-actions{flex-wrap:wrap;justify-content:flex-end;max-width:100%}
-}
+/* Use content-driven rows at every width, including desktop browser zoom.
+   The chapter strip can shrink; actions wrap without dropping their labels. */
+.deck-root .deck-topbar{flex-basis:auto;min-height:67px;flex-wrap:wrap;padding-block:6px;row-gap:4px}
+.deck-root .deck-chapters{min-width:0;flex:1 1 260px}
+.deck-root .deck-header-actions{flex-wrap:wrap;justify-content:flex-end;max-width:100%;margin-left:auto}
+@media(max-width:780px){.deck-root .deck-topbar{min-height:48px;padding-block:4px}}

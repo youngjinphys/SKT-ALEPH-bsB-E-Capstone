@@ -50,6 +50,10 @@ def check_header_navigation(browser, origin):
                         }
                         return {failures};
                     }""")
+                    if result['failures']:
+                        failures = Path('/tmp/aleph-build-artifacts/header')
+                        failures.mkdir(parents=True, exist_ok=True)
+                        page.screenshot(path=str(failures / f'failure-{width}-{zoom or 1}-{microphone}.png'))
                     assert not result['failures'], (width, height, zoom, microphone, result)
                     if microphone:
                         page.locator('#header-mic-fixture').evaluate('el => el.remove()')
