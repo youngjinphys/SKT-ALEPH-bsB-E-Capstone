@@ -55,6 +55,28 @@ def _check_natural_reachability(page,context):
     else:raise AssertionError((context,'source link missing from Tab order'))
 
 
+def _assert_terminal_visibility(page):
+    result=page.locator('.dns-terminal').evaluate(r"""root=>{
+        const rgba=value=>value.match(/[\d.]+/g).map(Number);
+        const luminance=rgb=>rgb.slice(0,3).map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+        const body=getComputedStyle(root.querySelector('.dns-terminal-body'));
+        const surface=rgba(body.backgroundColor),alpha=surface[3]??1;
+        // White behind the glass is the lightest possible backing. Foreground
+        // must remain clear even then, not only against the current dark slide.
+        const worst=surface.slice(0,3).map(v=>v*alpha+255*(1-alpha));
+        const samples=[root.querySelector('.dns-terminal-command'),root.querySelector('.dns-terminal-output'),...root.querySelectorAll('.dns-terminal-output span')];
+        const contrast=samples.map(el=>{const fg=luminance(rgba(getComputedStyle(el).color)),bg=luminance(worst);return(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)});
+        const output=getComputedStyle(root.querySelector('.dns-terminal-output'));
+        return {minContrast:Math.min(...contrast),fontSize:parseFloat(output.fontSize),lineHeight:parseFloat(output.lineHeight)/parseFloat(output.fontSize),textShadow:output.textShadow,filter:getComputedStyle(root).filter,backdrop:getComputedStyle(root).backdropFilter,whiteSpace:output.whiteSpace};
+    }""")
+    assert result['minContrast']>=7,result
+    assert result['fontSize']>=13,result
+    assert result['lineHeight']>=1.5,result
+    assert result['textShadow']=='none' and result['filter']=='none',result
+    assert result['whiteSpace']=='pre-wrap',result
+    assert 'blur(20px)' in result['backdrop'],result
+
+
 def check_dns_terminal(browser, origin):
     OUT.mkdir(parents=True, exist_ok=True)
     total = 0
@@ -79,6 +101,7 @@ def check_dns_terminal(browser, origin):
                 await document.fonts.ready;
                 return loaded.length===2&&loaded.every(font=>font.status==='loaded');
             }''')
+            _assert_terminal_visibility(page)
             _check_natural_reachability(page,f'{width}x{height}')
             if (width,height)==(390,844):
                 first=page.get_by_role('group',name='검증 자료 선택',exact=True).get_by_role('button').first
@@ -97,7 +120,8 @@ def check_dns_terminal(browser, origin):
                 expect(root).to_have_attribute('data-query-id',query['id'])
                 expect(root.locator('.dns-terminal-command code')).to_have_text(query['command'])
                 output=root.locator('.dns-terminal-output').inner_text()
-                assert query['header'] in output and query['flags'] in output
+                expected='\n'.join([query['header'],query['flags'],';; QUESTION SECTION:',query['question'],';; ANSWER SECTION:',*query['answers'],f";; Query time: {query['queryMs']} msec",query['server']])
+                assert output==expected,(width,height,query['id'],'transcript changed')
                 assert output.count('[REDACTED]')==query['answerCount']
                 assert f"Query time: {query['queryMs']} msec" in output
                 assert query['server'] in output
@@ -145,4 +169,4 @@ def check_dns_terminal(browser, origin):
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors, errors
         finally:context.close()
-    print(f'DNS terminal: {total} stored records, 60 choice-to-arrow cases, UTF-8, web fonts, wheel/Tab reachability and text-size stress verified')
+    print(f'DNS terminal: {total} stored records, 60 choice-to-arrow cases, UTF-8, web fonts, high-contrast glass transcript, wheel/Tab reachability and text-size stress verified')

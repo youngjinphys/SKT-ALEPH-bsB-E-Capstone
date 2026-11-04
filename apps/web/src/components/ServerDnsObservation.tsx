@@ -32,7 +32,7 @@ export function ServerDnsObservation(){
    })}</div>
    <div className="dns-terminal-body">
     <p className="dns-terminal-command"><span aria-hidden="true">$ </span><code>{record.command}</code></p>
-    <pre className="dns-terminal-output"><code>{output}</code></pre>
+    <pre className="dns-terminal-output"><code>{output.split("\n").map((line,index,lines)=><span key={index} className={line.includes("SECTION:")?"dns-terminal-line--section":!line.startsWith(";;")?"dns-terminal-line--answer":undefined}>{line}{index<lines.length-1?"\n":""}</span>)}</code></pre>
     <div className="dns-terminal-status"><span>exit {record.exitCode} · NOERROR</span><time dateTime={record.timestamp}>{record.timestamp.slice(11,23)} UTC</time></div>
    </div>
   </figure>
