@@ -53,6 +53,18 @@ with materialize(empty_state()) as w:
                 p.update(report_sequence=sample+1,reported_at=at.isoformat(),applied_at=at.isoformat(),metrics=m)
                 w.service.nodes.receive(signed_report(p,k,now=at),now=at)
     snap=w.export()
+if os.getenv('ALEPH_BROWSER_EXPIRED_REVIEWS')=='1':
+    # A separate offline acceptance variant: retain the signed fixture feed,
+    # but age its source evidence to exercise explicit source exclusion.
+    old=now-timedelta(minutes=10)
+    verified['checked_at']=old.isoformat()
+    for row in verified['entries']:
+        row.update(checked_at=old.isoformat(),valid_until=(old+timedelta(minutes=5)).isoformat())
+    reviews=intel.review_template(verified)
+    reviews['reviews'][0].update(approved=True,acknowledge_subtree=True,reviewer='Fixture operator',
+        reason='Synthetic stale approval with reviewed whole subtree impact')
+    snap['files']['workspace/verified.json']=json.dumps(verified)
+    snap['files']['workspace/reviews.json']=json.dumps(reviews)
 store=MemoryStore();store.save(0,snap)
 ca.get_store=lambda:store
 ca.require_operator=lambda request:'fixture@example.org'

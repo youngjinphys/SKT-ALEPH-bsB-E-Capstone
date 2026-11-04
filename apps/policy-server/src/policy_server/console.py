@@ -382,12 +382,20 @@ class ConsoleService:
 
     def build(self, data: dict):
         required={'fingerprint','confirm_replacement','acknowledge_user_notice'}
-        optional={'review_set_revision','manual_revision'}
+        optional={'review_set_revision','manual_revision','excluded_expired_review_ids','confirm_empty_replacement'}
         if (type(data) is not dict or set(data)-required-optional
                 or not required.issubset(data) or
                 data['confirm_replacement'] is not True or
                 data['acknowledge_user_notice'] is not True):
             raise ConsoleError('Explicit full replacement and user notice required')
+        exclusions=data.get('excluded_expired_review_ids',[])
+        empty_confirmed=data.get('confirm_empty_replacement',False)
+        if (type(exclusions) is not list or len(exclusions)>intel.MAX_URLS
+                or any(type(ref) is not str or not re.fullmatch('[a-f0-9]{64}',ref) for ref in exclusions)
+                or len(set(exclusions))!=len(exclusions) or type(empty_confirmed) is not bool):
+            raise ConsoleError('Exact expired approval identities and boolean empty confirmation required')
+        if (exclusions or empty_confirmed) and not {'review_set_revision','manual_revision'}.issubset(data):
+            raise ConsoleConflict('Reload both source revisions before confirming withdrawals')
         from .manual_blacklist import records,revision,draft_rules
         instant=datetime.now(timezone.utc)
         with self.locked():
@@ -398,6 +406,7 @@ class ConsoleService:
                 raise ConsoleConflict('Manual blacklist changed; reload first')
             verified,reviews,template=self._verified_reviews()
             if verified is None:
+                if exclusions:raise ConsoleConflict('Excluded approvals changed; reload first')
                 if data['fingerprint'] is not None or data.get('review_set_revision') not in (None,'NOT_PRESENT'):
                     raise ConsoleConflict('Verification evidence changed; reload first')
                 intel_rules=[]
@@ -407,14 +416,17 @@ class ConsoleService:
                 if ('review_set_revision' in data and
                         data['review_set_revision']!=_revision(reviews)):
                     raise ConsoleConflict('Review approvals changed; reload first')
-                if any(row['approved'] for row in reviews['reviews']):
-                    verified_policy=intel.build_policy(verified,reviews,at=instant,
-                        acknowledge_replacement=True,acknowledge_notice=True)
-                    intel_rules=verified_policy['rules']
-                else:intel_rules=[]
+                by_id={_identity(row):row for row in reviews['reviews']}
+                if any(ref not in by_id for ref in exclusions):
+                    raise ConsoleConflict('Excluded approvals changed; reload first')
+                excluded_refs={(by_id[ref]['domain'],by_id[ref]['url_sha256'],by_id[ref]['checked_at'])
+                               for ref in exclusions}
+                intel_rules=intel.reviewed_rules(verified,reviews,at=instant,excluded_expired=excluded_refs)
             manual_rules,expired=draft_rules(self,instant)
             combined={}
+            sources={}
             for rule in intel_rules+manual_rules:
+                sources.setdefault(rule['domain'],[]).append(rule['evidence'])
                 prior=combined.get(rule['domain'])
                 if prior is None:combined[rule['domain']]=dict(rule)
                 else:
@@ -422,23 +434,36 @@ class ConsoleService:
                                                      intel.parse_time(rule['expires_at'])))
                     prior['evidence']='source-combined-v1:sha256:'+_revision({
                         'sources':sorted([prior['evidence'],rule['evidence']])})
-            if not combined:
-                raise ConsoleError('no approved, current, verified or manual FQDN rules; no policy created')
+            if not combined and not empty_confirmed:
+                raise ConsoleError('no approved, current, verified or manual FQDN rules; explicit empty replacement required')
+            if combined and empty_confirmed:
+                raise ConsoleConflict('Current rules remain; reload before confirming an empty replacement')
             rules=sorted(combined.values(),key=lambda x:x['domain'])
-            expires=min(intel.parse_time(x['expires_at']) for x in rules)
+            expires=min((intel.parse_time(x['expires_at']) for x in rules),
+                        default=instant+timedelta(minutes=15))
             for row in rules:
                 row['expires_at']=intel.iso(min(expires,intel.parse_time(row['expires_at'])))
             policy={'issued_at':intel.iso(instant),'expires_at':intel.iso(expires),'rules':rules}
             parsed=parse_policy(json.dumps(policy,ensure_ascii=True).encode())
             name=instant.strftime('policy-%Y%m%dT%H%M%SZ-')+secrets.token_hex(6)+'.json'
+            evidence_dir=self.workspace/'draft-evidence'
+            evidence_dir.mkdir(mode=0o700,exist_ok=True)
+            _private_dir(evidence_dir)
+            intel.write_json(evidence_dir/name,{'draft_sha256':parsed.digest,
+                'sources':{domain:sorted(refs) for domain,refs in sorted(sources.items())},
+                'excluded_expired_review_ids':exclusions,'empty_replacement':empty_confirmed})
             intel.write_json(self.drafts_dir/name,policy)
             _audit(self.workspace/'audit.jsonl','unsigned_policy_built',
                   draft=name,sha256=parsed.digest,rules=len(parsed.rules),
                   manual_rules=len(manual_rules),verified_rules=len(intel_rules),expired_manual_excluded=expired)
+            if exclusions or empty_confirmed:
+                _audit(self.workspace/'audit.jsonl','draft_withdrawals_confirmed',
+                       draft=name,excluded_expired_review_ids=exclusions,empty_replacement=empty_confirmed)
         return {'draft':name,'sha256':parsed.digest,'rules':len(parsed.rules),
                 'expires_at':parsed.expires_at.isoformat(),'published':False,
                 'signed':False,'manual_rules':len(manual_rules),'verified_rules':len(intel_rules),
-                'expired_manual_excluded':expired}
+                'expired_manual_excluded':expired,'excluded_expired_review_ids':exclusions,
+                'empty_replacement':empty_confirmed}
 
     def drafts(self):
         result = []

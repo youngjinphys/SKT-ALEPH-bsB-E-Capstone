@@ -39,6 +39,8 @@ jobs:
         run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts/tutorial python3 -B tests/browser/dashboard_tutorial.py
       - name: Verify local and cloud operator workflows
         run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts python3 -B tests/browser/console_smoke.py
+      - name: Verify explicit policy source exclusions and empty withdrawals
+        run: ALEPH_SCREENSHOTS=/tmp/aleph-browser-artifacts/policy-review python3 -B tests/browser/policy_review_safety.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

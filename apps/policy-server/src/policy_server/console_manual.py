@@ -71,14 +71,14 @@ function manualDefaultDate(){
 function renderManual(){
   const list=$('manual-list');list.replaceChildren();
   if(!manualData){list.append(empty('수동 규칙 조회 실패'));return;}
-  const valid=manualData.entries.filter(x=>!x.expired);
+  const valid=manualData.entries.filter(x=>!x.expired&&!x.unsafe_boundary);
   showText('manual-total','유효 '+valid.length+'건 / 전체 '+manualData.entries.length+'건');
   if(!manualData.entries.length){list.append(empty('아직 등록된 FQDN이 없습니다.'));return;}
   for(const item of manualData.entries){
     const card=node('article','manual-item');card.setAttribute('role','listitem');
     card.dataset.state=item.expired?'expired':'active';
     const head=node('div','manual-item-head');
-    head.append(node('strong','',item.domain),pill(item.expired?'만료':'수동 승인',item.expired?'muted':'warn'));
+    head.append(node('strong','',item.domain),pill(item.unsafe_boundary?'공용 접미사·보호 경계 위반':item.expired?'만료':'수동 승인',item.unsafe_boundary?'bad':item.expired?'muted':'warn'));
     const remove=node('button','text-button','등록 해제');
     remove.type='button';remove.addEventListener('click',()=>removeManual(item).catch(displayError));
     card.append(head,node('small','',item.reviewer+' · 만료 '+fmt(item.expires_at)),

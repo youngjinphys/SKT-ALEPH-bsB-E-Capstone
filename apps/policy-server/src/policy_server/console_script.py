@@ -481,9 +481,20 @@ async function loadEngine() {
   $("engine-sources").value=conf?conf.score_sources.join("\n"):"lab-scanner";
 }
 const lines = (id) => $(id).value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+function updateBuildAvailability(){
+  const state=buildReviewContext;
+  const ready=state&&!state.blocked&&
+    (!state.expired.length||$("confirm-expired-exclusion").checked)&&
+    (state.ruleCount>0||$("confirm-empty-replacement").checked);
+  $("build-form").querySelector('button[type="submit"]').disabled=!ready;
+}
+$("confirm-expired-exclusion").addEventListener("change",updateBuildAvailability);
+$("confirm-empty-replacement").addEventListener("change",updateBuildAvailability);
 async function loadDrafts() {
   const stillCurrent=currentRequest("drafts");
   buildReviewContext=null;
+  $("confirm-expired-exclusion").checked=false;
+  $("confirm-empty-replacement").checked=false;
   $("build-form").querySelector('button[type="submit"]').disabled=true;
   const [drafts,reviewResult,manualResult]=await Promise.allSettled([api("/api/drafts"),api("/api/reviews"),api("/api/manual")]);
   if(!stillCurrent()) return;
@@ -493,12 +504,21 @@ async function loadDrafts() {
   const items=drafts.value,reviewed=reviewResult.value;
   manualData=manualResult.value;manualDefaultDate();renderManual();
   const ready=reviewed?.items.filter(x=>x.approved&&x.eligible).length||0;
-  const local=manualData.entries.filter(x=>!x.expired).length;
+  const local=manualData.entries.filter(x=>!x.expired&&!x.unsafe_boundary).length;
+  const expired=reviewed.items.filter(x=>x.approved&&["EVIDENCE_EXPIRED","EVIDENCE_TOO_OLD"].includes(x.eligibility_reason));
+  const blocked=manualData.entries.some(x=>!x.expired&&x.unsafe_boundary)||
+    reviewed.items.some(x=>x.approved&&!x.eligible&&!expired.includes(x));
+  $("build-expired-section").hidden=!expired.length;
+  $("confirm-expired-exclusion").required=!!expired.length;
+  $("build-expired-list").replaceChildren(...expired.map(x=>node("li","",x.domain+" · 검증 "+fmt(x.checked_at)+" · 만료 "+fmt(x.valid_until)+" · "+x.id.slice(0,12))));
+  $("build-empty-section").hidden=!!(ready+local)||blocked;
+  $("confirm-empty-replacement").required=!(ready+local)&&!blocked;
   buildReviewContext={fingerprint:reviewed?.fingerprint||null,
     review_set_revision:reviewed?.review_set_revision||"NOT_PRESENT",
-    manual_revision:manualData.revision};
+    manual_revision:manualData.revision,expired,blocked,ruleCount:ready+local};
   showText("build-review-summary","외부 검증 승인 "+ready+"건 + 수동 FQDN "+local+"건 · 전체 교체 스냅샷");
-  $("build-form").querySelector('button[type="submit"]').disabled=!(ready+local);
+  if(blocked)showText("build-review-summary","공용 접미사·보호 경계 또는 유효하지 않은 승인 기록을 먼저 검토/해제하세요. 초안 생성은 차단됩니다.");
+  updateBuildAvailability();
   showText("verification-status",items.length+"개 미서명 초안 · 독립 서명 필요");
   showText("draft-count",items.length);
   const list=$("draft-list");
@@ -952,7 +972,9 @@ bindAsyncForm("build-form",async(e)=>{
       review_set_revision:state.review_set_revision,
       manual_revision:state.manual_revision,
       confirm_replacement:$("confirm-replacement").checked,
-      acknowledge_user_notice:$("confirm-notice").checked
+      acknowledge_user_notice:$("confirm-notice").checked,
+      excluded_expired_review_ids:$("confirm-expired-exclusion").checked?state.expired.map(x=>x.id):[],
+      confirm_empty_replacement:$("confirm-empty-replacement").checked
     });
     $("confirm-replacement").checked=false;
     $("confirm-notice").checked=false;

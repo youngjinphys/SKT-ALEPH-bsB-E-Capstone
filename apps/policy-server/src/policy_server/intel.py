@@ -19,6 +19,7 @@ from urllib.parse import urlencode, urlsplit, urlunsplit
 from urllib.request import Request, build_opener, HTTPRedirectHandler, HTTPSHandler
 
 from dns_agent.policy import PolicyError, domain_name, timestamp
+from .public_suffix import is_subtree_boundary
 
 OPENPHISH = 'https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt'
 GOOGLE = 'https://safebrowsing.googleapis.com/v5/urls:search'
@@ -185,7 +186,7 @@ def safe_url(raw):
 
 
 def is_protected(host):
-    return any(host == x or host.endswith('.'+x) for x in PROTECTED_SUFFIXES)
+    return is_subtree_boundary(host) or any(host == x or host.endswith('.'+x) for x in PROTECTED_SUFFIXES)
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -424,10 +425,14 @@ def review_template(verified):
             'verification_sha256': verification_fingerprint(verified), 'reviews': proposals}
 
 
-def build_policy(verified, reviews, *, at=None,
-                 acknowledge_replacement=False, acknowledge_notice=False):
-    if acknowledge_replacement is not True or acknowledge_notice is not True:
-        raise IntelError('explicit --confirm-replacement and --acknowledge-user-notice required')
+def reviewed_rules(verified, reviews, *, at=None, excluded_expired=()):
+    """Compile bound approvals, optionally excluding explicitly named stale ones.
+
+    Exclusion never relaxes identity, rationale, source or SUBTREE validation.
+    Callers must independently confirm full replacement, including empty output.
+    """
+    excluded_expired=set(excluded_expired)
+    excluded_seen=set()
     entries = _verification_entries(verified)
     _object(reviews, {'kind', 'format', 'scope', 'verification_sha256', 'reviews'},
             'reviews (regenerate and re-review legacy unbound templates)')
@@ -476,7 +481,13 @@ def build_policy(verified, reviews, *, at=None,
             raise IntelError('not a confirmed relevant Google threat')
         observed = parse_time(item['checked_at'])
         expires = parse_time(item['valid_until'])
-        if observed - at > timedelta(seconds=60) or at >= expires or at - observed >= timedelta(minutes=30):
+        stale=at >= expires or at - observed >= timedelta(minutes=30)
+        if reference in excluded_expired:
+            if observed-at>timedelta(seconds=60) or not stale:
+                raise IntelError('Only expired approvals can be explicitly excluded')
+            excluded_seen.add(reference)
+            continue
+        if observed - at > timedelta(seconds=60) or stale:
             raise IntelError('Google evidence stale; verify again before generating a block')
         until = min(expires, observed + timedelta(minutes=30), at + timedelta(minutes=15))
         if until <= at:
@@ -488,14 +499,25 @@ def build_policy(verified, reviews, *, at=None,
         else:
             selected[host] = {'domain':host,'decision':'BLOCK','scope':'SUBTREE',
                               'approved':True,'expires_at':iso(until),'evidence':''}
-    if not selected:
-        raise IntelError('no approved, current, verified domains; no policy generated')
+    if excluded_seen!=excluded_expired:
+        raise IntelError('Excluded approvals changed; reload the review summary')
     for host, rule in selected.items():
         # Retain an audit reference to EVERY approved URL and to who approved it.
         rule['evidence'] = 'intel-review-v2:sha256:' + _digest({
             'format': 2, 'scope': 'SUBTREE', 'verification_sha256': fingerprint,
             'reviews': sorted(host_reviews[host], key=lambda review: review['url_sha256'])})
     rules = sorted(selected.values(),key=lambda x:x['domain'])
+    return rules
+
+
+def build_policy(verified, reviews, *, at=None,
+                 acknowledge_replacement=False, acknowledge_notice=False):
+    if acknowledge_replacement is not True or acknowledge_notice is not True:
+        raise IntelError('explicit --confirm-replacement and --acknowledge-user-notice required')
+    at=as_utc(at or now_utc())
+    rules=reviewed_rules(verified,reviews,at=at)
+    if not rules:
+        raise IntelError('no approved, current, verified domains; no policy generated')
     return {'issued_at':iso(at), 'expires_at':max(x['expires_at'] for x in rules),
             'rules':rules}
 

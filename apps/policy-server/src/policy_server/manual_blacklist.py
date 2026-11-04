@@ -2,19 +2,22 @@
 from __future__ import annotations
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
+import json,os
 from dns_agent.policy import domain_name,timestamp
 from . import intel
 
 MAX_RECORDS=150
 FIELDS={'domain','reviewer','reason','expires_at','added_at','updated_at','acknowledge_subtree'}
-SENSITIVE_SUFFIXES={'co.uk','org.uk','ac.uk','gov.uk','com.au','net.au','org.au','co.jp','co.kr','or.kr','go.kr','co.in','com.br','com.cn','co.nz','com.mx','com.tr','co.za','co.id','com.tw'}
 
 def now():return datetime.now(timezone.utc)
 
-def validate(entry):
+def unsafe_boundary(domain):
+    return intel.is_protected(domain)
+
+def validate(entry,*,check_boundary=True):
     if type(entry) is not dict or set(entry)!=FIELDS:raise ValueError('Invalid manual FQDN record')
     domain=domain_name(entry['domain'])
-    if domain!=entry['domain'] or domain in SENSITIVE_SUFFIXES or intel.is_protected(domain):
+    if domain!=entry['domain'] or (check_boundary and unsafe_boundary(domain)):
         raise ValueError('Protected, public-suffix or noncanonical FQDN')
     if (type(entry['reviewer']) is not str or not 2<=len(entry['reviewer'])<=80
        or type(entry['reason']) is not str or not 15<=len(entry['reason'])<=400
@@ -40,7 +43,9 @@ def records(service):
         raise ValueError('Invalid manual blacklist')
     names=set()
     for item in data['entries']:
-        validate(item)
+        # Older records remain inspectable/removable after a boundary update.
+        # New registrations and draft generation still enforce current safety.
+        validate(item,check_boundary=False)
         if item['domain'] in names:raise ValueError('Duplicate manual FQDN')
         names.add(item['domain'])
     if data['entries']!=sorted(data['entries'],key=lambda x:x['domain']):
@@ -54,8 +59,40 @@ def revision(value):
 def list_rules(service,instant=None):
     data=records(service);instant=instant or now()
     return {'revision':revision(data),'scope':'SUBTREE','entries':[
-        {**x,'expired':timestamp(x['expires_at'],'expires_at')<=instant}
+        {**x,'expired':timestamp(x['expires_at'],'expires_at')<=instant,
+         'unsafe_boundary':unsafe_boundary(x['domain'])}
         for x in data['entries']]}
+
+def archive(service,item):
+    """Retain the exact evidence preimage, never overwrite historical records."""
+    from .console import _private_dir,_json_read
+    validate(item,check_boundary=False)
+    folder=service.workspace/'manual-evidence'
+    try:relative=folder.resolve(strict=False).relative_to(intel.ROOT)
+    except ValueError:pass
+    else:
+        if relative.parts[:2]!=('data','private'):
+            raise ValueError('Private manual evidence must be outside the repository or in data/private/')
+    folder.mkdir(mode=0o700,exist_ok=True)
+    _private_dir(folder)
+    path=folder/(revision(item)+'.json')
+    raw=json.dumps(item,sort_keys=True,ensure_ascii=True,allow_nan=False).encode()+b'\n'
+    try:fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+    except FileExistsError:
+        existing=_json_read(path)
+        if revision(existing)!=revision(item) or existing!=item:
+            raise ValueError('Manual evidence archive mismatch')
+        return
+    try:
+        with os.fdopen(fd,'wb') as output:
+            output.write(raw);output.flush();os.fsync(output.fileno())
+        directory=os.open(folder,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        try:os.fsync(directory)
+        finally:os.close(directory)
+    except BaseException:
+        # A failed/partial archive never permits registry mutation. Leave the
+        # artifact for inspection; a later mismatch fails closed as well.
+        raise
 
 def candidate(data,instant=None):
     expected={'domain','reviewer','reason','expires_at','acknowledge_subtree','expected_revision'}
@@ -97,6 +134,8 @@ def upsert(service,data):
             item['added_at']=prior['added_at']
         if prior is None and len(state['entries'])>=MAX_RECORDS:
             raise ValueError('Manual blacklist is full')
+        if prior:archive(service,prior)
+        archive(service,item)
         value={'format':1,'entries':sorted(
             [x for x in state['entries'] if x['domain']!=item['domain']]+[item],
             key=lambda x:x['domain'])}
@@ -119,6 +158,7 @@ def remove(service,data):
             raise ConsoleConflict('Manual blacklist changed; reload')
         if not any(x['domain']==name for x in state['entries']):
             raise ValueError('Manual FQDN not found')
+        archive(service,next(x for x in state['entries'] if x['domain']==name))
         value={'format':1,'entries':[x for x in state['entries'] if x['domain']!=name]}
         from .console import _audit
         intel.write_json(service.workspace/'manual-blacklist.json',value)
@@ -129,6 +169,9 @@ def remove(service,data):
 def draft_rules(service,instant=None):
     instant=instant or now();items=records(service)['entries']
     fresh=[x for x in items if timestamp(x['expires_at'],'expires_at')>instant]
+    for item in fresh:
+        validate(item)
+        archive(service,item)
     return ([{'domain':item['domain'],'decision':'BLOCK','scope':'SUBTREE',
               'approved':True,'expires_at':item['expires_at'],
               'evidence':'manual-review-v1:sha256:'+revision(item)} for item in fresh],
