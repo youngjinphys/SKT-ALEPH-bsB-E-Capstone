@@ -296,7 +296,7 @@
   },
   "block-test-loopback-20261104": {
     "label": "2026.11.04 · block.test 격리 DNS 실험",
-    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/main/apps/web/public/capstone/evidence/block-test-loopback-20261104.json",
+    "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9040affdaa823b7f3a999a65de71738b990d5b15/apps/web/public/capstone/evidence/block-test-loopback-20261104.json",
     "note": "통제 upstream과 로컬 보호 DNS에서 A·AAAA, UDP·TCP의 적용 전·차단·철회를 비교했습니다. 운영 DNS 적용 증거가 아닙니다."
   }
 }

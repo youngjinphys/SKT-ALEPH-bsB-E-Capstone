@@ -58,12 +58,13 @@ test('the displayed block.test result is a bounded recorded loopback experiment'
  assert.ok(source.includes('data-command-display="summary"'));
  assert.ok(source.includes('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략'));
  assert.doesNotMatch(source,/SERVER ·|server \/ dig/);
- assert.ok(source.includes('ISOLATED LOOPBACK · BLOCK 적용 · A / UDP'));
  assert.doesNotMatch(source,/dns-fixture-summary|dns-fixture-boundary/);
  assert.ok(source.includes('block-test-loopback-20261104.json'));
- assert.ok(source.includes('blockedQuery.command.join(" ")'));
- assert.ok(source.includes('{blockedQuery.stdout}'));
- assert.ok(source.includes('data-command-display="recorded"'));
+ assert.ok(source.includes('<code>dig block.test A</code>'));
+ assert.ok(source.includes('{blockedOutput}'));
+ assert.ok(source.includes('격리 DNS 실험 · 명령·응답 일부 생략'));
+ assert.equal((source.match(/data-command-display="summary"/g)||[]).length,2);
+ assert.doesNotMatch(source,/blockedQuery\.command\.join|data-command-display="recorded"/);
  assert.ok(source.includes('publicDns?"captured":"fixture"'));
  assert.doesNotMatch(source,/type Transport|type Route|setTransport|setRoute|record\.server|google\.server|dns-terminal-routes/);
  assert.doesNotMatch(style,/dns-terminal-routes/);
@@ -76,6 +77,9 @@ test('the displayed block.test result is a bounded recorded loopback experiment'
  const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
  assert.ok(visible.includes('격리'));
  assert.ok(visible.includes('운영 DNS 적용'));
+ assert.doesNotMatch(visible,/\b(?:TCP|UDP)\b/);
+ const sources=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/sources.json'),'utf8'));
+ assert.equal(sources['block-test-loopback-20261104'].url,'https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9040affdaa823b7f3a999a65de71738b990d5b15/apps/web/public/capstone/evidence/block-test-loopback-20261104.json');
 });
 
 test('Google answer display preserves the separate stored public IPv4 record',()=>{

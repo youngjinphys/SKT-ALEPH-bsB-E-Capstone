@@ -118,11 +118,9 @@ def check_dns_terminal(browser, origin):
             for domain in ('google.com','block.test'):
                 choices.get_by_role('button',name=domain,exact=True).click()
                 text=root.inner_text()
-                for removed in ('example.com','기본 DNS'):
+                for removed in ('example.com','기본 DNS','SERVER:','+time','+tries','+tcp'):
                     assert removed not in text,(width,height,domain,removed)
-                if domain=='google.com':
-                    for removed in ('SERVER:','+time','+tries','+tcp'):
-                        assert removed not in text,(width,height,domain,removed)
+                assert not re.search(r'\b(?:TCP|UDP)\b',text,re.IGNORECASE),(width,height,domain,'transport detail visible')
                 assert '\ufffd' not in text
                 if domain=='google.com': assert '1.1.1.1' in text and all(line.split()[-1] in text for line in google['answers'])
                 if domain=='google.com':
@@ -149,10 +147,11 @@ def check_dns_terminal(browser, origin):
                         assert len(phase['queries'])==4
                         assert {(q['qtype'],q['transport']) for q in phase['queries']}=={('A','UDP'),('A','TCP'),('AAAA','UDP'),('AAAA','TCP')}
                         assert all(q['exit_code']==0 and q['rcode']==expected_rcode for q in phase['queries'])
-                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','recorded')
-                    expect(root.locator('.dns-terminal-command code')).to_have_text(' '.join(recorded['command']))
-                    assert root.locator('.dns-terminal-output code').text_content()==recorded['stdout']
-                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('ISOLATED LOOPBACK · BLOCK 적용 · A / UDP')
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig block.test A')
+                    excerpt='\n'.join(line for line in recorded['stdout'].split('\n') if not line.startswith((';; OPT PSEUDOSECTION:','; EDNS:')))
+                    assert root.locator('.dns-terminal-output code').text_content()==excerpt
+                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('격리 DNS 실험 · 명령·응답 일부 생략')
                     expect(root.locator('.dns-fixture-summary,.dns-fixture-boundary')).to_have_count(0)
                     expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',recorded['started_at'])
                     link=root.get_by_role('link',name='실험 기록 ↗',exact=True)

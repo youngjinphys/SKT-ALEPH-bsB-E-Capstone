@@ -13,7 +13,7 @@
     },
     {
       "title": "block.test 격리 차단 검증",
-      "body": "A·AAAA, UDP·TCP · 적용 전 정상 / BLOCK 후 NXDOMAIN / 철회 후 정상"
+      "body": "적용 전 정상 / BLOCK 후 NXDOMAIN / 철회 후 정상"
     },
     {
       "title": "질의 기록 확인",
@@ -46,7 +46,7 @@
       },
       {
         "title": "block.test 격리 차단 검증",
-        "body": "A·AAAA, UDP·TCP · 적용 전 정상 / BLOCK 후 NXDOMAIN / 철회 후 정상"
+        "body": "적용 전 정상 / BLOCK 후 NXDOMAIN / 철회 후 정상"
       },
       {
         "title": "질의 기록 확인",
@@ -75,7 +75,7 @@
       [
         "block.test",
         "적용 전 NOERROR · BLOCK 후 NXDOMAIN · 철회 후 NOERROR",
-        "격리 DNS · A/AAAA 및 UDP/TCP 12개 질의"
+        "격리 DNS · 12개 질의"
       ],
       [
         "실험 기록",

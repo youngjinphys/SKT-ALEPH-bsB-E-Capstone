@@ -8,6 +8,11 @@ type Domain="google.com"|"block.test";
 const output=[google.header,google.flags,";; QUESTION SECTION:",google.question,";; ANSWER SECTION:",...google.answers,`;; Query time: ${google.queryMs} msec`].join("\n");
 const blocked=block.phases.find(phase=>phase.name==="blocked")!;
 const blockedQuery=blocked.queries.find(query=>query.qtype==="A"&&query.transport==="UDP")!;
+// Preserve the full command and EDNS metadata in the linked record. The visible
+// excerpt omits transport details; every remaining response line is unchanged.
+const blockedOutput=blockedQuery.stdout.split("\n")
+ .filter(line=>!line.startsWith(";; OPT PSEUDOSECTION:")&&!line.startsWith("; EDNS:"))
+ .join("\n");
 
 /** Recorded observations from separate public-DNS and isolated loopback tests. */
 export function ServerDnsObservation(){
@@ -21,7 +26,7 @@ export function ServerDnsObservation(){
   <div className="server-dns-selectors">
    <div role="group" aria-label="질의 이름 선택">{(["google.com","block.test"] as const).map(value=><button type="button" data-scenario-step="true" key={value} aria-pressed={domain===value} onClick={()=>setDomain(value)}>{value}</button>)}</div>
   </div>
-  <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{publicDns?`google.com, NOERROR, 주소 ${google.answerCount}개. 공개 DNS 1.1.1.1의 별도 저장 기록입니다.`:"block.test 격리 실험. 적용 전 정상 응답, BLOCK 적용 후 NXDOMAIN, 철회 후 정상 응답. A와 AAAA, UDP와 TCP 각각 확인."}</p>
+  <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{publicDns?`google.com, NOERROR, 주소 ${google.answerCount}개. 공개 DNS 1.1.1.1의 별도 저장 기록입니다.`:"block.test 격리 실험. 적용 전 정상 응답, BLOCK 적용 후 NXDOMAIN, 철회 후 정상 응답. 12개 질의가 기대 응답과 일치."}</p>
   <figure className="dns-terminal" aria-label={publicDns?"google.com 저장된 터미널 출력":"block.test 격리 DNS 실험 기록"}>
    <figcaption className="dns-terminal-titlebar"><span className="dns-terminal-lights" aria-hidden="true"><i/><i/><i/></span><span>{publicDns?"public DNS / dig":"loopback / dig"}</span><span>READ ONLY</span></figcaption>
    <div className="dns-terminal-body">
@@ -31,9 +36,9 @@ export function ServerDnsObservation(){
      <pre className="dns-terminal-output"><code>{output.split("\n").map((line,index,lines)=><span key={index} className={line.includes("SECTION:")?"dns-terminal-line--section":!line.startsWith(";;")?"dns-terminal-line--answer":undefined}>{line}{index<lines.length-1?"\n":""}</span>)}</code></pre>
      <div className="dns-terminal-status"><span>exit {google.exitCode} · NOERROR</span><time dateTime={google.timestamp}>{google.timestamp.slice(11,19)} UTC</time><a href="/capstone/evidence/google-dns-observation.json" target="_blank" rel="noopener noreferrer">기록 ↗</a></div>
     </>:<>
-     <p className="dns-terminal-excerpt">ISOLATED LOOPBACK · BLOCK 적용 · A / UDP</p>
-     <p className="dns-terminal-command" data-command-display="recorded"><span aria-hidden="true">$ </span><code>{blockedQuery.command.join(" ")}</code></p>
-     <pre className="dns-terminal-output"><code>{blockedQuery.stdout}</code></pre>
+     <p className="dns-terminal-excerpt">격리 DNS 실험 · 명령·응답 일부 생략</p>
+     <p className="dns-terminal-command" data-command-display="summary"><span aria-hidden="true">$ </span><code>dig block.test A</code></p>
+     <pre className="dns-terminal-output"><code>{blockedOutput}</code></pre>
      <div className="dns-terminal-status"><span>exit {blockedQuery.exit_code} · {blockedQuery.rcode}</span><time dateTime={blockedQuery.started_at}>{blockedQuery.started_at.slice(11,19)} UTC</time><a href="/capstone/evidence/block-test-loopback-20261104.json" target="_blank" rel="noopener noreferrer">실험 기록 ↗</a></div>
     </>}
    </div>
