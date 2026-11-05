@@ -48,7 +48,7 @@
  .deck-root .deck-slide.slide-bypass[data-mobile-layout=desktop] .slide-visual-container>.dns-evidence-dashboard{flex:none;height:auto;max-height:none;overflow:visible;justify-content:flex-start}
 }
 
-/* Neither panel runs a query. The illustration is separate from evidence. */
+/* Both panels display stored observations and do not perform live queries. */
 .server-dns-unverified{color:#f5d8a5;font-size:12px}
 .deck-root .dns-terminal-excerpt{margin:0 0 9px;color:#c6d9ea;font-size:12px;line-height:1.5}
 .dns-terminal-status a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px}
@@ -61,7 +61,7 @@
 
 .dns-terminal-pending a{color:#d1f0ff;text-decoration:underline;text-underline-offset:3px;font-size:13px}
 
-.deck-root .server-dns-observation[data-evidence-state=illustration] .dns-terminal-output{min-height:0}
+.deck-root .server-dns-observation[data-query-id="pi-dns-block-20261105"] .dns-terminal-output{min-height:0}
 
 /* Exact response tokens remain selectable/copyable. Weight and an underline
    retain emphasis without relying on green/red colour alone. */

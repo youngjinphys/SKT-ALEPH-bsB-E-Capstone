@@ -64,7 +64,8 @@ def check_references(page, width, height):
     root=page.locator('.slide-active .reference-slide')
     expect(root).to_be_visible()
     expect(page.locator('a[href*="/capstone/references"]')).to_have_count(0)
-    expect(root.locator('a')).to_have_count(38)
+    expect(root.locator('a')).to_have_count(39)
+    expect(root.locator('a[href*="pi-dns-block-20261105.json"]')).to_have_count(1)
     expect(root.locator('a[href*="block-test-loopback-20261104.json"]')).to_have_count(0)
     expect(root.locator('details')).to_have_count(5)
     expect(page.get_by_role('button',name='부록 장으로 이동',exact=True)).to_have_count(0)
@@ -99,7 +100,7 @@ def check_references(page, width, height):
     label=page.locator('.slide-active .policy-flow-stage strong').nth(1)
     expect(label).to_have_text('정책기반 위험도 판정')
     assert label.evaluate('el=>{const r=el.getBoundingClientRect(),p=el.closest("button").getBoundingClientRect();return r.left>=p.left&&r.right<=p.right}')
-    return {'width':width,'height':height,'referencesSlide':True,'sources':38,'pipelineLabel':True}
+    return {'width':width,'height':height,'referencesSlide':True,'sources':39,'pipelineLabel':True}
 
 
 def main():

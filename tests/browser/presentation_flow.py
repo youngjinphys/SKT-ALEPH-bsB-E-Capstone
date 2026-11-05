@@ -80,18 +80,19 @@ def check_flow(browser, origin):
         expect(page.locator('.dns-accessible-flow ol li')).to_have_count(4)
         page.emulate_media(reduced_motion='no-preference')
 
-        # The explicit illustration and stored record survive presentation replay.
+        # The two distinct DNS observations survive presentation replay.
         open_slide('bypass', '.dns-evidence-dashboard')
         observation = page.locator('.server-dns-observation')
         expect(observation).to_be_visible()
         fixture = observation.get_by_role('button', name='block.test', exact=True)
         fixture.click()
-        expect(observation).to_have_attribute('data-evidence-state', 'illustration')
+        expect(observation).to_have_attribute('data-evidence-state', 'captured')
+        expect(observation).to_have_attribute('data-query-id', 'pi-dns-block-20261105')
         fixture_result = observation.locator('.dns-terminal-body').text_content()
         page.locator('#slide-area').press('r')
         page.wait_for_timeout(4400)
         expect(fixture).to_have_attribute('aria-pressed', 'true')
-        expect(observation).to_have_attribute('data-evidence-state', 'illustration')
+        expect(observation).to_have_attribute('data-evidence-state', 'captured')
         expect(observation.locator('.dns-terminal-body')).to_have_text(fixture_result)
         selected = observation.get_by_role('button', name='google.com', exact=True)
         selected.click()

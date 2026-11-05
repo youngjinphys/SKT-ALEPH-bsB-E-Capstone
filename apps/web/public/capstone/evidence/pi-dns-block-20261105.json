@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "scope": "user-provided Pi DNS endpoint, real network queries; independent device identity and active policy not verified",
+  "interpretation": "NXDOMAIN alone cannot establish that a BLOCK policy produced the response; google.com is a connectivity control",
+  "method": "Executed each dig against the user-specified internal IPv4 address. The exact target argument is replaced with ${PI_DNS} in the published command and no host identifier is recorded. stdout/stderr preserve output verbatim unless private_address_redactions is nonzero.",
+  "active_policy": "not verified; SSH public-key authentication was denied",
+  "started_at": "2026-11-04T23:53:51.346054+00:00",
+  "finished_at": "2026-11-04T23:53:51.609384+00:00",
+  "raw_private_capture_sha256": "c64d348b216d88ca4584a1b10ab86d3bb96af24fc0e499d61c2252a39b446d7c",
+  "dig": {
+    "path": "/usr/bin/dig",
+    "sha256": "656321d867f3b3f4ae4c274ebf9ee9b034e665c6c5ae2a72aad218683fb750d7",
+    "version": "DiG 9.20.24-1ubuntu0.5-Ubuntu"
+  },
+  "block_queries": [
+    {
+      "domain": "block.test",
+      "qtype": "A",
+      "transport": "UDP",
+      "started_at": "2026-11-04T23:53:51.346089+00:00",
+      "finished_at": "2026-11-04T23:53:51.409349+00:00",
+      "command": [
+        "dig",
+        "@${PI_DNS}",
+        "block.test",
+        "A",
+        "+time=2",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer"
+      ],
+      "exit_code": 0,
+      "rcode": "NXDOMAIN",
+      "answer_count": 0,
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 40377\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+      "stderr": "",
+      "error": null,
+      "private_address_redactions": 0
+    },
+    {
+      "domain": "block.test",
+      "qtype": "A",
+      "transport": "TCP",
+      "started_at": "2026-11-04T23:53:51.409374+00:00",
+      "finished_at": "2026-11-04T23:53:51.475150+00:00",
+      "command": [
+        "dig",
+        "@${PI_DNS}",
+        "block.test",
+        "A",
+        "+time=2",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer",
+        "+tcp"
+      ],
+      "exit_code": 0,
+      "rcode": "NXDOMAIN",
+      "answer_count": 0,
+      "stdout": ";; Got answer:\n;; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN, id: 29366\n;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 1, ADDITIONAL: 1\n\n;; OPT PSEUDOSECTION:\n; EDNS: version: 0, flags:; udp: 1232\n",
+      "stderr": "",
+      "error": null,
+      "private_address_redactions": 0
+    }
+  ],
+  "control_queries": [
+    {
+      "domain": "google.com",
+      "qtype": "A",
+      "transport": "UDP",
+      "started_at": "2026-11-04T23:53:51.475186+00:00",
+      "finished_at": "2026-11-04T23:53:51.541478+00:00",
+      "command": [
+        "dig",
+        "@${PI_DNS}",
+        "google.com",
+        "A",
+        "+time=2",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "answer_count": 6,
+      "error": null
+    },
+    {
+      "domain": "google.com",
+      "qtype": "A",
+      "transport": "TCP",
+      "started_at": "2026-11-04T23:53:51.541499+00:00",
+      "finished_at": "2026-11-04T23:53:51.609363+00:00",
+      "command": [
+        "dig",
+        "@${PI_DNS}",
+        "google.com",
+        "A",
+        "+time=2",
+        "+tries=1",
+        "+noall",
+        "+comments",
+        "+answer",
+        "+tcp"
+      ],
+      "exit_code": 0,
+      "rcode": "NOERROR",
+      "answer_count": 6,
+      "error": null
+    }
+  ]
+}

@@ -149,6 +149,7 @@
     47728,
     47749,
     47784,
+    47803,
     48120,
     48152,
     48156,
@@ -175,6 +176,7 @@
     50506,
     50520,
     50640,
+    50668,
     50689,
     50696,
     50741,
@@ -236,13 +238,13 @@
     {
       "weight": 400,
       "file": "aleph-dns-ui-400.woff",
-      "sha256": "254dac682c43da91751572aff0d20bf1546d39f2aec5c5aaf2b36c3ac8e8b6f6",
+      "sha256": "c778d7db6906cca8f44cdcca8d7ea8efb3426f74442128d655027784489fb116",
       "sourceCollectionSha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
     },
     {
       "weight": 700,
       "file": "aleph-dns-ui-700.woff",
-      "sha256": "08ba02417b17ab4ab6b26dca0c34e03ffb0126fdfbe67c59f2b960a77e4efcda",
+      "sha256": "55ba11b02d0474fd23fa92ea21693d3a1972dcef3f72e5860655b2e2489f6839",
       "sourceCollectionSha256": "faa5f3656a78b2e2d450d27fe8382c778bc2b6bb5ea29c986664a6a435056ceb"
     }
   ]

@@ -43,14 +43,14 @@ class PresentationLatencyTests(unittest.TestCase):
         slide=json.loads((WEB/'capstone/data/slides/13-precedents.json').read_text())
         self.assertNotIn('반례', json.dumps(slide,ensure_ascii=False))
         self.assertEqual(slide['reading']['rows'][2][1],'정책 승인·서명·집행·철회')
-        # Stored public evidence must remain separate from the Pi DNS illustration.
+        # The Pi result is an observed response; its policy cause remains unknown.
         bypass=json.loads((WEB/'capstone/data/slides/09-bypass.json').read_text())
         self.assertIn('공개 리졸버 1.1.1.1로 별도 질의',bypass['notes'])
         self.assertIn('기존 사설 DNS 실험과 별개',bypass['notes'])
-        self.assertIn('미실행 상태의 독립적인 설명 자료',bypass['notes'])
-        self.assertIn('실제 실험 기록은 별도로 보존',bypass['notes'])
-        self.assertIn('구성한 예상 응답 요약',bypass['notes'])
+        self.assertIn('사용자가 지정한 Pi DNS로 A 질의를 실제 실행',bypass['notes'])
+        self.assertIn('활성 정책은 인증에 실패해 확인하지 못했습니다',bypass['notes'])
+        self.assertIn('NXDOMAIN만으로 BLOCK 정책',bypass['notes'])
+        self.assertIn('pi-dns-block-20261105',bypass['sources'])
         self.assertNotIn('block-test-loopback-20261104',bypass['sources'])
-        self.assertNotIn('12개 질의가 기대 응답과 일치',bypass['notes'])
 
 if __name__ == '__main__':unittest.main()

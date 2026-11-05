@@ -51,33 +51,32 @@ test('stored terminal choices use native buttons without capturing arrow keys',(
 });
 
 
-test('the Pi DNS example is explicit and disconnected from captured experiments',()=>{
+test('the Pi DNS display reads the recorded response without attributing its cause',()=>{
  const source=fs.readFileSync(path.join(web,'src/components/ServerDnsObservation.tsx'),'utf8');
  const slide=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/slides/09-bypass.json'),'utf8'));
- assert.ok(source.includes('공개 DNS 별도 관측 · 1.1.1.1 · 명령 옵션 일부 생략'));
- assert.ok(source.includes('PI DNS · ILLUSTRATION'));
- const wrapper=fs.readFileSync(path.join(web,'src/components/EditorialVisual.tsx'),'utf8');
- assert.ok(wrapper.includes('className="diagram-panel dns-evidence-dashboard" aria-label="DNS 질의 기록과 예시"'));
- assert.ok(source.includes('예시 · 미실행'));
- assert.ok(source.includes('Pi DNS 차단 예시 · 미실행'));
- assert.ok(source.includes('data-command-display="illustration"'));
- assert.ok(source.includes('dig @${PI_DNS} block.test A'));
- assert.ok(source.includes('<Transcript text={exampleOutput}/>'));
- assert.ok(source.includes('publicDns?"captured":"illustration"'));
- assert.ok(source.includes('NXDOMAIN (expected)'));
- assert.doesNotMatch(source,/block-test-loopback|blockedQuery|block\.phases|ISOLATED LOOPBACK|CAPTURED|type Transport|type Route|setTransport|setRoute|onKeyDown/);
- const visible=JSON.stringify([slide.title,slide.subtitle,slide.points,slide.presentation,slide.reading,slide.visual]);
- assert.ok(visible.includes('미실행'));
- assert.doesNotMatch(visible,/\b(?:TCP|UDP)\b|격리 차단 검증|12개 질의/);
- assert.ok(!slide.sources.includes('block-test-loopback-20261104'));
+ const record=JSON.parse(fs.readFileSync(path.join(web,'public/capstone/evidence/pi-dns-block-20261105.json'),'utf8'));
+ const query=record.block_queries.find(q=>q.qtype==='A'&&q.transport==='UDP');
+ assert.ok(source.includes('pi-dns-block-20261105.json'));
+ assert.ok(source.includes('PI DNS · STORED RECORD'));
+ assert.ok(source.includes('data-command-display="recorded"'));
+ assert.ok(source.includes('{block.command.join(" ")}'));
+ assert.ok(source.includes('<Transcript text={block.stdout}/>'));
+ assert.ok(source.includes('data-evidence-state="captured"'));
+ assert.doesNotMatch(source,/exampleOutput|NXDOMAIN \(expected\)|ANSWER: 0 \(expected\)|NOT RUN/);
+ assert.ok(query);assert.equal(query.exit_code,0);assert.equal(query.rcode,'NXDOMAIN');
+ assert.equal(query.answer_count,0);assert.match(query.stdout,/status: NXDOMAIN/);assert.match(query.stdout,/ANSWER: 0/);
+ assert.match(record.active_policy,/not verified/);
+ assert.match(record.interpretation,/NXDOMAIN alone cannot establish/);
+ assert.ok(slide.sources.includes('pi-dns-block-20261105'));
+ assert.match(slide.notes,/정책.*확인하지 못/);
+ assert.match(slide.notes,/NXDOMAIN만으로 BLOCK 정책/);
  const manuscript=fs.readFileSync(path.join(web,'docs/presentation/final-20min-scenario.md'),'utf8');
  const schedule=manuscript.split('\n').find(line=>line.startsWith('| 09 |'));
- assert.ok(schedule.includes('Pi DNS 미실행 예시'));
  assert.ok(schedule.includes(slide.title.replace('\n',' ')));
- assert.doesNotMatch(manuscript,/block\.test[^\n]*격리 차단 실험/);
- assert.doesNotMatch(manuscript,/07:37 UTC|12개 질의가 기대 응답과 일치/);
+ assert.ok(manuscript.includes(slide.notes));
  const registry=JSON.parse(fs.readFileSync(path.join(web,'capstone/data/sources.json'),'utf8'));
- assert.ok(registry['block-test-loopback-20261104']); // Historical evidence remains intact.
+ assert.ok(registry['pi-dns-block-20261105']);
+ assert.ok(registry['block-test-loopback-20261104']); // Historical fixture remains separately available.
 });
 
 test('Google answer display preserves the separate stored public IPv4 record',()=>{

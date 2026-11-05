@@ -298,5 +298,10 @@
     "label": "2026.11.04 · block.test 격리 DNS 실험",
     "url": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/9040affdaa823b7f3a999a65de71738b990d5b15/apps/web/public/capstone/evidence/block-test-loopback-20261104.json",
     "note": "통제 upstream과 로컬 보호 DNS에서 A·AAAA, UDP·TCP의 적용 전·차단·철회를 비교했습니다. 운영 DNS 적용 증거가 아닙니다."
+  },
+  "pi-dns-block-20261105": {
+    "label": "2026.11.05 · Pi DNS block.test 실제 질의",
+    "url": "https://skt-aleph-capstone.vercel.app/capstone/evidence/pi-dns-block-20261105.json",
+    "note": "사용자 지정 Pi DNS의 UDP·TCP 실제 A 질의. 내부 주소는 비공개이며 활성 정책과 NXDOMAIN 원인은 확인하지 못했습니다."
   }
 }

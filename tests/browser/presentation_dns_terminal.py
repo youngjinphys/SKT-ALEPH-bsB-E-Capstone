@@ -7,6 +7,8 @@ from presentation_controls import _assert_readable
 
 ROOT = Path(__file__).resolve().parents[2]
 CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/google-dns-observation.json').read_text())
+PI_CAPTURE = json.loads((ROOT/'apps/web/public/capstone/evidence/pi-dns-block-20261105.json').read_text())
+PI_QUERY = PI_CAPTURE['block_queries'][0]
 OUT = Path('/tmp/aleph-build-artifacts/dns-terminal')
 
 
@@ -118,12 +120,13 @@ def check_dns_terminal(browser, origin):
             for domain in ('google.com','block.test'):
                 choices.get_by_role('button',name=domain,exact=True).click()
                 text=root.inner_text()
-                for removed in ('example.com','기본 DNS','SERVER:','+time','+tries','+tcp'):
-                    assert removed not in text,(width,height,domain,removed)
-                assert not re.search(r'\b(?:TCP|UDP)\b',text,re.IGNORECASE),(width,height,domain,'transport detail visible')
+                if domain=='google.com':
+                    for removed in ('example.com','기본 DNS','SERVER:','+time','+tries','+tcp'):
+                        assert removed not in text,(width,height,domain,removed)
+                    assert not re.search(r'\b(?:TCP|UDP)\b',text,re.IGNORECASE),(width,height,domain,'transport detail visible')
                 assert '\ufffd' not in text
-                expected_code='NOERROR' if domain=='google.com' else 'NXDOMAIN'
-                expected_count=f"ANSWER: {google['answerCount']}" if domain=='google.com' else 'ANSWER: 0'
+                expected_code='NOERROR' if domain=='google.com' else PI_QUERY['rcode']
+                expected_count=f"ANSWER: {google['answerCount']}" if domain=='google.com' else f"ANSWER: {PI_QUERY['answer_count']}"
                 tone='success' if domain=='google.com' else 'negative'
                 results=root.locator('.dns-terminal-output .dns-terminal-result')
                 expect(results).to_have_text([expected_code,expected_count])
@@ -147,23 +150,20 @@ def check_dns_terminal(browser, origin):
                     for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 else:
-                    expect(root).to_have_attribute('data-evidence-state','illustration')
-                    expect(root).to_have_attribute('data-query-id','block-test-illustration')
-                    expect(root.locator('.dns-example-badge')).to_have_text('예시 · 미실행')
-                    expect(root.locator('.server-dns-heading h3')).to_have_text('Pi DNS 차단 흐름 예시')
-                    expect(root.locator('time,a')).to_have_count(0)
-                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','illustration')
-                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig @${PI_DNS} block.test A')
-                    assert root.locator('.dns-terminal-output code').text_content()=='QUERY    block.test A\nPOLICY   BLOCK (example)\nRESULT   NXDOMAIN (expected)\nANSWER: 0 (expected)'
-                    expect(root.locator('.dns-terminal-excerpt')).to_have_text('Pi DNS 차단 예시 · 미실행')
-                    expect(root.locator('.dns-terminal-titlebar')).to_contain_text('NOT RUN')
-                    expect(root.locator('.dns-terminal-status')).to_contain_text('예상 응답')
-                    expect(root.locator('.dns-terminal-status')).to_contain_text('설명용 출력')
-                    for absent in ('exit 0','msec','07:37','12/12','실험 기록 ↗',';;'):
+                    expect(root).to_have_attribute('data-evidence-state','captured')
+                    expect(root).to_have_attribute('data-query-id','pi-dns-block-20261105')
+                    expect(root.locator('.server-dns-heading h3')).to_have_text('Pi DNS 질의 기록')
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','recorded')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text(' '.join(PI_QUERY['command']))
+                    assert root.locator('.dns-terminal-output code').text_content()==PI_QUERY['stdout']
+                    expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',PI_QUERY['started_at'])
+                    link=root.get_by_role('link',name='기록 ↗',exact=True)
+                    expect(link).to_have_attribute('href','/capstone/evidence/pi-dns-block-20261105.json')
+                    for absent in ('NXDOMAIN (expected)','ANSWER: 0 (expected)','NOT RUN','예시 · 미실행'):
                         assert absent not in text,(width,height,absent)
                     _assert_terminal_visibility(page)
-                    _check_natural_reachability(page,f'{width}x{height}-illustration','.dns-terminal-status','.server-dns-selectors button:last-child')
-                    for selector in ('.dns-example-badge','.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
+                    _check_natural_reachability(page,f'{width}x{height}-pi-record')
+                    for selector in ('.dns-terminal-command','.dns-terminal-output','.dns-terminal-status'):
                         _assert_readable(root.locator(selector),(width,height,domain,selector))
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.screenshot(path=str(OUT/f'terminal-{domain}-{width}x{height}.png'),full_page=True)
@@ -220,4 +220,4 @@ def check_dns_terminal(browser, origin):
                 _check_natural_reachability(page,'1366x768-text-size-200percent')
             assert not errors,errors
         finally:context.close()
-    print(f'DNS terminal: {total} captured/illustration states, 20 domain-to-arrow cases, stored excerpts and unexecuted example, fonts, glass, wheel/Tab and text stress verified')
+    print(f'DNS terminal: {total} two-record states, 20 domain-to-arrow cases, stored public and Pi DNS transcripts, fonts, glass, wheel/Tab and text stress verified')

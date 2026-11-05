@@ -1,8 +1,8 @@
 {
   "id": "bypass",
   "chapter": "03 · 검증",
-  "title": "확인한 DNS 응답과\n차단 흐름 예시를 구분합니다",
-  "subtitle": "google.com 저장 기록 · block.test Pi DNS 미실행 예시",
+  "title": "DNS 질의 응답을\n직접 확인했습니다",
+  "subtitle": "google.com 공개 DNS 기록 · block.test Pi DNS 기록",
   "seconds": 150,
   "kind": "limits",
   "status": "evidence-snapshot",
@@ -12,54 +12,55 @@
       "body": "공개 DNS 1.1.1.1 별도 질의 · NOERROR · A 주소 6개"
     },
     {
-      "title": "block.test 차단 흐름 예시",
-      "body": "Pi DNS에 BLOCK 규칙이 있다고 가정 · 예상 응답 NXDOMAIN"
+      "title": "block.test 실제 응답",
+      "body": "사용자가 지정한 Pi DNS · A 질의 UDP·TCP 모두 NXDOMAIN"
     },
     {
-      "title": "명령과 응답 요약",
-      "body": "미실행 예시 · 명령과 예상 응답을 독립적으로 설명"
+      "title": "명령과 응답 원문",
+      "body": "실제 질의 명령과 응답을 기록 · 내부 주소는 가림"
     },
     {
       "title": "판정 경계",
-      "body": "google.com은 저장 관측 · block.test는 설명용 예시"
+      "body": "NXDOMAIN의 정책 차단 원인은 확인하지 못함"
     }
   ],
-  "notes": "[화면] google.com의 저장된 공개 DNS 응답과 block.test의 Pi DNS 미실행 예시를 구분합니다.\n\n[발표] google.com 화면은 2026-11-04 07:23:23 UTC에 공개 리졸버 1.1.1.1로 별도 질의한 실제 응답입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 이 기록은 기존 사설 DNS 실험과 별개이며 공개 리졸버가 반환한 주소를 보여 줍니다. 주소는 시점과 리졸버에 따라 바뀔 수 있습니다.\n\nblock.test는 Pi DNS에 BLOCK 규칙이 있다고 가정한 명령과 차단 흐름의 설명용 예시입니다. 명령의 ${PI_DNS}는 사용자가 지정하는 DNS 주소 자리입니다. 화면의 QUERY, POLICY, RESULT, ANSWER는 이해를 돕기 위해 구성한 예상 응답 요약입니다. 이 예시는 미실행 상태의 독립적인 설명 자료입니다. 실제 실험 기록은 별도로 보존합니다.\n\n예상 NXDOMAIN과 주소 0개는 BLOCK 규칙이 적용됐다고 가정한 결과를 설명합니다. 운영 Pi의 실제 정책 적용과 차단 성능은 별도 검증 대상입니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
+  "notes": "[화면] google.com의 공개 DNS 저장 기록과 사용자가 지정한 Pi DNS의 block.test 실제 질의 기록을 구분합니다.\n\n[발표] google.com 화면은 2026-11-04 07:23:23 UTC에 공개 리졸버 1.1.1.1로 별도 질의한 실제 응답입니다. NOERROR와 A 주소 여섯 개를 반환했습니다. 이 기록은 기존 사설 DNS 실험과 별개이며 공개 리졸버가 반환한 주소를 보여 줍니다. 주소는 시점과 리졸버에 따라 바뀔 수 있습니다.\n\nblock.test는 2026-11-04 23:53:51 UTC에 사용자가 지정한 Pi DNS로 A 질의를 실제 실행했습니다. UDP와 TCP에서 모두 NXDOMAIN, ANSWER 0이 반환됐습니다. 같은 DNS에 google.com A를 대조 질의했을 때는 UDP와 TCP 모두 NOERROR, ANSWER 6이었습니다. 화면에는 UDP 질의의 실제 명령과 응답 원문을 표시하며, 내부 주소만 ${PI_DNS}로 가렸습니다.\n\n서버의 활성 정책은 인증에 실패해 확인하지 못했습니다. NXDOMAIN만으로 BLOCK 정책이 이 응답을 만들었다고 단정할 수 없으며 차단 성공률도 알 수 없습니다.\n\n[전환] 다음에는 실제 Pi DNS 전달 경로의 응답 지연을 살펴봅니다.",
   "sources": [
     "dns-query-20261104",
     "review-current",
     "dns-runtime-current",
     "validation",
-    "dns-google-public-20261104"
+    "dns-google-public-20261104",
+    "pi-dns-block-20261105"
   ],
   "mood": "concerned",
   "presentation": {
-    "title": "확인한 DNS 응답과\n차단 흐름 예시를 구분합니다",
-    "subtitle": "google.com 저장 기록 · block.test Pi DNS 미실행 예시",
-    "cue": "저장 관측과 미실행 예시를 구분합니다.",
-    "reviewNote": "google.com은 공개 DNS 저장 기록이며 block.test는 미실행 설명용 예시입니다.",
+    "title": "DNS 질의 응답을\n직접 확인했습니다",
+    "subtitle": "google.com 공개 DNS 기록 · block.test Pi DNS 기록",
+    "cue": "공개 DNS와 Pi DNS에서 각각 기록한 실제 응답을 확인합니다.",
+    "reviewNote": "block.test는 Pi DNS 실측 응답이며 정책 적용 원인은 미확인입니다.",
     "points": [
       {
         "title": "google.com 정상 반환",
         "body": "공개 DNS 1.1.1.1 별도 질의 · NOERROR · A 주소 6개"
       },
       {
-        "title": "block.test 차단 흐름 예시",
-        "body": "Pi DNS에 BLOCK 규칙이 있다고 가정 · 예상 응답 NXDOMAIN"
+        "title": "block.test 실제 응답",
+        "body": "사용자가 지정한 Pi DNS · A 질의 UDP·TCP 모두 NXDOMAIN"
       },
       {
-        "title": "명령과 응답 요약",
-        "body": "미실행 예시 · 명령과 예상 응답을 독립적으로 설명"
+        "title": "명령과 응답 원문",
+        "body": "실제 질의 명령과 응답을 기록 · 내부 주소는 가림"
       },
       {
         "title": "판정 경계",
-        "body": "google.com은 저장 관측 · block.test는 설명용 예시"
+        "body": "NXDOMAIN의 정책 차단 원인은 확인하지 못함"
       }
     ],
-    "compactTitle": "DNS 관측과 차단 예시"
+    "compactTitle": "DNS 질의 응답 기록"
   },
   "reading": {
-    "title": "DNS 관측과 차단 예시",
+    "title": "DNS 질의 응답 기록",
     "columns": [
       "질의 이름",
       "관측 결과",
@@ -69,35 +70,35 @@
       [
         "google.com",
         "공개 DNS 1.1.1.1 별도 질의: NOERROR · 주소 6개",
-        "2026-11-04 07:23:23 UTC 관측 · 사설 DNS와 별개"
+        "2026-11-04 07:23:23 UTC 관측"
       ],
       [
         "block.test",
-        "Pi DNS의 BLOCK 규칙을 가정한 예상 NXDOMAIN",
-        "설명용 예시 · 미실행"
+        "Pi DNS A 질의: UDP·TCP NXDOMAIN · 응답 주소 0개",
+        "2026-11-04 23:53:51 UTC 관측"
       ],
       [
-        "명령과 응답 요약",
-        "${PI_DNS} 주소 자리 · QUERY / POLICY / RESULT",
-        "설명용 명령과 예상 응답 요약"
+        "명령과 응답",
+        "실제 dig 명령과 응답 원문",
+        "내부 주소는 ${PI_DNS}로 가림"
       ],
       [
         "차단 판정",
-        "예상 응답은 BLOCK 규칙의 동작 설명",
-        "운영 Pi 정책 적용 여부는 별도 검증 대상"
+        "NXDOMAIN의 원인과 활성 정책은 미확인",
+        "정책 차단 성공이나 탐지율로 단정하지 않음"
       ]
     ],
-    "takeaway": "google.com은 저장된 관측, block.test는 Pi DNS 동작 설명용 미실행 예시입니다.",
+    "takeaway": "Pi DNS는 block.test에 NXDOMAIN으로 응답했으며, 정책 적용 원인은 확인하지 못했습니다.",
     "source": "https://github.com/youngjinphys/SKT-ALEPH-bsB-E-Capstone/blob/bf7d1d613b2bd5824454fe9d3695711e7b13eb11/apps/web/public/capstone/evidence/google-dns-observation.json",
     "sourceLabel": "2026.11.04 공개 DNS 질의 기록 ↗"
   },
   "headline": {
-    "focus": "저장 관측과 미실행 예시",
+    "focus": "실제 DNS 응답 기록",
     "tone": "info"
   },
   "visual": {
     "type": "cname-chain",
-    "title": "DNS 관측과 차단 예시",
+    "title": "DNS 질의 응답 기록",
     "sourceKey": "dns-google-public-20261104",
     "nodes": [
       {
@@ -111,15 +112,15 @@
         "state": "A"
       },
       {
-        "label": "미실행 예시",
+        "label": "Pi DNS 실제 질의",
         "value": "block.test",
-        "state": "예상 NXDOMAIN"
+        "state": "NXDOMAIN"
       }
     ],
     "links": [
       "주소 반환",
-      "차단 흐름 예시"
+      "실제 응답"
     ],
-    "caveat": "google.com은 저장된 관측, block.test는 Pi DNS 동작 설명용 미실행 예시입니다."
+    "caveat": "공개 DNS와 Pi DNS의 별도 관측 · NXDOMAIN의 정책 원인은 미확인"
   }
 }
