@@ -62,6 +62,21 @@ CSS=r'''
 '''
 JS=r'''
 let manualData=null;
+let manualInputVersion=0;
+for(const id of ['manual-domain','manual-expires','manual-reviewer','manual-reason','manual-ack']){
+  $(id).addEventListener('input',()=>{manualInputVersion++;});
+  $(id).addEventListener('change',()=>{manualInputVersion++;});
+}
+// Bind the complete preview/confirmation/write sequence to the displayed
+// session, view and form snapshot, not merely each individual HTTP request.
+function manualOperation(trackInput=false){
+  const epoch=sessionEpoch,view=viewEpoch,credential=token,revision=manualData?.revision,input=manualInputVersion;
+  return (completed=false)=>{
+    if(!credential||credential!==token||epoch!==sessionEpoch||view!==viewEpoch||
+       currentView!=='drafts'||(!completed&&(manualData?.revision!==revision||(trackInput&&input!==manualInputVersion))))
+      throw staleRequest();
+  };
+}
 function manualDefaultDate(){
   if($('manual-expires').value)return;
   const d=new Date(Date.now()+4*3600000);
@@ -87,13 +102,16 @@ function renderManual(){
 }
 async function removeManual(item){
   if(!manualData||!token)return;
+  const current=manualOperation();
   const rev=manualData.revision;
   if(!await confirmOperation({title:'FQDN 등록 해제',
        description:'등록 기록만 해제합니다. 기존에 서명·게시한 정책이나 DNS는 즉시 변경되지 않습니다.',
        phrase:'REMOVE_MANUAL_BLOCK',facts:[['FQDN',item.domain],['차단 범위','SUBTREE']],
        action:'수동 등록 해제'}))return;
+  current();
   const result=await api('/api/manual/remove',{
     domain:item.domain,expected_revision:rev,confirm:'REMOVE_MANUAL_BLOCK'});
+  current(true);
   toast(result.domain+' 수동 등록을 해제했습니다. 게시된 DNS 정책은 그대로입니다.');
   if(token&&currentView==='drafts')await loadDrafts();
 }
@@ -101,6 +119,8 @@ bindAsyncForm('manual-form',async e=>{
   e.preventDefault();
   try{
     if(!manualData)throw Error('수동 FQDN 목록을 먼저 조회하세요.');
+    const current=manualOperation(true);
+    const inputVersion=manualInputVersion;
     const value=$('manual-expires').value,when=new Date(value);
     if(!value||!Number.isFinite(when.getTime()))throw Error('규칙 만료 시각이 필요합니다.');
     const request={
@@ -112,15 +132,18 @@ bindAsyncForm('manual-form',async e=>{
       expected_revision:manualData.revision
     };
     const preview=await api('/api/manual/preview',request);
+    current();
     if(!await confirmOperation({title:'수동 FQDN 차단 승인',
       description:'등록은 별도 서명 전 목록에만 반영됩니다. DNS를 변경하려면 새 정책을 서명·게시해야 합니다.',
       phrase:'UPSERT_MANUAL_SUBTREE',
       facts:[['FQDN',preview.domain],['영향 범위','SUBTREE · 하위 도메인 포함'],
              ['만료',fmt(preview.expires_at)],['근거',preview.reason]],
       action:'FQDN 저장'}))return;
+    current();
     const result=await api('/api/manual/save',{...request,confirm:'UPSERT_MANUAL_SUBTREE'});
+    current(true);
     toast(result.domain+' 수동 FQDN을 등록했습니다. 미서명 초안을 생성하세요.');
-    $('manual-form').reset();manualDefaultDate();
+    if(inputVersion===manualInputVersion){$('manual-form').reset();manualDefaultDate();}
     if(token&&currentView==='drafts')await loadDrafts();
   }catch(error){displayError(error);}
 });

@@ -53,7 +53,7 @@ body[data-active-view]:not([data-active-view="overview"]) .hero-trust{display:no
 .confirmation-facts{display:grid;grid-template-columns:minmax(90px,.7fr) minmax(0,1.5fr);gap:10px 15px;padding:16px 0;border-block:1px solid var(--ops-line);margin:20px 0;font-size:12px}
 .confirmation-facts dt{color:#96b1c6}.confirmation-facts dd{margin:0;overflow-wrap:anywhere;line-height:1.6}.confirmation-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:23px}
 .ops-confirm label{font-size:12px;line-height:1.8}.ops-confirm code{color:#91e6e5;font-size:12px}.ops-confirm input{font-size:14px!important;min-height:45px}
-button[aria-busy="true"]{cursor:progress;opacity:.68}.button:disabled{transform:none!important}.form-status{font-size:12px;color:#b3cbd9;line-height:1.7}
+button[aria-busy="true"]{cursor:progress;opacity:.68}button[aria-busy="true"]::after{content:" · 처리 중";font-size:.85em}.button:disabled{transform:none!important}.form-status{font-size:12px;color:#b3cbd9;line-height:1.7}
 @media(max-width:1000px){.review-editor{position:static}.runtime-boundary{display:none}}
 /* Keep controls and observed data above decoration, especially on narrow displays. */
 .surface{box-shadow:0 7px 24px rgba(0,8,19,.12)}
@@ -169,9 +169,14 @@ function bindAsyncForm(id,handler) {
     event.preventDefault();
     if(form.dataset.busy==='true')return;
     const buttons=[...form.querySelectorAll('button[type="submit"]')];
-    const disabled=buttons.map(x=>x.disabled);
-    form.dataset.busy='true';buttons.forEach(x=>{x.disabled=true;x.setAttribute('aria-busy','true');});
-    try{await handler(event);}finally{delete form.dataset.busy;buttons.forEach((x,i)=>{x.disabled=disabled[i];x.removeAttribute('aria-busy');});}
+    // Guard duplicate submissions without taking ownership of disabled: the
+    // handler may refresh validation and change that state while it is busy.
+    const ariaDisabled=buttons.map(x=>x.getAttribute('aria-disabled'));
+    form.dataset.busy='true';buttons.forEach(x=>{x.setAttribute('aria-busy','true');x.setAttribute('aria-disabled','true');});
+    try{await handler(event);}finally{delete form.dataset.busy;buttons.forEach((x,i)=>{
+      x.removeAttribute('aria-busy');
+      if(ariaDisabled[i]===null)x.removeAttribute('aria-disabled');else x.setAttribute('aria-disabled',ariaDisabled[i]);
+    });}
   });
 }
 async function loadCapabilities() {

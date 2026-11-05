@@ -79,7 +79,11 @@ async function api(path, data) {
   const headers={"Authorization":"Bearer "+activeToken};
   if (data !== undefined) headers["Content-Type"]="application/json";
   let response;
-  const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),20000);
+  // Provider refresh performs two serial network calls and durable commits.
+  // A timeout or broken response cannot prove whether the server committed it.
+  const providerRefresh=data!==undefined && path.endsWith("/intel/refresh");
+  const uncertainRefresh=()=>Object.assign(Error("위협정보 검증 요청 결과를 확인할 수 없습니다. 중복 요청 전에 상태를 다시 조회하세요."),{outcomeUnknown:true});
+  const controller=new AbortController(),deadline=setTimeout(()=>controller.abort(),providerRefresh?70000:20000);
   try {
     try {
     response=await fetch(path,{
@@ -93,7 +97,7 @@ async function api(path, data) {
     });
   } catch (_) {
     if(!stillCurrent()) throw staleRequest();
-    throw Error("콘솔 서버에 연결할 수 없습니다.");
+    throw providerRefresh?uncertainRefresh():Error("콘솔 서버에 연결할 수 없습니다.");
   }
   if(!stillCurrent()) throw staleRequest();
   // Authorization loss must clear protected observations even if the error body
@@ -104,10 +108,11 @@ async function api(path, data) {
     error.status=response.status;
     throw error;
   }
+  if(providerRefresh && response.status>=500) throw uncertainRefresh();
   let body;
   try {body=await response.json();} catch (_){
     if(!stillCurrent()) throw staleRequest();
-    throw Error("서버 응답 형식이 올바르지 않습니다.");
+    throw providerRefresh?uncertainRefresh():Error("서버 응답 형식이 올바르지 않습니다.");
   }
   if(!stillCurrent()) throw staleRequest();
   if(!response.ok){const error=Error(body.error||"요청이 거부되었습니다.");error.status=response.status;throw error;}
@@ -853,7 +858,8 @@ document.querySelectorAll("[data-go]").forEach((el)=>el.addEventListener("click"
 $("intel-status-reload").addEventListener("click",()=>loadIntelStatus().catch(displayError));
 bindAsyncForm("intel-refresh-form",async(event)=>{
   event.preventDefault();
-  const button=$("intel-refresh");
+  const button=$("intel-refresh"),session=sessionEpoch;
+  let unknown=null;
   button.disabled=true;
   try {
     const result=await api("/api/intel/refresh",{
@@ -866,8 +872,13 @@ bindAsyncForm("intel-refresh-form",async(event)=>{
     else if(result.state==="RUNNING")toast("수집기가 이미 검증을 진행하고 있습니다.");
     else toast("요청 간격 제한 중입니다. "+Math.ceil((result.retry_after_seconds||0)/60)+"분 뒤 다시 요청하세요.",true);
     await loadIntelStatus();
-  }catch(error){displayError(error);}
-  finally{if(token && currentView==="reviews")loadIntelStatus().catch(displayError);}
+  }catch(error){if(error.outcomeUnknown)unknown=error.message;displayError(error);}
+  finally{
+    if(token && session===sessionEpoch && currentView==="reviews")
+      loadIntelStatus().then(()=>{
+        if(unknown && token && session===sessionEpoch && currentView==="reviews")showText("intel-note",unknown);
+      }).catch(displayError);
+  }
 });
 $("intel-import").addEventListener("click",async()=>{
   const latest=intelLatest, revision=intelReviewRevision, context=intelContextRevision;
