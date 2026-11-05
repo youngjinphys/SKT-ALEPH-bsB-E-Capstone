@@ -10,6 +10,21 @@ DATA = WEB / 'capstone/data'
 # NXDOMAIN, unsupported features, uncertain results or security warnings.
 CONTRAST = re.compile(r'아닙니다|아니라|뜻하지(?:는)?\s*않|의미하지(?:는)?\s*않|입증하지(?:는)?\s*않')
 
+# These exact sentences state evidence and TLS limits, rather than an editorial
+# contrast. Keep the exemption narrow and separately require each disclosure.
+SCOPE_DISCLOSURES = (
+    '선례는 운영 가능성을 보여 주지만 저희 제안이 이미 배포됐다는 뜻은 아닙니다.',
+    'HTTPS에서 원래 호스트의 인증서 검증을 우회해 안내할 수 있다는 의미도 아닙니다.',
+    'warning.or.kr은 차단 안내 선례이며, 임의 HTTPS 리다이렉트 또는 ISP 참여의 증거가 아닙니다.',
+    'ISP 참여나 HTTPS 안내 구현의 증거는 아닙니다.',
+)
+
+
+def editorial_contrast(text):
+    for disclosure in SCOPE_DISCLOSURES:
+        text = text.replace(disclosure, '')
+    return CONTRAST.search(text)
+
 
 def read_json(path):
     return json.loads(path.read_text())
@@ -19,12 +34,12 @@ class PresentationDirectCopyTests(unittest.TestCase):
     def test_all_authored_slides_and_script_use_direct_descriptions(self):
         for path in sorted((DATA / 'slides').glob('*.json')):
             with self.subTest(path=path.name):
-                self.assertIsNone(CONTRAST.search(path.read_text()))
+                self.assertIsNone(editorial_contrast(path.read_text()))
         for name in ('diagrams.json', 'dns-latency.json', 'landing.json'):
             with self.subTest(data=name):
-                self.assertIsNone(CONTRAST.search((DATA / name).read_text()))
+                self.assertIsNone(editorial_contrast((DATA / name).read_text()))
         script = (WEB / 'docs/presentation/final-20min-scenario.md').read_text()
-        self.assertIsNone(CONTRAST.search(script))
+        self.assertIsNone(editorial_contrast(script))
 
     def test_visible_source_notes_use_direct_descriptions(self):
         sequence = read_json(DATA / 'sequence.json')
@@ -36,7 +51,20 @@ class PresentationDirectCopyTests(unittest.TestCase):
                 continue
             for key in slide.get('sources', []):
                 with self.subTest(slide=slide['id'], source=key):
-                    self.assertIsNone(CONTRAST.search(sources[key].get('note', '')))
+                    self.assertIsNone(editorial_contrast(sources[key].get('note', '')))
+
+    def test_scope_disclosures_are_preserved_without_allowing_other_contrast(self):
+        slide = read_json(DATA / 'slides/12-topology-public.json')
+        scenario = (WEB / 'docs/presentation/final-20min-scenario.md').read_text()
+        source = read_json(DATA / 'sources.json')['warning-page']['note']
+        for disclosure in SCOPE_DISCLOSURES[:2]:
+            self.assertIn(disclosure, slide['notes'])
+            self.assertIn(disclosure, scenario)
+        self.assertIn(SCOPE_DISCLOSURES[2], slide['presentation']['reviewNote'])
+        self.assertIn(SCOPE_DISCLOSURES[3], source)
+        self.assertIsNone(editorial_contrast(' '.join(SCOPE_DISCLOSURES)))
+        self.assertIsNotNone(editorial_contrast('이것은 A가 아니라 B입니다.'))
+        self.assertIsNotNone(editorial_contrast('이것은 단순한 설명이 아닙니다.'))
 
     def test_measurement_scope_and_statistical_limits_remain_explicit(self):
         friction = read_json(DATA / 'slides/01-friction.json')

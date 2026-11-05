@@ -9,6 +9,7 @@ from .security import require_operator,same_origin
 from .operations import trust_key,preview_trust,import_evidence,preview_evidence,publish
 from .assets import assets
 from .enrollment import preview_enrollment,enroll
+from .handoff import make_handoff
 from policy_server import intel
 from . import intel_refresh
 from policy_server.console import ConsoleConflict,_audit
@@ -146,6 +147,10 @@ async def control(path:str,request:Request):
             if selected:return work.service.deployment(include_rules=True,device=selected[1])
             if path=='intel':return intel_refresh.status(work)
             if path=='cloud/trust':return {name:[x.stem for x in sorted((work.root/name).glob('*.pem'))] for name in ('policy-trust','node-trust')}
+            handoff=re.fullmatch(r'drafts/(policy-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{12}\.json)/handoff/([A-Za-z0-9][A-Za-z0-9_.-]{0,63})',path)
+            if handoff:
+                if request.url.query:raise HTTPException(400,'Unexpected query')
+                return make_handoff(work,*handoff.groups())
             match=re.fullmatch(r'drafts/(policy-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{12}\.json)/(download|impact)',path)
             if match:
                 name,action=match.groups()

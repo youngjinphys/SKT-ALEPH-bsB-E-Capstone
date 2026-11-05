@@ -6,6 +6,7 @@ from policy_server.console_assets import HTML,CSS,JS
 from .diagnostics import HTML as STORAGE_HTML,CSS as STORAGE_CSS,JS as STORAGE_JS
 from .onboarding import HTML as ENROLL_HTML,CSS as ENROLL_CSS,JS as ENROLL_JS
 from .tutorial import HTML as GUIDE_HTML,CSS as GUIDE_CSS,JS as GUIDE_JS
+from .release_ui import HTML as RELEASE_HTML,CSS as RELEASE_CSS,JS as RELEASE_JS
 
 def replace_once(text,old,new):
     if text.count(old)!=1:raise RuntimeError('Console integration anchor changed')
@@ -28,6 +29,7 @@ def assets(surface=""):
     controls='''<details class="surface cloud-tools" id="cloud-publication-tools"><summary>서명 정책 게시 · 공개키 신뢰 관리</summary><div class="overline">CLOUD TRUST & SIGNED PUBLICATION</div><h2>신뢰 공개키와 서명된 정책</h2><p class="muted-copy">정책 개인키는 업로드하지 마세요. 기존 서명 도구에서 생성한 서명 봉투만 게시할 수 있습니다. 게시 완료와 DNS 적용 완료는 별개입니다.</p><div class="dashboard-grid two-equal"><form id="cloud-key-form"><label for="cloud-key-role">공개키 용도</label><select id="cloud-key-role"><option value="node">DNS 상태 보고 장치</option><option value="policy">독립 정책 서명자</option></select><label for="cloud-key">Ed25519 공개키 PEM</label><textarea id="cloud-key" rows="4" maxlength="4096" placeholder="-----BEGIN PUBLIC KEY-----" required></textarea><label class="check-row"><input id="cloud-key-confirm" type="checkbox" required><span>별도 채널로 공개키 지문과 소유자를 확인했습니다.</span></label><button type="submit" class="button outline">공개키 지문 확인</button><p id="cloud-key-result" class="fine-print" role="status"></p></form><form id="cloud-publish-form"><label for="cloud-publish-device">배포 대상 장치 ID</label><input id="cloud-publish-device" value="edge-69" required><label for="cloud-publish-sequence">현재 게시 시퀀스 (최초는 0)</label><input id="cloud-publish-sequence" type="number" min="0" step="1" value="0" required><label for="cloud-policy">독립 서명자가 서명한 정책 봉투 JSON</label><input id="cloud-policy" type="file" accept=".json,application/json" required><label class="check-row"><input id="cloud-withdrawals" type="checkbox"><span>기존 차단 철회 또는 만료 단축 영향을 확인했습니다.</span></label><label class="check-row"><input id="cloud-rotation" type="checkbox"><span>정책 서명키 변경을 확인했습니다.</span></label><button type="submit" class="button primary">서명·변경 영향 미리보기</button></form></div><div id="cloud-publish-preview" class="cloud-preview" hidden aria-live="polite"><h4>게시 전 변경 영향</h4><div id="cloud-publish-summary"></div><button type="button" class="button primary" id="cloud-publish-commit">확인 후 서명 정책 게시</button></div></details>'''
     html=replace_once(html,'<div class="surface published-list-surface">',ENROLL_HTML+controls+'<div class="surface published-list-surface">')
     html=replace_once(html,'<section class="view" data-panel="audit" hidden>','<section class="view" data-panel="audit" hidden>'+STORAGE_HTML)
+    html=replace_once(html,'<section id="draft-impact"',RELEASE_HTML+'<section id="draft-impact"')
     pin_form = '<form id="cloud-pin-form" hidden><h3>테스트 PIN 로그인</h3><p>공유 PIN은 개인 신원을 확인하지 않습니다. 15분 후 다시 로그인해야 합니다.</p><label for="cloud-pin">PIN (8~12자리)</label><input id="cloud-pin" type="password" inputmode="numeric" pattern="[0-9]{8,12}" minlength="8" maxlength="12" autocomplete="off" required><div id="cloud-extra-row" hidden><label for="cloud-access-code">추가 접근 코드</label><input id="cloud-access-code" type="password" maxlength="128" autocomplete="off"></div><button id="cloud-pin-submit" class="button primary wide" type="submit">테스트 PIN으로 로그인</button><p id="cloud-pin-message" role="status" aria-live="polite"></p></form>'
     html = html.replace('<details class="cloud-login-help">', pin_form + '<details class="cloud-login-help">') if '<details class="cloud-login-help">' in html else html.replace('<a href="/" class="text-button cloud-home">', pin_form + '<a href="/" class="text-button cloud-home">')
     script=JS.replace('/api/','/api/ops/').replace('credentials:"omit"','credentials:"same-origin"')
@@ -41,6 +43,10 @@ def assets(surface=""):
     script=replace_once(script,'  refreshView(name).catch(displayError);',
                         '  document.dispatchEvent(new CustomEvent("ops:view",{detail:{view:name}}));\n  refreshView(name).catch(displayError);')
     script=replace_once(script,'node("strong","",item.event),','node("strong","",auditEventLabel(item.event)),')
+    script=replace_once(script,'  const items=drafts.value,reviewed=reviewResult.value;',
+                        '  const items=drafts.value,reviewed=reviewResult.value;\n  cloudDraftOptions(items);')
+    script=replace_once(script,'    actions.append(preview);',
+                        '    actions.append(preview);\n    const handoff=node("button","text-button","장치별 배포 준비 →");handoff.type="button";handoff.addEventListener("click",()=>openCloudHandoff(item.name));actions.append(handoff);')
     script=replace_once(script,'node("span","mono",item.draft||item.reference||item.version||item.fingerprint||"–"));',
                         'node("span","mono",auditReference(item)));')
     actions=Path(__file__).with_name('actions.js').read_text()
@@ -60,4 +66,4 @@ def assets(surface=""):
         pin_script=Path(__file__).with_name('pin_actions.js').read_text()
     script+='\n'+STORAGE_JS+'\n'+pin_script+'\n'+actions
     css=CSS+'\n'+STORAGE_CSS+'\n.dashboard-home{gap:7px;min-width:64px}.dashboard-home-icon{flex:0 0 18px;width:18px;height:18px}.cloud-tools{margin-bottom:22px}.cloud-tools input[type=file]{padding:10px;color:inherit;max-width:100%}.cloud-tools form>.button{margin-top:15px}.cloud-google{margin-top:12px}.cloud-home{display:block;margin-top:20px;text-align:center}.cloud-tools p[role=status]{overflow-wrap:anywhere}.cloud-tools form{min-width:0}\n'
-    return html,css+'\n'+ENROLL_CSS+'\n'+GUIDE_CSS,script+'\n'+ENROLL_JS+'\n'+GUIDE_JS
+    return html,css+'\n'+ENROLL_CSS+'\n'+GUIDE_CSS+'\n'+RELEASE_CSS,script+'\n'+ENROLL_JS+'\n'+GUIDE_JS+'\n'+RELEASE_JS

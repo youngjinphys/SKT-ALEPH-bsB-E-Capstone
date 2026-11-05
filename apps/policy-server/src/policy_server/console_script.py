@@ -547,9 +547,14 @@ async function loadDrafts() {
     list.append(wrapper);
   });
 }
+let draftImpactEpoch=0;
 async function previewDraft(name) {
-  const impact=await api("/api/drafts/"+encodeURIComponent(name)+"/impact");
-  if(currentView!=="drafts") return;
+  const request=++draftImpactEpoch,view=viewEpoch,session=sessionEpoch,credential=token;
+  const current=()=>!!credential&&token===credential&&session===sessionEpoch&&view===viewEpoch&&currentView==="drafts"&&request===draftImpactEpoch;
+  let impact;
+  try{impact=await api("/api/drafts/"+encodeURIComponent(name)+"/impact");}
+  catch(error){if(!current())throw staleRequest();throw error;}
+  if(!current()) return;
   const el=$("draft-impact");
   el.hidden=false;
   el.replaceChildren();
@@ -978,6 +983,8 @@ bindAsyncForm("build-form",async(e)=>{
   try{
     const state=buildReviewContext;
     if(!state?.manual_revision) throw Error("정책 수집/수동 목록을 새로 조회한 뒤 생성하세요.");
+    const epoch=sessionEpoch,view=viewEpoch,credential=token;
+    const current=()=>!!credential&&token===credential&&epoch===sessionEpoch&&view===viewEpoch&&currentView==="drafts";
     const result=await api("/api/build",{
       fingerprint:state.fingerprint,
       review_set_revision:state.review_set_revision,
@@ -987,10 +994,12 @@ bindAsyncForm("build-form",async(e)=>{
       excluded_expired_review_ids:$("confirm-expired-exclusion").checked?state.expired.map(x=>x.id):[],
       confirm_empty_replacement:$("confirm-empty-replacement").checked
     });
+    if(!current())return;
     $("confirm-replacement").checked=false;
     $("confirm-notice").checked=false;
-    await loadDrafts();
-    toast(result.rules+"개 규칙을 생성했습니다. 초안은 미서명·미배포 상태입니다.");
+    const success=result.rules+"개 규칙의 초안 "+result.draft+"을 생성했습니다. 미서명·미배포 상태입니다.";
+    toast(success);
+    try{await loadDrafts();}catch(error){if(current()&&!error.stale)toast(success+" 목록 조회에 실패했습니다. 다시 조회하세요.",true);}
   }catch(err){displayError(err);}
 });
 $("deployment-device-select").addEventListener("change",()=>{

@@ -1,5 +1,7 @@
 # ALEPH DNS Operations Console
 
+Vercel의 `/dashboard`는 아래 로컬 콘솔을 재사용하는 **HTTPS 정책 서버 운영 화면**입니다. 클라우드 화면에서는 수동 FQDN·초안 작성, 장치별 배포 준비, 독립 서명자의 공개키 확인, 서명 봉투의 변경 영향 확인·게시, 공개 피드 제공과 노드 보고 비교를 지원합니다. 초안의 **장치별 배포 준비**에서 서명·게시·노드 수신 절차로 이어집니다. [대시보드 정책 서버 가이드](../../docs/remote-policy-deployment.md)를 따르세요. 아래의 로컬 토큰 콘솔 권한표는 클라우드 어댑터의 게시 기능과 구분합니다.
+
 검증된 위협정보에 대한 검토, **미서명 DNS 정책 생성**, 비집행 EXACT 제안 엔진 설정, 서명된 로컬 게시 파일 확인을 수행하는 운영자 관제 GUI입니다. 기존 `policy_server.intel.build_policy`, `dns_agent.policy.parse_policy`, `policy_server.engine.evaluate_policy`, `aleph_policy_sync.snapshot.verify_envelope`을 재사용합니다. 모의 통계, 자동 승인, 온라인 서명, 자동 root 발행은 구현하지 않습니다.
 
 ## 위협 모델과 권한

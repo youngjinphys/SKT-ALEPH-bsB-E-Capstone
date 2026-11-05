@@ -7,8 +7,8 @@ let cloudTrustVersion=0;
 // per-request session guard alone cannot bind that whole sequence.
 function cloudOperation(version){
   const epoch=sessionEpoch,view=viewEpoch,credential=token,revision=version();
-  return ()=>{
-    if(!credential||token!==credential||epoch!==sessionEpoch||view!==viewEpoch||revision!==version())
+  return (completed=false)=>{
+    if(!credential||token!==credential||epoch!==sessionEpoch||view!==viewEpoch||(!completed&&revision!==version()))
       throw staleRequest();
   };
 }
@@ -210,9 +210,19 @@ $('cloud-publish-commit').addEventListener('click',async()=>{
   try{
     pending.current();pending.committing=true;
     const result=await api('/api/ops/cloud/publish',{...pending.body,ack_withdrawals:$('cloud-withdrawals').checked,ack_key_rotation:$('cloud-rotation').checked});
-    pending.current();
-    clearPublicationPreview();$('cloud-publish-sequence').value=result.sequence;$('cloud-withdrawals').checked=false;$('cloud-rotation').checked=false;
-    await loadDeployment();toast('정책을 게시했습니다. 노드 적용 보고는 별도로 확인하세요.');
+    pending.current(true);
+    if(cloudPublicationPreview===pending){
+      clearPublicationPreview();$('cloud-publish-sequence').value=result.sequence;$('cloud-withdrawals').checked=false;$('cloud-rotation').checked=false;
+    }
+    const success='장치 '+pending.body.device_id+'에 정책 시퀀스 '+result.sequence+'를 게시했습니다. DNS 적용은 별도 확인하세요.';
+    toast(success);
+    try{
+      const status=await loadDeployment();pending.current(true);
+      if(status?.partial)toast(success+' 일부 상태 조회에 실패했습니다. 다시 조회하세요.',true);
+    }catch(error){
+      if(error.stale)throw error;
+      pending.current(true);toast(success+' 상태 조회에 실패했습니다. 다시 조회하세요.',true);
+    }
   }catch(error){if(cloudPublicationPreview===pending)clearPublicationPreview();displayError(error);}
 });
 cloudConnect();

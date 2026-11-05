@@ -23,7 +23,7 @@ def allowed_path(method, path):
     if not path.startswith('/api/ops/'): return False
     path = path[len('/api/ops/'):]
     if method == 'POST': return path in POST_PATHS
-    return method == 'GET' and (path in GET_PATHS or bool(re.fullmatch(r'deployment/[A-Za-z0-9][A-Za-z0-9_.-]{0,63}|drafts/policy-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{12}\.json/(download|impact)', path)))
+    return method == 'GET' and (path in GET_PATHS or bool(re.fullmatch(r'deployment/[A-Za-z0-9][A-Za-z0-9_.-]{0,63}|drafts/policy-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{12}\.json/(?:download|impact|handoff/[A-Za-z0-9][A-Za-z0-9_.-]{0,63})', path)))
 
 def present(request):
     return ASSERTION in request.headers or SIGNATURE in request.headers
