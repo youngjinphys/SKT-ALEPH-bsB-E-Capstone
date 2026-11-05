@@ -153,8 +153,9 @@ def check_dns_terminal(browser, origin):
                     expect(root).to_have_attribute('data-evidence-state','captured')
                     expect(root).to_have_attribute('data-query-id','pi-dns-block-20261105')
                     expect(root.locator('.server-dns-heading h3')).to_have_text('Pi DNS 질의 기록')
-                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','recorded')
-                    expect(root.locator('.dns-terminal-command code')).to_have_text(' '.join(PI_QUERY['command']))
+                    expect(root.locator('.dns-terminal-command')).to_have_attribute('data-command-display','summary')
+                    expect(root.locator('.dns-terminal-command code')).to_have_text('dig @${PI_DNS} block.test A')
+                    assert PI_QUERY['command']==['dig','@${PI_DNS}','block.test','A','+time=2','+tries=1','+noall','+comments','+answer']
                     assert root.locator('.dns-terminal-output code').text_content()==PI_QUERY['stdout']
                     expect(root.locator('.dns-terminal-status time')).to_have_attribute('datetime',PI_QUERY['started_at'])
                     link=root.get_by_role('link',name='기록 ↗',exact=True)

@@ -58,8 +58,10 @@ test('the Pi DNS display reads the recorded response without attributing its cau
  const query=record.block_queries.find(q=>q.qtype==='A'&&q.transport==='UDP');
  assert.ok(source.includes('pi-dns-block-20261105.json'));
  assert.ok(source.includes('PI DNS · STORED RECORD'));
- assert.ok(source.includes('data-command-display="recorded"'));
- assert.ok(source.includes('{block.command.join(" ")}'));
+ assert.ok(source.includes('data-command-display="summary"'));
+ assert.ok(source.includes('dig @${PI_DNS} block.test A'));
+ assert.doesNotMatch(source,/block\.command\.join/);
+ assert.deepEqual(query.command,['dig','@${PI_DNS}','block.test','A','+time=2','+tries=1','+noall','+comments','+answer']);
  assert.ok(source.includes('<Transcript text={block.stdout}/>'));
  assert.ok(source.includes('data-evidence-state="captured"'));
  assert.doesNotMatch(source,/exampleOutput|NXDOMAIN \(expected\)|ANSWER: 0 \(expected\)|NOT RUN/);

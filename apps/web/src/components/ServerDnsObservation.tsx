@@ -41,7 +41,7 @@ export function ServerDnsObservation(){
      <div className="dns-terminal-status"><span>exit {google.exitCode} · <ResultText text="NOERROR"/></span><time dateTime={google.timestamp}>{google.timestamp.slice(11,19)} UTC</time><a href="/capstone/evidence/google-dns-observation.json" target="_blank" rel="noopener noreferrer">기록 ↗</a></div>
     </>:<>
      <p className="dns-terminal-excerpt">Pi DNS 실제 질의 · A / UDP</p>
-     <p className="dns-terminal-command" data-command-display="recorded"><span aria-hidden="true">$ </span><code>{block.command.join(" ")}</code></p>
+     <p className="dns-terminal-command" data-command-display="summary"><span aria-hidden="true">$ </span><code>{"dig @${PI_DNS} block.test A"}</code></p>
      <Transcript text={block.stdout}/>
      <div className="dns-terminal-status"><span>exit {block.exit_code} · <ResultText text={block.rcode}/></span><time dateTime={block.started_at}>{block.started_at.slice(11,19)} UTC</time><a href="/capstone/evidence/pi-dns-block-20261105.json" target="_blank" rel="noopener noreferrer">기록 ↗</a></div>
     </>}
