@@ -104,6 +104,11 @@
     "url": "https://www.ncsc.gov.uk/guidance/protective-dns-for-private-sector",
     "note": "차단 방식, 인증서 오류, 우회 통제, 개인정보와 가용성의 운영 조건."
   },
+  "warning-page": {
+    "label": "불법·유해정보 차단 안내 · warning.or.kr",
+    "url": "https://warning.or.kr/",
+    "note": "차단 안내 및 이의신청 문의에 관한 페이지. 일부 환경에서 보안 연결이 실패할 수 있습니다. ISP 참여나 HTTPS 안내 구현의 증거는 아닙니다."
+  },
   "warning": {
     "label": "해외 인터넷사이트 차단 강화 보도자료 · 2019-02-12",
     "url": "https://www.kcc.go.kr/user.do?boardId=1113&page=A05030000&dc=K00000001&boardSeq=46820&mode=view",

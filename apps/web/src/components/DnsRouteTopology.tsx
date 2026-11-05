@@ -18,12 +18,12 @@ function RouteArrows({label,epoch,policy=false}:{label:string;epoch:string;polic
  </div>;
 }
 export function DnsRouteTopology({paused=false}:{paused?:boolean}){
- const [selected,setSelected]=useState(0);
+ const [selected,setSelected]=useState(2);
  const playback=useDiagramPlayback({steps:selected===0?1:2,paused});
  const external=selected===2, resolver=external?'external':'protected';
  return <section ref={playback.diagramRef} className="diagram-panel dns-route-topology" data-stage={selected} data-resolver={resolver} data-flow-step={playback.step} data-flow-cycle={playback.cycle} data-playing={playback.playing} aria-label="공공·ISP 운영 제안과 선택한 하나의 DNS 경로">
-  <p className="diagram-caption">PROPOSED OPERATION</p>
-  <h2>보호 범위는 선택한 DNS 경로까지</h2>
+  <p className="diagram-caption">한계와 확장 방안</p>
+  <h2>선택한 DNS 경로에서 보호합니다</h2>
   <div className="dns-route-stages" role="group" data-flow-cue={playback.hint} aria-label="설명할 경로 선택">
    {['정책 사전 배포','보호 DNS 선택','다른 DNS 경로'].map((label,index)=><button key={label} type="button" data-scenario-step="true" aria-pressed={selected===index} onClick={()=>{setSelected(index);playback.restart(0)}}>{label}</button>)}
   </div>
@@ -35,6 +35,10 @@ export function DnsRouteTopology({paused=false}:{paused?:boolean}){
     <strong>{external?<>대체 리졸버<br/>또는 VPN DNS</>:'ISP 보호 DNS'}</strong>
     <span>{selected===0?'서명 정책을 미리 받음':external?'ISP 보호 정책 적용 범위 밖':'받아 둔 정책을 로컬 대조'}</span>
    </article>
+  </div>
+  <div className="dns-route-precedent">
+   <div><small>국내 차단 안내 선례</small><strong>차단 사실 안내 사례</strong></div>
+   <p>warning.or.kr</p>
   </div>
  </section>;
 }

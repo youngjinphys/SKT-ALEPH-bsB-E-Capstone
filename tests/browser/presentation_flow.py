@@ -108,6 +108,8 @@ def check_flow(browser, origin):
 
         open_slide('topology-public', '.dns-route-topology')
         routes = page.locator('.dns-route-topology')
+        expect(routes).to_have_attribute('data-resolver', 'external')
+        page.get_by_role('button', name='정책 사전 배포', exact=True).click()
         expect(routes).to_have_attribute('data-playing', 'true')
         old_route = page.locator('.dns-route-policy-line .dns-route-rails:visible').element_handle()
         page.keyboard.press('r')

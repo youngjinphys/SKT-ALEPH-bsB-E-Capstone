@@ -15,6 +15,8 @@
 .dns-route-bypass{border-color:#ffd29a;background:linear-gradient(145deg,#3b3540,#1b2939);box-shadow:0 0 18px #ffc48420}.dns-route-bypass small{color:#ffcf9a;font-weight:750}
 .dns-route-arrows{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}.dns-route-arrows>span{font-size:11px;color:#b2ebfa;white-space:nowrap}.dns-route-arrows>.dns-route-answer-label{color:#a1e6cf}.dns-route-lines{position:relative;width:100%;height:38px}.dns-route-rails{width:100%;height:100%;overflow:visible}.dns-route-head{position:absolute;width:12px;height:12px;overflow:visible}.dns-route-head-query{left:94%;top:26.316%;transform:translate(-100%,-50%);stroke:#9beaff}.dns-route-head-answer{left:6%;top:73.684%;transform:translateY(-50%);stroke:#77f0c7}.dns-route-arrows path{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.dns-route-query{stroke:#9beaff}.dns-route-answer{stroke:#77f0c7}.dns-route-vertical{display:none}
 .dns-route-policy-line>.dns-route-query-label{white-space:normal;text-align:center;color:#d2cdfa;line-height:1.45}.dns-route-policy-line>.dns-route-query-label>span{display:inline-block;white-space:nowrap}.dns-route-policy-line .dns-route-query,.dns-route-policy-line .dns-route-head-query{stroke:#d2cdfa}.dns-route-policy-line .dns-route-head-query.dns-route-horizontal{top:50%}
+.dns-route-precedent{display:grid;grid-template-columns:minmax(160px,.8fr) minmax(0,1.4fr);align-items:center;gap:14px;margin-top:3px;padding:14px 16px;border:1px solid #526e7f;border-radius:12px;background:#102d3d}
+.dns-route-precedent div{display:flex;flex-direction:column;gap:4px}.dns-route-precedent small{font-size:11px;color:#9ee8dd;font-weight:700}.dns-route-precedent strong{font-size:clamp(14px,1.05vw,17px);color:#e9f9fc;word-break:keep-all}.dns-route-precedent p{margin:0;color:#c7dde5;font-size:clamp(12px,.9vw,14px);line-height:1.7;word-break:keep-all}
 @keyframes dns-resolver-select{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 @container dns-route (max-width:440px){
  .dns-route-map{grid-template-columns:minmax(0,1fr);gap:8px}
@@ -25,8 +27,18 @@
  .dns-route-horizontal{display:none}.dns-route-vertical{display:block}
  .dns-route-head-query.dns-route-vertical{left:26.316%;top:94%;transform:translate(-50%,-100%)}.dns-route-head-answer.dns-route-vertical{left:73.684%;top:6%;transform:translateX(-50%)}
  .dns-route-policy-line .dns-route-head-query.dns-route-vertical{left:50%}
+ .dns-route-precedent{grid-template-columns:1fr;gap:8px}
 }
 @media(max-width:780px){.deck-root .dns-route-topology{max-height:none;padding:16px;gap:12px}.dns-route-stages button{min-height:44px;font-size:11px;padding:7px 9px}}
+@media(min-width:1100px) and (min-height:851px){
+ .deck-root .dns-route-topology{gap:16px}
+ .dns-route-topology .diagram-caption{font-size:13px}
+ .dns-route-stages button{font-size:14px;min-height:42px;padding:8px 12px}
+ .dns-route-node{min-height:190px;padding:18px 15px}
+ .dns-route-node small,.dns-route-node span,.dns-route-arrows>span{font-size:14px}
+ .dns-route-node strong{font-size:clamp(19px,1.3vw,24px)}
+ .dns-route-precedent{padding:17px 18px}.dns-route-precedent small{font-size:13px}.dns-route-precedent strong,.dns-route-precedent p{font-size:15px}
+}
 @media(min-width:781px) and (max-height:850px){.deck-root .dns-route-topology{gap:8px;padding:16px}}
 .dns-route-topology[data-playing=true][data-stage="0"] .dns-route-policy-line .dns-route-query{stroke-dasharray:5 5;animation:dns-route-distribute calc(1.8s * var(--presentation-motion-scale, 1)) linear 1}
 .dns-route-topology[data-playing=true]:not([data-stage="0"])[data-flow-step="0"] .dns-route-query,
